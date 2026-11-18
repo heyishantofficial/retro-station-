@@ -1,0 +1,15 @@
+{
+  "name": "A24 Minimal Music Player",
+  "short_name": "A24 Player",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#090808",
+  "theme_color": "#090808",
+  "icons": [
+    {
+      "src": "/vinyl-disc.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
