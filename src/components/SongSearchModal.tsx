@@ -6,7 +6,6 @@ import {
   Plus,
   Check,
   Disc3,
-  Sparkles,
   Music2,
   ChevronDown,
   FolderPlus,
@@ -752,15 +751,12 @@ export const SongSearchModal: React.FC<SongSearchModalProps> = ({
             </div>
 
             {/* Footer Notice */}
-            <div className="px-5 py-3 border-t border-black/[0.06] dark:border-white/[0.06] bg-black/[0.02] dark:bg-white/[0.02] flex items-center justify-between text-[11px] text-neutral-500 dark:text-neutral-400 font-mono relative z-20">
-              <span className="flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                Hover on Target Crate above to switch or create playlists
-              </span>
+            <div className="px-5 py-3 border-t border-black/[0.06] dark:border-white/[0.06] bg-black/[0.02] dark:bg-white/[0.02] flex items-center justify-between text-[11px] text-neutral-500 dark:text-neutral-400 font-sans relative z-20">
+              <span>Press Esc to close</span>
               <button
                 type="button"
                 onClick={onClose}
-                className="hover:text-neutral-900 dark:hover:text-white uppercase tracking-wider font-medium"
+                className="hover:text-neutral-900 dark:hover:text-white font-medium px-2.5 py-1 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
               >
                 Done
               </button>
