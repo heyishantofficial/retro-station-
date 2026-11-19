@@ -11,7 +11,6 @@ import {
   Plus,
   Search,
   Share2,
-  FolderPlus,
   TrendingUp,
   Cloud,
   Disc3,
@@ -312,10 +311,10 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
               </button>
             </div>
 
-            {/* Quick Actions Deck: 4 Solid, High-Contrast Grid Cards */}
+            {/* Quick Actions Bar: 3 Clean, Dedicated Discovery & Sync Actions */}
             <div className="px-5 py-2 relative z-10">
-              <div className="grid grid-cols-2 gap-2">
-                {/* 1. Search & Add */}
+              <div className="grid grid-cols-3 gap-2">
+                {/* 1. Search Songs */}
                 <button
                   type="button"
                   onClick={() => {
@@ -323,14 +322,14 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                     onClose();
                     onOpenSearch?.();
                   }}
-                  className="p-2.5 rounded-xl bg-[#18181d] hover:bg-[#22222a] border border-white/10 hover:border-white/20 flex items-center gap-2.5 text-left transition-all active:scale-[0.98] group cursor-pointer"
+                  className="p-2.5 rounded-xl bg-[#18181d] hover:bg-[#22222a] border border-white/10 hover:border-white/20 flex flex-col items-center text-center gap-1.5 transition-all active:scale-[0.98] group cursor-pointer"
                 >
-                  <div className="w-7 h-7 rounded-lg bg-emerald-500/20 border border-emerald-500/35 flex items-center justify-center text-emerald-400 group-hover:scale-105 transition-transform shrink-0">
-                    <Search className="w-3.5 h-3.5" />
+                  <div className="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/35 flex items-center justify-center text-emerald-400 group-hover:scale-105 transition-transform shrink-0">
+                    <Search className="w-4 h-4" />
                   </div>
-                  <div className="min-w-0">
-                    <div className="text-xs font-semibold text-white truncate">Search Songs</div>
-                    <div className="text-[11px] text-zinc-300 truncate">Add to playlist</div>
+                  <div className="min-w-0 w-full">
+                    <div className="text-xs font-semibold text-white truncate">Search</div>
+                    <div className="text-[10px] text-zinc-300 truncate mt-0.5">Add Songs</div>
                   </div>
                 </button>
 
@@ -342,36 +341,18 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                     onClose();
                     onOpenCharts?.();
                   }}
-                  className="p-2.5 rounded-xl bg-[#18181d] hover:bg-[#22222a] border border-white/10 hover:border-white/20 flex items-center gap-2.5 text-left transition-all active:scale-[0.98] group cursor-pointer"
+                  className="p-2.5 rounded-xl bg-[#18181d] hover:bg-[#22222a] border border-white/10 hover:border-white/20 flex flex-col items-center text-center gap-1.5 transition-all active:scale-[0.98] group cursor-pointer"
                 >
-                  <div className="w-7 h-7 rounded-lg bg-purple-500/20 border border-purple-500/35 flex items-center justify-center text-purple-300 group-hover:scale-105 transition-transform shrink-0">
-                    <TrendingUp className="w-3.5 h-3.5" />
+                  <div className="w-8 h-8 rounded-lg bg-purple-500/20 border border-purple-500/35 flex items-center justify-center text-purple-300 group-hover:scale-105 transition-transform shrink-0">
+                    <TrendingUp className="w-4 h-4" />
                   </div>
-                  <div className="min-w-0">
-                    <div className="text-xs font-semibold text-white truncate">Live Charts</div>
-                    <div className="text-[11px] text-zinc-300 truncate">Daily Top 100</div>
+                  <div className="min-w-0 w-full">
+                    <div className="text-xs font-semibold text-white truncate">Charts</div>
+                    <div className="text-[10px] text-zinc-300 truncate mt-0.5">Top 100</div>
                   </div>
                 </button>
 
-                {/* 3. New Playlist */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    sound.playClick();
-                    triggerCreatePlaylist?.();
-                  }}
-                  className="p-2.5 rounded-xl bg-[#18181d] hover:bg-[#22222a] border border-white/10 hover:border-white/20 flex items-center gap-2.5 text-left transition-all active:scale-[0.98] group cursor-pointer"
-                >
-                  <div className="w-7 h-7 rounded-lg bg-amber-500/20 border border-amber-500/35 flex items-center justify-center text-amber-300 group-hover:scale-105 transition-transform shrink-0">
-                    <FolderPlus className="w-3.5 h-3.5" />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="text-xs font-semibold text-white truncate">New Playlist</div>
-                    <div className="text-[11px] text-zinc-300 truncate">Create empty</div>
-                  </div>
-                </button>
-
-                {/* 4. Sync YouTube */}
+                {/* 3. Sync YouTube */}
                 <button
                   type="button"
                   onClick={() => {
@@ -379,14 +360,14 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                     onClose();
                     onOpenSyncModal();
                   }}
-                  className="p-2.5 rounded-xl bg-[#18181d] hover:bg-[#22222a] border border-white/10 hover:border-white/20 flex items-center gap-2.5 text-left transition-all active:scale-[0.98] group cursor-pointer"
+                  className="p-2.5 rounded-xl bg-[#18181d] hover:bg-[#22222a] border border-white/10 hover:border-white/20 flex flex-col items-center text-center gap-1.5 transition-all active:scale-[0.98] group cursor-pointer"
                 >
-                  <div className="w-7 h-7 rounded-lg bg-red-500/20 border border-red-500/35 flex items-center justify-center text-red-400 group-hover:scale-105 transition-transform shrink-0">
-                    <YouTubeIcon className="w-3.5 h-3.5 text-red-400" />
+                  <div className="w-8 h-8 rounded-lg bg-red-500/20 border border-red-500/35 flex items-center justify-center text-red-400 group-hover:scale-105 transition-transform shrink-0">
+                    <YouTubeIcon className="w-4 h-4 text-red-400" />
                   </div>
-                  <div className="min-w-0">
-                    <div className="text-xs font-semibold text-white truncate">Sync YouTube</div>
-                    <div className="text-[11px] text-zinc-300 truncate">Import link</div>
+                  <div className="min-w-0 w-full">
+                    <div className="text-xs font-semibold text-white truncate">Sync</div>
+                    <div className="text-[10px] text-zinc-300 truncate mt-0.5">Import</div>
                   </div>
                 </button>
               </div>
