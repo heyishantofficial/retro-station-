@@ -70,7 +70,7 @@ export async function publishCrateToCommunity(
       id: playlist.id,
       title: playlist.title,
       subtitle: playlist.subtitle || `${playlist.tracks.length} tracks`,
-      category: playlist.category || 'Curated Crate',
+      category: playlist.category || 'Curated Playlist',
       tracks: playlist.tracks,
     },
     creatorName,
@@ -101,7 +101,7 @@ export async function publishCrateToCommunity(
     id: playlist.id,
     title: playlist.title,
     subtitle: playlist.subtitle || `${playlist.tracks.length} tracks`,
-    category: playlist.category || 'Curated Crate',
+    category: playlist.category || 'Curated Playlist',
     creatorName,
     creatorAvatar:
       creatorAvatar ||

@@ -5,7 +5,7 @@ export const STARTER_CRATES: Playlist[] = [
     id: 'crate-lofi-beats',
     title: 'Lofi Beats · Late Night Study',
     subtitle: 'ChilledCow & Vinyl Study Essentials • 6 discs',
-    category: 'Curated Starter Crate',
+    category: 'Curated Starter Playlist',
     tracks: [
       {
         id: 'lofi-1',
@@ -118,7 +118,7 @@ export const STARTER_CRATES: Playlist[] = [
     id: 'crate-certified-baddie',
     title: 'Certified Baddie Pop',
     subtitle: 'Glossy Pink Anthems & Pop Royalty • 5 discs',
-    category: 'Curated Starter Crate',
+    category: 'Curated Starter Playlist',
     tracks: [
       {
         id: 'baddie-1',
@@ -211,7 +211,7 @@ export const STARTER_CRATES: Playlist[] = [
     id: 'crate-synthwave-80s',
     title: '80s Synthwave & Retrowave',
     subtitle: 'Neon Grids, Analog Synthesizers & Midnight Drives • 5 discs',
-    category: 'Curated Starter Crate',
+    category: 'Curated Starter Playlist',
     tracks: [
       {
         id: 'synth-1',
@@ -304,7 +304,7 @@ export const STARTER_CRATES: Playlist[] = [
     id: 'crate-city-pop-tokyo',
     title: 'Midnight City Pop · Tokyo Vinyl',
     subtitle: 'Golden-Era Japanese Funk & Vinyl Warmth • 4 discs',
-    category: 'Curated Starter Crate',
+    category: 'Curated Starter Playlist',
     tracks: [
       {
         id: 'city-1',

@@ -68,7 +68,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
   const { isIOS } = useViewportMode();
   const [isPlaylistDropdownOpen, setIsPlaylistDropdownOpen] = useState(false);
   const [isCreatingInline, setIsCreatingInline] = useState(false);
-  const [newCrateTitle, setNewCrateTitle] = useState('');
+  const [newPlaylistTitle, setNewPlaylistTitle] = useState('');
 
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const leaderboardRef = useRef<HTMLDivElement | null>(null);
@@ -88,7 +88,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setIsPlaylistDropdownOpen(false);
         setIsCreatingInline(false);
-        setNewCrateTitle('');
+        setNewPlaylistTitle('');
       }
     };
 
@@ -96,7 +96,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
       if (e.key === 'Escape') {
         setIsPlaylistDropdownOpen(false);
         setIsCreatingInline(false);
-        setNewCrateTitle('');
+        setNewPlaylistTitle('');
       }
     };
 
@@ -137,16 +137,16 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
     onSelectPlaylist?.(plId);
     setIsPlaylistDropdownOpen(false);
     setIsCreatingInline(false);
-    setNewCrateTitle('');
+    setNewPlaylistTitle('');
   };
 
   const handleCreateSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newCrateTitle.trim() || !onCreatePlaylist) return;
+    if (!newPlaylistTitle.trim() || !onCreatePlaylist) return;
     sound.playClick(1280, 0.02);
-    onCreatePlaylist(newCrateTitle.trim());
+    onCreatePlaylist(newPlaylistTitle.trim());
     setIsCreatingInline(false);
-    setNewCrateTitle('');
+    setNewPlaylistTitle('');
     setIsPlaylistDropdownOpen(false);
   };
 
@@ -187,7 +187,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
                 setIsPlaylistDropdownOpen((o) => !o);
               }}
               aria-label="Switch playlist"
-              title="Playlists & Crates"
+              title="Playlists"
               className={`touch-target w-9 h-9 rounded-full flex items-center justify-center ${iconColor} ${
                 isPlaylistDropdownOpen ? 'bg-black/15 dark:bg-white/20' : hoverBg
               } active:scale-90 transition-all cursor-pointer`}
@@ -209,7 +209,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
                   <div className="px-2 py-1 border-b border-black/[0.06] dark:border-white/[0.08] flex items-center justify-between">
                     <span className="font-mono text-[9px] uppercase tracking-wider text-neutral-400 dark:text-neutral-500 flex items-center gap-1.5">
                       <Disc3 className="w-3 h-3 text-neutral-500 animate-spin" />
-                      Select Crate / Playlist
+                      Select Playlist
                     </span>
                     <span className="font-mono text-[9px] text-neutral-400 dark:text-neutral-500">
                       {playlists.length} available
@@ -230,7 +230,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
                             key={pl.id}
                             type="button"
                             onClick={() => handleSelectCrate(pl.id)}
-                            className={`w-full px-2.5 py-2 rounded-xl text-left transition-all flex items-center justify-between group/crate cursor-pointer ${
+                            className={`w-full px-2.5 py-2 rounded-xl text-left transition-all flex items-center justify-between group cursor-pointer ${
                               isActive
                                 ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 shadow-sm'
                                 : 'hover:bg-black/[0.05] dark:hover:bg-white/[0.08] text-neutral-800 dark:text-neutral-200'
@@ -283,9 +283,9 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
                       <input
                         type="text"
                         autoFocus
-                        value={newCrateTitle}
-                        onChange={(e) => setNewCrateTitle(e.target.value)}
-                        placeholder="New crate title…"
+                        value={newPlaylistTitle}
+                        onChange={(e) => setNewPlaylistTitle(e.target.value)}
+                        placeholder="New playlist title…"
                         className="w-full px-2.5 py-1.5 rounded-lg bg-white dark:bg-black/40 border border-black/15 dark:border-white/15 text-[12px] focus:outline-none focus:ring-1 focus:ring-neutral-900 dark:focus:ring-white"
                       />
                       <div className="flex items-center justify-end gap-1.5">
@@ -293,7 +293,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
                           type="button"
                           onClick={() => {
                             setIsCreatingInline(false);
-                            setNewCrateTitle('');
+                            setNewPlaylistTitle('');
                           }}
                           className="px-2 py-0.5 text-[10px] font-mono text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200"
                         >
@@ -301,7 +301,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
                         </button>
                         <button
                           type="submit"
-                          disabled={!newCrateTitle.trim()}
+                          disabled={!newPlaylistTitle.trim()}
                           className="px-2.5 py-1 rounded-md bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-mono text-[10px] font-medium disabled:opacity-40"
                         >
                           Create
@@ -316,7 +316,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
                         className="flex-1 py-1.5 px-2 rounded-xl border border-dashed border-neutral-300 dark:border-neutral-600 hover:border-neutral-900 dark:hover:border-white text-neutral-700 dark:text-neutral-200 text-[10.5px] font-mono uppercase tracking-wider flex items-center justify-center gap-1.5 hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors cursor-pointer"
                       >
                         <FolderPlus className="w-3.5 h-3.5" />
-                        <span>+ New Crate</span>
+                        <span>+ New Playlist</span>
                       </button>
 
                       {onOpenCharts && (
@@ -344,7 +344,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
                             onOpenCommunityLeaderboard();
                           }}
                           className="py-1.5 px-2.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/20 text-[10.5px] font-mono uppercase tracking-wider flex items-center gap-1 transition-colors cursor-pointer"
-                          title="Open Community Leaderboard (Most Saved Crates)"
+                          title="Open Community Leaderboard (Most Saved Playlists)"
                         >
                           <Trophy className="w-3.5 h-3.5" />
                           <span>Leaderboard</span>
@@ -358,7 +358,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
           </div>
         )}
 
-        {/* 3. Community Crates Leaderboard Trigger & Anchored Dropdown Below Rank Button */}
+        {/* 3. Community Playlists Leaderboard Trigger & Anchored Dropdown Below Rank Button */}
         {!isMenuOpen && (
           <div className="relative" ref={leaderboardRef}>
             <button
@@ -372,7 +372,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
                   onOpenCommunityLeaderboard?.();
                 }
               }}
-              aria-label="Community Crates Leaderboard"
+              aria-label="Community Playlists Leaderboard"
               title="Community Leaderboard — Most Saved Playlists"
               className={`touch-target w-9 h-9 rounded-full flex items-center justify-center ${
                 isCommunityLeaderboardOpen

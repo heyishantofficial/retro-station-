@@ -319,7 +319,7 @@ export const SongSearchModal: React.FC<SongSearchModalProps> = ({
                         title="Click to switch target playlist"
                       >
                         <Disc3 className="w-3 h-3 text-emerald-500 dark:text-emerald-400 shrink-0" />
-                        <span className="text-neutral-400 dark:text-neutral-400 font-normal">Target Crate:</span>
+                        <span className="text-neutral-400 dark:text-neutral-400 font-normal">Target Playlist:</span>
                         <span className="font-medium text-neutral-900 dark:text-white truncate max-w-[200px]">
                           {activeCrate?.title || 'Select a playlist'}
                         </span>
@@ -342,7 +342,7 @@ export const SongSearchModal: React.FC<SongSearchModalProps> = ({
                           >
                             <div className="px-2 py-1 border-b border-black/[0.06] dark:border-white/[0.08] flex items-center justify-between">
                               <span className="text-xs font-semibold text-neutral-900 dark:text-white">
-                                Select Target Crate
+                                Select Target Playlist
                               </span>
                               <span className="text-[11px] text-neutral-400">
                                 {playlists.length} available

@@ -104,7 +104,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     {user ? 'Google Account' : 'Sign in with Google'}
                   </h2>
                   <p className="font-mono text-[10px] text-white/50 tracking-wider mt-0.5">
-                    Cloud Playlists & Crate Backup
+                    Cloud Playlist & Song Backup
                   </p>
                 </div>
               </div>
@@ -153,12 +153,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                         Playlists Saved to Google Cloud
                       </span>
                       <span className="font-mono text-xs font-bold text-white">
-                        {playlistsCount} Crates
+                        {playlistsCount} Playlists
                       </span>
                     </div>
 
                     <p className="font-mono text-[10.5px] text-white/60 leading-relaxed">
-                      Your crates and tracks are securely tied to your Google account. Closing your browser or switching devices will restore all your songs automatically.
+                      Your playlists and tracks are securely tied to your Google account. Closing your browser or switching devices will restore all your songs automatically.
                     </p>
 
                     {lastSync && (
@@ -200,7 +200,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 <div className="space-y-4">
                   <div className="text-center py-2">
                     <h3 className="font-sans text-lg font-bold text-white tracking-tight">
-                      Never Lose Your Crates Again
+                      Never Lose Your Playlists Again
                     </h3>
                     <p className="font-sans text-xs text-white/60 mt-1 max-w-xs mx-auto leading-relaxed">
                       Sign in with Google to backup your playlists, custom mixtapes, and imported tracks across all your browsers and devices.

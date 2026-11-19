@@ -152,7 +152,7 @@ export const CommunityLeaderboardDropdown: React.FC<CommunityLeaderboardDropdown
     if (!targetPl) return;
 
     if (targetPl.tracks.length === 0) {
-      alert('This crate has 0 songs. Add some tracks before publishing!');
+      alert('This playlist has 0 songs. Add some tracks before publishing!');
       return;
     }
 
@@ -205,7 +205,7 @@ export const CommunityLeaderboardDropdown: React.FC<CommunityLeaderboardDropdown
           <div className="min-w-0">
             <div className="flex items-center gap-1.5">
               <span className="text-[13px] font-semibold text-white tracking-tight">
-                Community Crates
+                Community Playlists
               </span>
               <span className="px-1.5 py-0.5 rounded-full text-[9px] font-mono uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/35 font-medium">
                 Ranked
@@ -258,11 +258,11 @@ export const CommunityLeaderboardDropdown: React.FC<CommunityLeaderboardDropdown
           }`}
         >
           <UploadCloud className="w-3.5 h-3.5 text-emerald-400" />
-          <span>Publish Crate</span>
+          <span>Publish Playlist</span>
         </button>
       </div>
 
-      {/* Tab Content: Ranked Crates */}
+      {/* Tab Content: Ranked Playlists */}
       {activeTab === 'ranked' && (
         <div className="flex-1 overflow-y-auto pr-0.5 space-y-2 min-h-0">
           {isLoading ? (
@@ -276,9 +276,9 @@ export const CommunityLeaderboardDropdown: React.FC<CommunityLeaderboardDropdown
               <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500/25 to-yellow-600/15 border border-amber-500/35 flex items-center justify-center text-amber-300 shadow-inner mb-3">
                 <Trophy className="w-6 h-6" />
               </div>
-              <h4 className="text-sm font-semibold text-white">No Crates Published Yet</h4>
+              <h4 className="text-sm font-semibold text-white">No Playlists Published Yet</h4>
               <p className="text-xs text-zinc-300 mt-1 max-w-[260px] leading-relaxed">
-                Be the first curator to publish your playlist and claim the #1 spot on the community leaderboard!
+                Be the first to publish your playlist and claim the #1 spot on the community leaderboard!
               </p>
               <button
                 type="button"
@@ -289,7 +289,7 @@ export const CommunityLeaderboardDropdown: React.FC<CommunityLeaderboardDropdown
                 className="mt-4 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-black font-semibold text-xs transition-all shadow-md shadow-amber-500/25 flex items-center gap-1.5 active:scale-95 cursor-pointer"
               >
                 <UploadCloud className="w-3.5 h-3.5" />
-                <span>Publish Your Crate</span>
+                <span>Publish Your Playlist</span>
               </button>
             </div>
           ) : (
@@ -362,7 +362,7 @@ export const CommunityLeaderboardDropdown: React.FC<CommunityLeaderboardDropdown
                         type="button"
                         onClick={(e) => handlePlayCrate(crate, e)}
                         className="px-2 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white text-[11px] font-medium flex items-center gap-1 transition-colors cursor-pointer"
-                        title="Play Crate"
+                        title="Play Playlist"
                       >
                         <Play className="w-3 h-3 fill-current" />
                         <span>Play</span>
@@ -408,7 +408,7 @@ export const CommunityLeaderboardDropdown: React.FC<CommunityLeaderboardDropdown
                       ) : (
                         <>
                           <Plus className="w-3 h-3 stroke-[2.5]" />
-                          <span>Add Crate</span>
+                          <span>Add Playlist</span>
                         </>
                       )}
                     </button>
@@ -420,7 +420,7 @@ export const CommunityLeaderboardDropdown: React.FC<CommunityLeaderboardDropdown
         </div>
       )}
 
-      {/* Tab Content: Publish Crate */}
+      {/* Tab Content: Publish Playlist */}
       {activeTab === 'publish' && (
         <form onSubmit={handlePublishSubmit} className="flex-1 flex flex-col gap-2.5 min-h-0">
           {publishSuccessMessage ? (
@@ -429,18 +429,18 @@ export const CommunityLeaderboardDropdown: React.FC<CommunityLeaderboardDropdown
                 <Check className="w-5 h-5 stroke-[2.5]" />
               </div>
               <h4 className="text-sm font-semibold text-white">{publishSuccessMessage}</h4>
-              <p className="text-xs text-zinc-400">Your crate is now live on the leaderboard!</p>
+              <p className="text-xs text-zinc-400">Your playlist is now live on the leaderboard!</p>
             </div>
           ) : (
             <>
               <p className="text-[11.5px] text-zinc-300 leading-snug">
-                Publishing shares your playlist with the community. Every time a collector adds your crate, your rank rises!
+                Publishing shares your playlist with the community. Every time someone adds your playlist, your rank rises!
               </p>
 
-              {/* Select Crate to Publish */}
+              {/* Select Playlist to Publish */}
               <div className="flex flex-col gap-1">
                 <label className="text-[11px] font-mono uppercase tracking-wider text-zinc-400">
-                  Select Crate to Share
+                  Select Playlist to Share
                 </label>
                 <select
                   value={selectedPlaylistId}
@@ -449,7 +449,7 @@ export const CommunityLeaderboardDropdown: React.FC<CommunityLeaderboardDropdown
                 >
                   {userPlaylists.length === 0 ? (
                     <option value="" disabled>
-                      No crates found in library
+                      No playlists found in library
                     </option>
                   ) : (
                     userPlaylists.map((pl) => (
@@ -470,7 +470,7 @@ export const CommunityLeaderboardDropdown: React.FC<CommunityLeaderboardDropdown
                   type="text"
                   value={creatorName}
                   onChange={(e) => setCreatorName(e.target.value)}
-                  placeholder="e.g. Ishant C, VinylCollector, TokyoGroove"
+                  placeholder="e.g. Ishant C, MusicLover, TokyoGroove"
                   maxLength={36}
                   className="w-full px-3 py-2 rounded-xl bg-black/60 border border-white/15 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400"
                 />
@@ -491,7 +491,7 @@ export const CommunityLeaderboardDropdown: React.FC<CommunityLeaderboardDropdown
                   ) : (
                     <>
                       <UploadCloud className="w-3.5 h-3.5" />
-                      <span>Publish Crate to Leaderboard</span>
+                      <span>Publish Playlist to Leaderboard</span>
                     </>
                   )}
                 </button>

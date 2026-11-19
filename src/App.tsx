@@ -148,7 +148,7 @@ export function App() {
     fetchUserCloudPlaylists(user.id).then((cloudPls) => {
       if (isCancelled || !cloudPls || cloudPls.length === 0) return;
       setPlaylists(cloudPls);
-      setViewToast(`Restored ${cloudPls.length} crates from Google Cloud! ☁️`);
+      setViewToast(`Restored ${cloudPls.length} playlists from Google Cloud! ☁️`);
     });
 
     return () => {
@@ -415,7 +415,7 @@ export function App() {
       if (pl.tracks[0]) {
         setDuration(pl.tracks[0].duration);
       }
-      setViewToast(`Crate: "${pl.title}" (${pl.tracks.length} discs) ✦`);
+      setViewToast(`Playlist: "${pl.title}" (${pl.tracks.length} songs) ✦`);
     }
   };
 
@@ -450,10 +450,10 @@ export function App() {
         setPlaylists(cloudPls);
         setActivePlaylistId(cloudPls[0].id);
         setActiveTrackIndex(0);
-        setViewToast(`Restored ${cloudPls.length} crates from your Google Cloud! ☁️`);
+        setViewToast(`Restored ${cloudPls.length} playlists from your Google Cloud! ☁️`);
       } else {
         await saveUserCloudPlaylists(profile.id, playlists);
-        setViewToast(`Backed up ${playlists.length} crates to your Google Account! ☁️`);
+        setViewToast(`Backed up ${playlists.length} playlists to your Google Account! ☁️`);
       }
     } catch {
       // ignore
@@ -471,7 +471,7 @@ export function App() {
     if (!user) return;
     const ok = await saveUserCloudPlaylists(user.id, playlists);
     if (ok) {
-      setViewToast(`Backed up ${playlists.length} crates to Google Cloud ☁️`);
+      setViewToast(`Backed up ${playlists.length} playlists to Google Cloud ☁️`);
     } else {
       setViewToast('Could not reach cloud backend. Local backup preserved.');
     }
@@ -586,17 +586,17 @@ export function App() {
   };
 
   const handleCreateNewCrate = useCallback(() => {
-    const customCount = playlists.filter((p) => p.category === 'Custom Crate').length;
+    const customCount = playlists.filter((p) => p.category === 'Custom Playlist').length;
     const defaultName = `Mixtape #${customCount + 1}`;
-    const name = window.prompt('Name your new custom crate:', defaultName);
+    const name = window.prompt('Name your new custom playlist:', defaultName);
     if (!name || !name.trim()) return;
 
-    const newId = `custom-crate-${Date.now()}`;
+    const newId = `custom-playlist-${Date.now()}`;
     const newPl: Playlist = {
       id: newId,
       title: name.trim(),
-      subtitle: '0 discs • Custom Crate',
-      category: 'Custom Crate',
+      subtitle: '0 tracks • Custom Playlist',
+      category: 'Custom Playlist',
       tracks: [],
     };
 
@@ -637,7 +637,7 @@ export function App() {
 
   const handleShareCrate = useCallback(() => {
     if (!activePlaylist || activePlaylist.tracks.length === 0) {
-      setViewToast('No tracks in crate to share');
+      setViewToast('No tracks in playlist to share');
       return;
     }
     const ytIds = activePlaylist.tracks
@@ -645,7 +645,7 @@ export function App() {
       .filter((id): id is string => Boolean(id && id.length === 11));
 
     if (ytIds.length === 0) {
-      setViewToast('No YouTube tracks in crate');
+      setViewToast('No YouTube tracks in playlist');
       return;
     }
 
@@ -682,7 +682,7 @@ export function App() {
 
       setActivePlaylistId(communityPlaylist.id);
       setActiveTrackIndex(0);
-      setViewToast(`Saved "${communityPlaylist.title}" to Crates`);
+      setViewToast(`Saved "${communityPlaylist.title}" to Playlists`);
     },
     [user]
   );
@@ -1182,12 +1182,12 @@ export function App() {
           setViewToast(`Pressed "${result.title}" onto "${targetPl.title}"! ✦`);
         }}
         onCreatePlaylist={(title) => {
-          const newId = `custom-crate-${Date.now()}`;
+          const newId = `custom-playlist-${Date.now()}`;
           const newPl: Playlist = {
             id: newId,
             title,
-            subtitle: '0 discs • Custom Crate',
-            category: 'Custom Crate',
+            subtitle: '0 tracks • Custom Playlist',
+            category: 'Custom Playlist',
             tracks: [],
           };
           setPlaylists((prev) => [newPl, ...prev]);

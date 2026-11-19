@@ -101,11 +101,11 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
   onOpenCommunityLeaderboard,
   onToggleMiniVideo,
 }) => {
-  const [activeTab, setActiveTab] = useState<'tracks' | 'crates' | 'themes'>(() => {
+  const [activeTab, setActiveTab] = useState<'tracks' | 'playlists' | 'themes'>(() => {
     if (typeof window !== 'undefined') {
       const tabParam = new URLSearchParams(window.location.search).get('tab');
-      if (tabParam === 'crates' || tabParam === 'themes' || tabParam === 'tracks') {
-        return tabParam;
+      if (tabParam === 'playlists' || tabParam === 'crates' || tabParam === 'themes' || tabParam === 'tracks') {
+        return tabParam === 'crates' ? 'playlists' : tabParam;
       }
     }
     return 'tracks';
@@ -166,7 +166,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                 </div>
 
                 <h2 className="text-base sm:text-lg font-bold text-white tracking-tight mt-1 truncate">
-                  {activePlaylist?.title || 'No Crate Selected'}
+                  {activePlaylist?.title || 'No Playlist Selected'}
                 </h2>
               </div>
 
@@ -217,7 +217,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                       )}
                     </div>
                     <span className="text-xs text-zinc-300 block truncate mt-0.5">
-                      {user ? 'Playlists backed up to cloud' : 'Keep crates synced across devices'}
+                      {user ? 'Playlists backed up to cloud' : 'Keep playlists synced across devices'}
                     </span>
                   </div>
                 </div>
@@ -247,7 +247,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                   </div>
                   <div className="min-w-0">
                     <div className="text-xs font-semibold text-white truncate">Search Songs</div>
-                    <div className="text-[11px] text-zinc-300 truncate">Add to crate</div>
+                    <div className="text-[11px] text-zinc-300 truncate">Add to playlist</div>
                   </div>
                 </button>
 
@@ -270,7 +270,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                   </div>
                 </button>
 
-                {/* 3. New Crate */}
+                {/* 3. New Playlist */}
                 <button
                   type="button"
                   onClick={() => {
@@ -283,8 +283,8 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                     <FolderPlus className="w-3.5 h-3.5" />
                   </div>
                   <div className="min-w-0">
-                    <div className="text-xs font-semibold text-white truncate">New Crate</div>
-                    <div className="text-[11px] text-zinc-300 truncate">Empty playlist</div>
+                    <div className="text-xs font-semibold text-white truncate">New Playlist</div>
+                    <div className="text-[11px] text-zinc-300 truncate">Create empty</div>
                   </div>
                 </button>
 
@@ -341,19 +341,19 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                   type="button"
                   onClick={() => {
                     sound.playClick();
-                    setActiveTab('crates');
+                    setActiveTab('playlists');
                   }}
                   className={`py-1.5 px-2 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                    activeTab === 'crates'
+                    activeTab === 'playlists'
                       ? 'bg-white text-neutral-950 shadow-md font-bold'
                       : 'text-zinc-300 hover:text-white'
                   }`}
                 >
                   <Disc3 className="w-3 h-3" />
-                  <span>Crates</span>
+                  <span>Playlists</span>
                   <span
                     className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
-                      activeTab === 'crates'
+                      activeTab === 'playlists'
                         ? 'bg-neutral-900/10 text-neutral-950'
                         : 'bg-white/15 text-zinc-200'
                     }`}
@@ -417,7 +417,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                           onShareCrate?.();
                         }}
                         className="py-1.5 px-3 rounded-lg bg-[#18181d] hover:bg-[#22222a] text-xs font-semibold text-zinc-300 hover:text-white flex items-center gap-1.5 transition-colors border border-white/10 cursor-pointer"
-                        title="Share crate link"
+                        title="Share playlist link"
                       >
                         <Share2 className="w-3.5 h-3.5" />
                         <span>Share</span>
@@ -430,7 +430,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                       <div className="w-12 h-12 rounded-2xl bg-[#18181d] border border-white/10 flex items-center justify-center mx-auto text-zinc-400 mb-3">
                         <Music className="w-5 h-5" />
                       </div>
-                      <h4 className="text-sm font-semibold text-white">Crate is Empty</h4>
+                      <h4 className="text-sm font-semibold text-white">Playlist is Empty</h4>
                       <p className="text-xs text-zinc-300 mt-1 max-w-[240px] mx-auto">
                         Search songs or tap the Charts button to press your first tracks.
                       </p>
@@ -563,10 +563,10 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                 </div>
               )}
 
-              {/* TAB 2: CRATES / PLAYLISTS */}
-              {activeTab === 'crates' && (
+              {/* TAB 2: PLAYLISTS */}
+              {activeTab === 'playlists' && (
                 <div className="space-y-2 pb-4">
-                  {/* Community Crates Leaderboard Banner */}
+                  {/* Community Playlists Leaderboard Banner */}
                   <button
                     type="button"
                     onClick={() => {
@@ -588,14 +588,14 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                           </span>
                         </div>
                         <div className="text-xs text-zinc-300 truncate mt-0.5">
-                          Explore most saved crates by collectors
+                          Explore most saved playlists by community
                         </div>
                       </div>
                     </div>
                     <ArrowRight className="w-3.5 h-3.5 text-zinc-300 group-hover:text-amber-300 group-hover:translate-x-0.5 transition-all shrink-0" />
                   </button>
 
-                  {/* Create New Crate Quick Trigger */}
+                  {/* Create New Playlist Quick Trigger */}
                   <button
                     type="button"
                     onClick={() => {
@@ -605,12 +605,12 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                     className="w-full py-2.5 px-3 rounded-xl border border-dashed border-white/25 hover:border-white/50 bg-[#16161b] hover:bg-[#202026] text-xs font-semibold text-zinc-200 hover:text-white flex items-center justify-center gap-2 transition-all cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>Create New Crate</span>
+                    <span>Create New Playlist</span>
                   </button>
 
                   {playlists.length === 0 && (
                     <div className="py-12 text-center text-xs text-zinc-400">
-                      No playlists found. Create or import your first crate.
+                      No playlists found. Create or import your first playlist.
                     </div>
                   )}
 
@@ -671,7 +671,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                                   onClose();
                                   onOpenCommunityLeaderboard?.(pl.id);
                                 }}
-                                title="Publish crate to Community Leaderboard"
+                                title="Publish playlist to Community Leaderboard"
                                 className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-amber-400 hover:bg-amber-500/20 transition-colors cursor-pointer touch-target-sm"
                               >
                                 <Globe2 className="w-4 h-4" />
@@ -684,7 +684,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                                   sound.playClick();
                                   onShareCrate?.();
                                 }}
-                                title="Share crate link"
+                                title="Share playlist link"
                                 className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/15 transition-colors cursor-pointer touch-target-sm"
                               >
                                 <Share2 className="w-4 h-4" />
@@ -697,7 +697,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                                   sound.playClick();
                                   onDeletePlaylist(pl.id);
                                 }}
-                                title="Delete crate"
+                                title="Delete playlist"
                                 className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-red-400 hover:bg-red-500/20 transition-colors cursor-pointer touch-target-sm"
                               >
                                 <Trash2 className="w-4 h-4" />
