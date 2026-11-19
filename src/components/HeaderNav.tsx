@@ -12,6 +12,7 @@ import {
   User,
   Trophy,
   Pencil,
+  HeartHandshake,
 } from 'lucide-react';
 import { sound } from '../utils/soundEffects';
 import { useViewportMode } from '../hooks/useViewportMode';
@@ -41,6 +42,8 @@ interface HeaderNavProps {
   onImportCommunityPlaylist?: (playlist: Playlist) => void;
   onPlayCommunityPlaylist?: (playlist: Playlist) => void;
   onRenamePlaylist?: (id: string, newTitle: string) => void;
+  onOpenSharingIsCaring?: () => void;
+  isSharingIsCaringOpen?: boolean;
   initialPublishPlaylistId?: string;
   initialPublishCrateId?: string;
 }
@@ -67,6 +70,8 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
   onImportCommunityPlaylist,
   onPlayCommunityPlaylist,
   onRenamePlaylist,
+  onOpenSharingIsCaring,
+  isSharingIsCaringOpen = false,
   initialPublishPlaylistId,
   initialPublishCrateId,
 }) => {
@@ -432,6 +437,29 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
               )}
             </AnimatePresence>
           </div>
+        )}
+
+        {/* 3.5. Sharing is Caring (Community Music Lounge) Trigger */}
+        {!isMenuOpen && (
+          <button
+            type="button"
+            onClick={() => {
+              sound.playClick();
+              setIsPlaylistDropdownOpen(false);
+              onOpenSharingIsCaring?.();
+            }}
+            aria-label="Sharing is Caring Lounge"
+            title="Sharing is Caring — Community Music Lounge (Playlists & Song Stories)"
+            className={`touch-target relative w-9 h-9 rounded-full flex items-center justify-center ${
+              isSharingIsCaringOpen
+                ? 'bg-rose-500/25 text-rose-400 ring-1 ring-rose-500/40'
+                : `${iconColor} ${hoverBg}`
+            } active:scale-90 transition-all cursor-pointer`}
+          >
+            <HeartHandshake className="w-4 h-4 stroke-[1.8]" />
+            {/* Ambient Pulsing Badge */}
+            <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-rose-400 ring-2 ring-black/40 animate-pulse" />
+          </button>
         )}
 
         {/* 4. User Google Account & Cloud Sync Trigger */}

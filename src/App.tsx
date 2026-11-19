@@ -22,6 +22,7 @@ import { MenuDrawer } from './components/MenuDrawer';
 import { SongSearchModal } from './components/SongSearchModal';
 import { YouTubeChartsModal } from './components/YouTubeChartsModal';
 import { AuthModal } from './components/AuthModal';
+import { SharingIsCaringModal } from './components/SharingIsCaringModal';
 import { YouTubeIcon } from './components/YouTubeIcon';
 import { useYouTubePlayer } from './hooks/useYouTubePlayer';
 import { buildTrackFromYouTubeId, fetchVideoMetadata } from './services/youtube';
@@ -115,6 +116,7 @@ export function App() {
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [chromeHudVisible, setChromeHudVisible] = useState<boolean>(true);
   const [showMiniVideo, setShowMiniVideo] = useState<boolean>(false);
+  const [isSharingIsCaringOpen, setIsSharingIsCaringOpen] = useState<boolean>(false);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [syncStatus, setSyncStatus] = useState<string | null>(null);
   const [syncError, setSyncError] = useState<string | null>(null);
@@ -781,6 +783,8 @@ export function App() {
             setIsCommunityModalOpen(false);
             setCommunityCrateToPublishId(undefined);
           }}
+          onOpenSharingIsCaring={() => setIsSharingIsCaringOpen(true)}
+          isSharingIsCaringOpen={isSharingIsCaringOpen}
           onImportCommunityPlaylist={handleImportCommunityPlaylist}
           onPlayCommunityPlaylist={handlePlayCommunityPlaylist}
           onRenamePlaylist={handleRenamePlaylist}
@@ -1235,6 +1239,54 @@ export function App() {
         onLoginSuccess={handleLoginSuccess}
         onLogout={handleLogout}
         onManualSync={handleManualSync}
+      />
+
+      {/* "Sharing is Caring" Community Music Lounge Modal */}
+      <SharingIsCaringModal
+        isOpen={isSharingIsCaringOpen}
+        onClose={() => setIsSharingIsCaringOpen(false)}
+        user={user}
+        userPlaylists={playlists}
+        activePlaylistId={activePlaylistId}
+        currentTrack={activeTrack}
+        onPlaySong={(song) => {
+          const existingIdx = activePlaylist?.tracks.findIndex(
+            (t) => t.youtubeId === song.youtubeId || t.id === song.id
+          );
+          if (existingIdx !== undefined && existingIdx >= 0) {
+            setActiveTrackIndex(existingIdx);
+            setIsPlaying(true);
+          } else if (activePlaylist) {
+            const updatedTracks = [song, ...activePlaylist.tracks];
+            setPlaylists((prev) =>
+              prev.map((pl) => (pl.id === activePlaylist.id ? { ...pl, tracks: updatedTracks } : pl))
+            );
+            setActiveTrackIndex(0);
+            setIsPlaying(true);
+          }
+          setViewToast(`Now Spinning "${song.title}"! ✦`);
+        }}
+        onPlayPlaylist={(pl) => {
+          handlePlayCommunityPlaylist(pl);
+        }}
+        onImportPlaylist={(pl) => {
+          handleImportCommunityPlaylist(pl);
+        }}
+        onAddSongToPlaylist={(song, targetPlId) => {
+          setPlaylists((prev) =>
+            prev.map((pl) => {
+              if (pl.id !== targetPlId) return pl;
+              const nextTracks = [...pl.tracks, song];
+              return {
+                ...pl,
+                tracks: nextTracks,
+                subtitle: `${nextTracks.length} tracks • ${pl.category}`,
+              };
+            })
+          );
+          setViewToast(`Added "${song.title}" to playlist! ✦`);
+        }}
+        onOpenAuthModal={() => setIsAuthModalOpen(true)}
       />
 
       {/* Right-Side Minimal Hamburger Menu Drawer */}

@@ -40,6 +40,11 @@ function ensureDatabase() {
     saveDatabase(db);
   }
 
+  if (!db.feed || !Array.isArray(db.feed)) {
+    db.feed = [];
+    saveDatabase(db);
+  }
+
   return db;
 }
 
@@ -203,6 +208,128 @@ app.get('/api/community/playlist/:id', (req, res) => {
     return res.status(404).json({ error: 'Playlist not found' });
   }
   return res.json({ success: true, playlist: item });
+});
+
+// ==========================================
+// SHARING IS CARING: SOCIAL MUSIC FEED APIS
+// ==========================================
+
+// 1. Get Feed Posts (Recent or Trending)
+app.get('/api/feed/posts', (req, res) => {
+  const { filter } = req.query; // 'recent' or 'trending'
+  const db = ensureDatabase();
+  let posts = [...(db.feed || [])];
+
+  if (filter === 'trending') {
+    posts.sort((a, b) => {
+      const scoreA =
+        (a.reactions?.hype || 0) * 2 + (a.reactions?.love || 0) + (a.reactions?.save || 0) * 3;
+      const scoreB =
+        (b.reactions?.hype || 0) * 2 + (b.reactions?.love || 0) + (b.reactions?.save || 0) * 3;
+      return scoreB - scoreA;
+    });
+  } else {
+    // Default: Recent first
+    posts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
+  return res.json({ success: true, posts });
+});
+
+// 2. Create a Post (Playlist Drop or Song Story)
+app.post('/api/feed/posts', (req, res) => {
+  const { type, note, playlist, song, author } = req.body;
+
+  if (!type || (type !== 'playlist' && type !== 'song')) {
+    return res.status(400).json({ error: 'Valid post type ("playlist" or "song") is required' });
+  }
+
+  if (!note || typeof note !== 'string') {
+    return res.status(400).json({ error: 'A short note is required' });
+  }
+
+  // Enforce the 200 character micro-note limit (not an entire essay)
+  const trimmedNote = note.trim().slice(0, 200);
+
+  const db = ensureDatabase();
+  if (!Array.isArray(db.feed)) db.feed = [];
+
+  const newPost = {
+    id: `post_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+    type,
+    note: trimmedNote,
+    author: {
+      id: author?.id || undefined,
+      name: author?.name || 'Anonymous Collector',
+      avatarUrl:
+        author?.avatarUrl ||
+        `https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(
+          author?.name || 'listener'
+        )}`,
+      email: author?.email || undefined,
+    },
+    playlist: type === 'playlist' ? playlist : undefined,
+    song: type === 'song' ? song : undefined,
+    reactions: {
+      hype: 1,
+      love: 1,
+      save: 0,
+    },
+    createdAt: new Date().toISOString(),
+  };
+
+  db.feed.unshift(newPost);
+  saveDatabase(db);
+
+  return res.json({ success: true, post: newPost });
+});
+
+// 3. React to a Post (Hype, Love, Save)
+app.post('/api/feed/posts/:id/react', (req, res) => {
+  const { id } = req.params;
+  const { reactionType, action } = req.body; // reactionType: 'hype' | 'love' | 'save', action: 'add' | 'remove'
+
+  if (!['hype', 'love', 'save'].includes(reactionType)) {
+    return res.status(400).json({ error: 'Invalid reaction type' });
+  }
+
+  const db = ensureDatabase();
+  const post = (db.feed || []).find((p) => p.id === id);
+  if (!post) {
+    return res.status(404).json({ error: 'Post not found' });
+  }
+
+  if (!post.reactions) {
+    post.reactions = { hype: 0, love: 0, save: 0 };
+  }
+
+  const delta = action === 'remove' ? -1 : 1;
+  post.reactions[reactionType] = Math.max(0, (post.reactions[reactionType] || 0) + delta);
+  saveDatabase(db);
+
+  return res.json({ success: true, reactions: post.reactions });
+});
+
+// 4. Delete a Post (Author only)
+app.delete('/api/feed/posts/:id', (req, res) => {
+  const { id } = req.params;
+  const { userId } = req.body;
+
+  const db = ensureDatabase();
+  const index = (db.feed || []).findIndex((p) => p.id === id);
+  if (index === -1) {
+    return res.status(404).json({ error: 'Post not found' });
+  }
+
+  const post = db.feed[index];
+  if (post.author?.id && userId && post.author.id !== userId) {
+    return res.status(403).json({ error: 'Unauthorized to delete this post' });
+  }
+
+  db.feed.splice(index, 1);
+  saveDatabase(db);
+
+  return res.json({ success: true });
 });
 
 if (!process.env.VERCEL) {
