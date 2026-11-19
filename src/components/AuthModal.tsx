@@ -5,7 +5,6 @@ import {
   Cloud,
   LogOut,
   Sparkles,
-  Settings,
   RefreshCw,
   Disc3,
   ShieldCheck,
@@ -35,10 +34,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [showConfig, setShowConfig] = useState(false);
-  const [customClientId, setCustomClientId] = useState('');
   const [isSyncingNow, setIsSyncingNow] = useState(false);
-  const [quickEmailInput, setQuickEmailInput] = useState('');
 
   const lastSync = getLastSyncTime();
 
@@ -56,37 +52,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         },
         (err) => {
           setIsLoading(false);
-          // If Google popup is blocked or no custom client ID configured, prompt quick connect
           setErrorMessage(err || 'Could not connect with Google Identity Services');
-        },
-        customClientId.trim() || undefined
+        }
       );
     } catch {
       setIsLoading(false);
       setErrorMessage('Google Authentication was cancelled or blocked.');
     }
-  };
-
-  const handleQuickConnect = (e: React.FormEvent) => {
-    e.preventDefault();
-    const email = quickEmailInput.trim() || 'retro.listener@gmail.com';
-    const name = email.split('@')[0].replace(/[._-]/g, ' ');
-    const formattedName = name.charAt(0).toUpperCase() + name.slice(1);
-
-    sound.playClick();
-    setIsLoading(true);
-    window.setTimeout(() => {
-      setIsLoading(false);
-      onLoginSuccess(
-        {
-          id: `google_${email.replace(/[^a-zA-Z0-9]/g, '_')}`,
-          name: formattedName,
-          email,
-          avatarUrl: `https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(email)}`,
-        },
-        false
-      );
-    }, 400);
   };
 
   const handleTriggerManualSync = async () => {
@@ -273,59 +245,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     )}
                     <span>Continue with Google</span>
                   </button>
-
-                  <div className="flex items-center gap-2 text-white/30 text-[10px] font-mono uppercase tracking-widest my-1">
-                    <div className="h-[1px] bg-white/10 flex-1" />
-                    <span>OR QUICK CONNECT</span>
-                    <div className="h-[1px] bg-white/10 flex-1" />
-                  </div>
-
-                  {/* Quick Connect Form */}
-                  <form onSubmit={handleQuickConnect} className="space-y-2">
-                    <input
-                      type="email"
-                      value={quickEmailInput}
-                      onChange={(e) => setQuickEmailInput(e.target.value)}
-                      placeholder="Enter your email to link backup…"
-                      className="w-full px-3 py-2 rounded-xl bg-white/[0.06] border border-white/10 text-xs text-white placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-white/40 font-mono"
-                    />
-                    <button
-                      type="submit"
-                      className="w-full py-2.5 px-3 rounded-xl bg-white/[0.08] hover:bg-white/[0.14] text-white font-mono text-[11px] uppercase tracking-wider font-semibold transition-all active:scale-[0.98] cursor-pointer"
-                    >
-                      Instant Cloud Sync ✦
-                    </button>
-                  </form>
-
-                  {/* Advanced GCP Config Toggle */}
-                  <div className="pt-2 border-t border-white/[0.06]">
-                    <button
-                      type="button"
-                      onClick={() => setShowConfig((c) => !c)}
-                      className="font-mono text-[10px] text-white/40 hover:text-white flex items-center gap-1.5 transition-colors"
-                    >
-                      <Settings className="w-3 h-3" />
-                      <span>Configure Google OAuth Client ID (Optional)</span>
-                    </button>
-
-                    {showConfig && (
-                      <div className="mt-2.5 p-3 rounded-xl bg-white/[0.03] border border-white/10 space-y-2">
-                        <label className="font-mono text-[9.5px] uppercase tracking-widest text-white/50 block">
-                          Google Cloud OAuth 2.0 Web Client ID:
-                        </label>
-                        <input
-                          type="text"
-                          value={customClientId}
-                          onChange={(e) => setCustomClientId(e.target.value)}
-                          placeholder="apps.googleusercontent.com"
-                          className="w-full px-2.5 py-1.5 rounded-lg bg-black/40 border border-white/10 text-xs font-mono text-white focus:outline-none"
-                        />
-                        <p className="font-mono text-[9px] text-white/40 leading-normal">
-                          Leave blank to use Retro Station's built-in cloud service, or paste your own GCP Web Client ID.
-                        </p>
-                      </div>
-                    )}
-                  </div>
                 </div>
               )}
             </div>

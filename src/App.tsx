@@ -86,7 +86,10 @@ export function App() {
 
   // User Account & Cloud Sync
   const [user, setUser] = useState<UserProfile | null>(() => getStoredUser());
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return new URLSearchParams(window.location.search).has('auth');
+  });
 
   // UI overlays
   const [isSyncModalOpen, setIsSyncModalOpen] = useState<boolean>(false);
