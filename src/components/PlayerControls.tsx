@@ -241,20 +241,21 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
       </div>
 
       {/* Primary Transport Controls */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2">
         {/* Left: Shuffle & Repeat */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
           <button
             onClick={() => {
               sound.playClick();
               onToggleShuffle();
             }}
             title={`Shuffle: ${isShuffle ? 'ON' : 'OFF'}`}
-            className={`p-2 rounded-full transition-all active:scale-90 ${
+            aria-label="Toggle shuffle"
+            className={`touch-target p-2 rounded-full flex items-center justify-center transition-all active:scale-90 ${
               isShuffle ? 'text-black bg-black/10' : 'text-neutral-400 hover:text-black'
             }`}
           >
-            <Shuffle className="w-3.5 h-3.5" />
+            <Shuffle className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
           </button>
           <button
             onClick={() => {
@@ -262,11 +263,12 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
               onToggleRepeat();
             }}
             title={`Repeat: ${repeatMode}`}
-            className={`p-2 rounded-full transition-all active:scale-90 relative ${
+            aria-label="Toggle repeat"
+            className={`touch-target p-2 rounded-full flex items-center justify-center transition-all active:scale-90 relative ${
               repeatMode !== 'off' ? 'text-black bg-black/10' : 'text-neutral-400 hover:text-black'
             }`}
           >
-            <Repeat className="w-3.5 h-3.5" />
+            <Repeat className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
             {repeatMode === 'one' && (
               <span className="absolute top-1 right-1 text-[7px] font-mono font-bold leading-none">
                 1
@@ -283,9 +285,10 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
               onPrev();
             }}
             title="Previous Disc (←)"
-            className="p-2 text-neutral-700 hover:text-black transition-transform active:scale-90"
+            aria-label="Previous track"
+            className="touch-target p-2 flex items-center justify-center text-neutral-700 hover:text-black transition-transform active:scale-90"
           >
-            <SkipBack className="w-4 h-4" />
+            <SkipBack className="w-5 h-5 sm:w-4 sm:h-4" />
           </button>
 
           {/* Master Play / Pause Button */}
@@ -295,6 +298,7 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
               onTogglePlay();
             }}
             title={isPlaying ? 'Pause (Space)' : 'Play (Space)'}
+            aria-label={isPlaying ? 'Pause' : 'Play'}
             className="w-12 h-12 rounded-full bg-neutral-900 text-white flex items-center justify-center shadow-[0_4px_16px_rgba(0,0,0,0.2)] hover:bg-neutral-800 transition-all active:scale-95"
           >
             {isPlaying ? (
@@ -310,27 +314,29 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
               onNext();
             }}
             title="Next Disc (→)"
-            className="p-2 text-neutral-700 hover:text-black transition-transform active:scale-90"
+            aria-label="Next track"
+            className="touch-target p-2 flex items-center justify-center text-neutral-700 hover:text-black transition-transform active:scale-90"
           >
-            <SkipForward className="w-4 h-4" />
+            <SkipForward className="w-5 h-5 sm:w-4 sm:h-4" />
           </button>
         </div>
 
-        {/* Right: Volume Slider */}
+        {/* Right: Volume Slider (slider hidden on phones since mobile uses hardware volume; mute stays reachable!) */}
         <div className="flex items-center gap-2 group/vol">
           <button
             onClick={() => {
               sound.playClick();
               onToggleMute();
             }}
-            className="p-1.5 text-neutral-500 hover:text-black transition-colors"
+            aria-label={isMuted ? 'Unmute' : 'Mute'}
+            className="touch-target p-1.5 flex items-center justify-center text-neutral-500 hover:text-black transition-colors"
           >
             {isMuted || volume === 0 ? (
-              <VolumeX className="w-3.5 h-3.5 text-neutral-400" />
+              <VolumeX className="w-4 h-4 sm:w-3.5 sm:h-3.5 text-neutral-400" />
             ) : volume < 50 ? (
-              <Volume1 className="w-3.5 h-3.5" />
+              <Volume1 className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
             ) : (
-              <Volume2 className="w-3.5 h-3.5" />
+              <Volume2 className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
             )}
           </button>
 
@@ -340,7 +346,7 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
             max="100"
             value={isMuted ? 0 : volume}
             onChange={(e) => onVolumeChange(Number(e.target.value))}
-            className="w-16 sm:w-20 h-1 bg-black/15 rounded-lg appearance-none cursor-pointer accent-neutral-900 opacity-60 group-hover/vol:opacity-100 transition-opacity"
+            className="hidden sm:block w-16 sm:w-20 h-1 bg-black/15 rounded-lg appearance-none cursor-pointer accent-neutral-900 opacity-60 group-hover/vol:opacity-100 transition-opacity"
           />
         </div>
       </div>

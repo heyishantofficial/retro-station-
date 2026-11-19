@@ -11,6 +11,7 @@ import { sound } from '../../utils/soundEffects';
 import { createMotorRamp, retargetMotorRamp, sampleMotorRamp } from '../../utils/motorRamp';
 
 export const CassetteDeckView: React.FC<SharedViewProps> = ({
+  playlistTitle,
   tracks,
   activeIndex,
   isPlaying,
@@ -220,7 +221,7 @@ export const CassetteDeckView: React.FC<SharedViewProps> = ({
         initial={{ scale: 0.96, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: 'spring', stiffness: 180, damping: 24 }}
-        className="relative w-[min(90vw,640px)] aspect-[1.58/1] rounded-[14px] bg-gradient-to-b from-[#2b2a2c] via-[#1f1e20] to-[#161517] p-[4.2%] shadow-[0_36px_80px_rgba(65,0,15,0.58),0_12px_24px_rgba(0,0,0,0.45),inset_0_1px_1px_rgba(255,255,255,0.16)] border border-black/70"
+        className="relative w-[min(94vw,640px)] aspect-[1.58/1] rounded-[14px] bg-gradient-to-b from-[#2b2a2c] via-[#1f1e20] to-[#161517] p-[4.2%] shadow-[0_36px_80px_rgba(65,0,15,0.58),0_12px_24px_rgba(0,0,0,0.45),inset_0_1px_1px_rgba(255,255,255,0.16)] border border-black/70"
       >
         {/* 4 Corner Phillips Screws */}
         {[
@@ -392,14 +393,15 @@ export const CassetteDeckView: React.FC<SharedViewProps> = ({
 
         {/* Bottom Trapezoidal Magnetic Head Bay + Hardware Transport Buttons */}
         <div className="relative w-full h-[26%] flex items-end justify-center pt-2">
-          <div className="w-[68%] h-full rounded-t-[10px] bg-gradient-to-b from-[#252426] to-[#1a191b] border-t border-x border-white/10 shadow-[inset_0_2px_8px_rgba(0,0,0,0.65)] flex items-center justify-around px-8">
+          <div className="w-[74%] sm:w-[68%] h-full rounded-t-[10px] bg-gradient-to-b from-[#252426] to-[#1a191b] border-t border-x border-white/10 shadow-[inset_0_2px_8px_rgba(0,0,0,0.65)] flex items-center justify-around px-4 sm:px-8">
             <button
               onClick={() => {
                 sound.playDiscSpin();
                 onPrev();
               }}
               title="Previous Track (←)"
-              className="w-8 h-8 rounded-full bg-[#101012] border border-white/10 text-white/60 hover:text-[#f8e13a] flex items-center justify-center shadow-inner active:scale-90 transition-all"
+              aria-label="Previous track"
+              className="touch-target-sm w-8 h-8 rounded-full bg-[#101012] border border-white/10 text-white/60 hover:text-[#f8e13a] flex items-center justify-center shadow-inner active:scale-90 transition-all"
             >
               <SkipBack className="w-3.5 h-3.5" />
             </button>
@@ -410,7 +412,8 @@ export const CassetteDeckView: React.FC<SharedViewProps> = ({
                 onTogglePlay();
               }}
               title={isPlaying ? 'Pause (Space)' : 'Play (Space)'}
-              className="w-10 h-10 rounded-full bg-[#101012] border border-[#f8e13a]/35 text-[#f8e13a] hover:bg-[#f8e13a] hover:text-black flex items-center justify-center shadow-inner active:scale-90 transition-all"
+              aria-label={isPlaying ? 'Pause' : 'Play'}
+              className="touch-target-sm w-10 h-10 rounded-full bg-[#101012] border border-[#f8e13a]/35 text-[#f8e13a] hover:bg-[#f8e13a] hover:text-black flex items-center justify-center shadow-inner active:scale-90 transition-all"
             >
               {isPlaying ? (
                 <Pause className="w-4 h-4 fill-current" />
@@ -425,13 +428,32 @@ export const CassetteDeckView: React.FC<SharedViewProps> = ({
                 onNext();
               }}
               title="Next Track (→)"
-              className="w-8 h-8 rounded-full bg-[#101012] border border-white/10 text-white/60 hover:text-[#f8e13a] flex items-center justify-center shadow-inner active:scale-90 transition-all"
+              aria-label="Next track"
+              className="touch-target-sm w-8 h-8 rounded-full bg-[#101012] border border-white/10 text-white/60 hover:text-[#f8e13a] flex items-center justify-center shadow-inner active:scale-90 transition-all"
             >
               <SkipForward className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
       </motion.div>
+
+      {/* Mobile-Only Readable Bottom Track Strip (hidden on sm+ desktop so desktop stays 100% pure cassette!) */}
+      <div
+        className="sm:hidden fixed inset-x-4 z-20 rounded-2xl bg-[#181719]/90 backdrop-blur-xl border border-[#f8e13a]/25 px-4 py-3 text-white shadow-2xl"
+        style={{ bottom: 'max(1rem, env(safe-area-inset-bottom, 0px))' }}
+      >
+        <div className="flex items-center justify-between gap-2 mb-1">
+          <span className="font-sans font-extrabold text-xs uppercase tracking-wider text-[#f8e13a] truncate">
+            {title}
+          </span>
+          <span className="font-mono text-[10px] text-white/60 shrink-0 tabular-nums">
+            {String(activeIndex + 1).padStart(2, '0')}/{String(tracks.length).padStart(2, '0')}
+          </span>
+        </div>
+        <div className="font-mono text-[9.5px] uppercase tracking-[0.14em] text-white/55 truncate">
+          {activeTrack?.artist || playlistTitle} · Drag tape window to scrub
+        </div>
+      </div>
     </div>
   );
 };

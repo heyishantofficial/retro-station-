@@ -650,22 +650,73 @@ export const RetroLCDView: React.FC<SharedViewProps> = ({
   };
 
   return (
-    <div className="relative w-full h-full bg-black overflow-hidden select-none flex items-center justify-center">
-      <canvas
-        ref={glCanvasRef}
-        onWheel={handleWheel}
-        onPointerMove={handlePointerMove}
-        onPointerDown={handlePointerDown}
-        onPointerUp={handlePointerUp}
-        onPointerCancel={handlePointerUp}
-        onPointerLeave={() => {
-          hoveredZoneRef.current = null;
-          setCursorPointer(false);
-        }}
-        className={`w-full h-full block touch-none ${
-          cursorPointer ? 'cursor-pointer' : 'cursor-default'
-        }`}
-      />
+    <div className="relative w-full h-full bg-black overflow-hidden select-none flex flex-col md:block items-center justify-center">
+      <div className="relative w-full flex-1 md:h-full flex items-center justify-center">
+        <canvas
+          ref={glCanvasRef}
+          onWheel={handleWheel}
+          onPointerMove={handlePointerMove}
+          onPointerDown={handlePointerDown}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerUp}
+          onPointerLeave={() => {
+            hoveredZoneRef.current = null;
+            setCursorPointer(false);
+          }}
+          className={`w-full h-full block touch-none ${
+            cursorPointer ? 'cursor-pointer' : 'cursor-default'
+          }`}
+        />
+      </div>
+
+      {/* Mobile-Only Tactile Phosphor Control Deck below CRT (hidden on md+ desktop so desktop stays 100% pure CRT!) */}
+      <div
+        className="md:hidden w-full px-4 pt-2 shrink-0 z-20"
+        style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom, 0px))' }}
+      >
+        <div className="rounded-xl bg-[#1a0d0b]/95 border border-[#ff6b4f]/35 px-4 py-3 text-[#ff8b78] shadow-[0_0_24px_rgba(255,90,60,0.18)]">
+          <div className="flex items-center justify-between gap-2 mb-2.5 font-mono text-[10px] uppercase tracking-[0.14em]">
+            <span className="truncate text-[#ffb3a3]">
+              {String(activeIndex + 1).padStart(2, '0')} · {cleanDisplayTitle(activeTrack?.title || 'UNTITLED')}
+            </span>
+            <span className="shrink-0 tabular-nums text-[#ff6b4f]">
+              {formatTime(currentTime)}/{formatTime(duration)}
+            </span>
+          </div>
+          <div className="flex items-center justify-around gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                sound.playDiscSpin();
+                onPrev();
+              }}
+              className="touch-target flex-1 py-2 rounded-lg border border-[#ff6b4f]/40 bg-[#ff5a3c]/10 active:bg-[#ff5a3c]/30 font-mono text-xs font-bold tracking-widest uppercase text-[#ffb8aa]"
+            >
+              &lt;&lt; PREV
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                sound.playSwitch();
+                onTogglePlay();
+              }}
+              className="touch-target flex-1 py-2 rounded-lg border border-[#ff8b78] bg-[#ff5a3c] active:scale-95 font-mono text-xs font-bold tracking-widest uppercase text-black"
+            >
+              {isPlaying ? 'PAUSE' : 'PLAY'}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                sound.playDiscSpin();
+                onNext();
+              }}
+              className="touch-target flex-1 py-2 rounded-lg border border-[#ff6b4f]/40 bg-[#ff5a3c]/10 active:bg-[#ff5a3c]/30 font-mono text-xs font-bold tracking-widest uppercase text-[#ffb8aa]"
+            >
+              NEXT &gt;&gt;
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

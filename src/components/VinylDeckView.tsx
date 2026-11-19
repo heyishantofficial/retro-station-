@@ -578,10 +578,10 @@ export const VinylDeckView: React.FC<VinylDeckViewProps> = ({
   const songHeadline = cleanDisplayTitle(activeTrack?.title || playlistTitle);
 
   return (
-    <div className="relative w-full h-full bg-[#f8f8f7] text-[#111111] flex overflow-hidden select-none">
-      {/* LEFT STAGE: Full-Height Integrated Picture-Disc Vinyl + Concentric Orbital Scrubber */}
-      <div className="relative h-full flex items-center justify-start shrink-0">
-        <div className="relative h-[min(100vh,86vw)] aspect-[380/720] flex items-center">
+    <div className="relative w-full h-full bg-[#f8f8f7] text-[#111111] flex flex-col md:flex-row overflow-hidden select-none">
+      {/* LEFT / TOP STAGE: Integrated Picture-Disc Vinyl + Concentric Orbital Scrubber */}
+      <div className="relative h-[42dvh] md:h-full w-full md:w-auto flex items-center justify-start shrink-0 pt-safe md:pt-0">
+        <div className="relative h-full md:h-[min(100dvh,86vw)] aspect-[380/720] flex items-center">
           {/* Interactive Picture-Disc with silky left-edge sleeve eject & load */}
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
@@ -793,11 +793,11 @@ export const VinylDeckView: React.FC<VinylDeckViewProps> = ({
         </div>
       </div>
 
-      {/* RIGHT STAGE: Centered & Proportioned Swiss Song Title + Editorial Tracklist */}
-      <div className="flex-1 h-full flex items-center justify-center px-6 sm:px-10 lg:px-14 py-10 overflow-hidden">
-        <div className="w-full max-w-[540px] max-h-full flex flex-col justify-center">
+      {/* RIGHT / BOTTOM STAGE: Centered & Proportioned Swiss Song Title + Editorial Tracklist */}
+      <div className="flex-1 min-h-0 md:h-full flex items-start md:items-center justify-center px-5 sm:px-10 lg:px-14 pt-2 md:py-10 pb-safe overflow-hidden">
+        <div className="w-full max-w-[540px] h-full md:h-auto max-h-full flex flex-col justify-start md:justify-center">
           {/* Top Song Name Block */}
-          <div className="mb-6">
+          <div className="mb-3 md:mb-6 shrink-0">
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeTrack?.id + '-headline'}
@@ -808,11 +808,11 @@ export const VinylDeckView: React.FC<VinylDeckViewProps> = ({
               >
                 <h1
                   title={songHeadline}
-                  className="font-sans font-semibold uppercase tracking-[-0.04em] leading-[1.06] text-[#111111] text-[clamp(1.65rem,3.3vw,2.9rem)] truncate whitespace-nowrap"
+                  className="font-sans font-semibold uppercase tracking-[-0.04em] leading-[1.06] text-[#111111] text-[clamp(1.25rem,3.3vw,2.9rem)] truncate whitespace-nowrap"
                 >
                   {songHeadline}
                 </h1>
-                <div className="mt-2 font-mono text-[10px] sm:text-[10.5px] uppercase tracking-[0.15em] text-neutral-500 truncate">
+                <div className="mt-1 md:mt-2 font-mono text-[10px] sm:text-[10.5px] uppercase tracking-[0.15em] text-neutral-500 truncate">
                   {activeTrack?.artist}
                 </div>
               </motion.div>
@@ -820,8 +820,8 @@ export const VinylDeckView: React.FC<VinylDeckViewProps> = ({
           </div>
 
           {/* Middle Tracklist Section */}
-          <div className="flex flex-col min-h-0">
-            <div className="flex items-center justify-between mb-3">
+          <div className="flex-1 md:flex-none flex flex-col min-h-0">
+            <div className="flex items-center justify-between mb-2 md:mb-3 shrink-0">
               <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#a83838] font-medium truncate pr-4">
                 {playlistTitle}
               </span>
@@ -830,7 +830,7 @@ export const VinylDeckView: React.FC<VinylDeckViewProps> = ({
               </span>
             </div>
 
-            <div className="max-h-[46vh] overflow-y-auto pr-1 space-y-1.5">
+            <div className="flex-1 md:flex-none md:max-h-[46vh] overflow-y-auto pr-1 space-y-1.5">
               {tracks.map((track, idx) => {
                 const isActive = idx === activeIndex;
                 const thumbUrl = track.youtubeId

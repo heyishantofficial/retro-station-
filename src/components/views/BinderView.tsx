@@ -16,6 +16,7 @@ import {
 } from '../../utils/viewCatalog';
 import { Track } from '../../types';
 import { sound } from '../../utils/soundEffects';
+import { useViewportMode } from '../../hooks/useViewportMode';
 
 // ============================================================================
 // REAL-TIME WEBGL2 CRINKLED IRIDESCENT PVC POCKET CASE SHADER
@@ -500,19 +501,23 @@ export const BinderView: React.FC<SharedViewProps> = ({
     lastTime: 0,
   });
   const [isGrabbing, setIsGrabbing] = useState(false);
+  // Multi-pointer map for native 2-finger mobile touch pinch-to-zoom!
+  const activePointersRef = useRef<Map<number, { x: number; y: number }>>(new Map());
+  const pinchDistRef = useRef<number | null>(null);
+  const { isMobile } = useViewportMode();
 
   const activeTrack = tracks[activeIndex] || tracks[0];
 
-  // Balanced 2D omni-directional grid dimensions (grows BOTH horizontally & vertically with playlist size!)
+  // Balanced 2D omni-directional grid dimensions:
+  // Desktop (>= 768px): 100% unchanged 248px pockets; Mobile (< 768px): crisp 148px pockets so 2-3 columns fit cleanly!
   const { cols, rows, totalPockets, cellSize, marginL, padY, padR, sheetW, sheetH } = useMemo(() => {
     const count = Math.max(12, tracks.length);
-    // ~1.45 landscape aspect so you can pan freely left/right AND up/down through your entire collection!
-    const computedCols = Math.max(4, Math.ceil(Math.sqrt(count * 1.45)));
+    const computedCols = Math.max(isMobile ? 3 : 4, Math.ceil(Math.sqrt(count * (isMobile ? 1.05 : 1.45))));
     const computedRows = Math.max(3, Math.ceil(count / computedCols));
-    const cSize = 248;
-    const mL = 72;
-    const pY = 18;
-    const pR = 18;
+    const cSize = isMobile ? 148 : 248;
+    const mL = isMobile ? 42 : 72;
+    const pY = isMobile ? 12 : 18;
+    const pR = isMobile ? 12 : 18;
     return {
       cols: computedCols,
       rows: computedRows,
@@ -524,7 +529,7 @@ export const BinderView: React.FC<SharedViewProps> = ({
       sheetW: mL + computedCols * cSize + pR,
       sheetH: pY + computedRows * cSize + pY,
     };
-  }, [tracks.length]);
+  }, [tracks.length, isMobile]);
 
   const dimsRef = useRef({ cols, rows, cellSize, marginL, padY, sheetW, sheetH });
   dimsRef.current = { cols, rows, cellSize, marginL, padY, sheetW, sheetH };
@@ -872,9 +877,22 @@ export const BinderView: React.FC<SharedViewProps> = ({
     };
   }, [clampCam]);
 
-  // Pointer click-and-drag panning in all 360° directions (distinguishes drag vs click cleanly!)
+  // Pointer click-and-drag panning in all 360° directions + native 2-finger mobile touch pinch-to-zoom!
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (e.button !== 0) return;
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    activePointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+    if (activePointersRef.current.size === 2) {
+      // Transition cleanly into 2-finger touch pinch-to-zoom!
+      const pts = Array.from(activePointersRef.current.values());
+      pinchDistRef.current = Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y);
+      dragRef.current.active = false;
+      dragRef.current.moved = true;
+      velRef.current = { x: 0, y: 0 };
+      targetCamRef.current = null;
+      return;
+    }
+
     targetCamRef.current = null;
     velRef.current = { x: 0, y: 0 };
     dragRef.current = {
@@ -891,6 +909,24 @@ export const BinderView: React.FC<SharedViewProps> = ({
   const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     mouseRef.current.x = (e.clientX / window.innerWidth - 0.5) * 2;
     mouseRef.current.y = (e.clientY / window.innerHeight - 0.5) * 2;
+
+    if (activePointersRef.current.has(e.pointerId)) {
+      activePointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    }
+
+    // Native 2-finger mobile pinch-to-zoom anchored at finger midpoint!
+    if (activePointersRef.current.size === 2) {
+      const pts = Array.from(activePointersRef.current.values());
+      const dist = Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y);
+      const midX = (pts[0].x + pts[1].x) * 0.5;
+      const midY = (pts[0].y + pts[1].y) * 0.5;
+      if (pinchDistRef.current && pinchDistRef.current > 10 && dist > 10) {
+        const factor = dist / pinchDistRef.current;
+        zoomAroundPoint(factor, midX, midY, false);
+      }
+      pinchDistRef.current = dist;
+      return;
+    }
 
     if (!dragRef.current.active) return;
 
@@ -928,7 +964,16 @@ export const BinderView: React.FC<SharedViewProps> = ({
   };
 
   const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!dragRef.current.active) return;
+    activePointersRef.current.delete(e.pointerId);
+    if (activePointersRef.current.size < 2) {
+      pinchDistRef.current = null;
+    }
+    if (!dragRef.current.active) {
+      window.setTimeout(() => {
+        if (activePointersRef.current.size === 0) dragRef.current.moved = false;
+      }, 30);
+      return;
+    }
     dragRef.current.active = false;
     setIsGrabbing(false);
     try {
@@ -989,7 +1034,7 @@ export const BinderView: React.FC<SharedViewProps> = ({
         }}
       >
         {/* Left-Edge Torn Kraft Paper Collection Note (pinned with translucent pink washi tape) */}
-        <div className="pointer-events-none absolute -left-3.5 top-[150px] z-30 -rotate-[4deg]">
+        <div className="hidden sm:block pointer-events-none absolute -left-3.5 top-[150px] z-30 -rotate-[4deg]">
           <div
             className="relative w-[108px] px-3 py-3.5 text-[#1b1918] shadow-[0_10px_24px_rgba(0,0,0,0.62)]"
             style={{
@@ -1016,7 +1061,7 @@ export const BinderView: React.FC<SharedViewProps> = ({
         </div>
 
         {/* Right-Edge Pink "MUSIC" Ticket Stub Sticker */}
-        <div className="pointer-events-none absolute -right-3.5 top-[180px] z-30 rotate-[7deg]">
+        <div className="hidden sm:block pointer-events-none absolute -right-3.5 top-[180px] z-30 rotate-[7deg]">
           <div
             className="px-2.5 py-2 rounded-[3px] text-[#221620] shadow-[0_8px_18px_rgba(0,0,0,0.55)] border border-white/40"
             style={{
@@ -1139,8 +1184,11 @@ export const BinderView: React.FC<SharedViewProps> = ({
         style={{ mixBlendMode: 'screen' }}
       />
 
-      {/* Minimal Floating Obsidian-PVC Bottom Playback Pill (strictly flexbox-centered so Framer Motion never overrides translateX!) */}
-      <div className="pointer-events-none fixed bottom-4 inset-x-0 z-30 flex justify-center px-4">
+      {/* Minimal Floating Obsidian-PVC Bottom Playback Pill (strictly flexbox-centered + safe-area!) */}
+      <div
+        className="pointer-events-none fixed inset-x-0 z-30 flex justify-center px-3 sm:px-4"
+        style={{ bottom: 'max(1rem, env(safe-area-inset-bottom, 0px))' }}
+      >
         <motion.div
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}

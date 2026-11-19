@@ -70,7 +70,7 @@ export const VinylSleeveView: React.FC<SharedViewProps> = ({
   const isVinylOut = isPlaying || isScrubbing;
 
   return (
-    <div className="relative w-full h-full bg-[#362c20] text-[#e7d8bd] overflow-hidden select-none flex items-center justify-center">
+    <div className="relative w-full h-full bg-[#362c20] text-[#e7d8bd] overflow-hidden select-none flex flex-col md:flex-row items-center justify-between md:justify-center px-5 pt-14 pb-safe md:p-0">
       {/* Background Subtle Oversized Editorial Calligraphic Script Watermark */}
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden opacity-[0.14]">
         <span className="font-serif italic text-[clamp(8rem,22vw,20rem)] whitespace-nowrap text-[#c4a657] tracking-tight -rotate-6">
@@ -78,8 +78,8 @@ export const VinylSleeveView: React.FC<SharedViewProps> = ({
         </span>
       </div>
 
-      {/* Top-Left Editorial Print Spec (exact match to Ed Sheeran Sleeve reference) */}
-      <div className="absolute top-14 left-7 sm:left-11 z-20 max-w-[260px]">
+      {/* Top-Left Editorial Print Spec (flows cleanly at top on mobile, pinned top-left on md+ desktop!) */}
+      <div className="relative md:absolute md:top-14 md:left-11 z-20 w-full md:w-auto md:max-w-[260px] shrink-0">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTrack?.id}
@@ -104,9 +104,9 @@ export const VinylSleeveView: React.FC<SharedViewProps> = ({
         </AnimatePresence>
 
         {/* Hairline + Editorial 3-Swatch Color Palette */}
-        <div className="mt-7">
-          <div className="w-3 h-[1.5px] bg-[#cbb894]/70 mb-3" />
-          <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#cbb894]/75 mb-2">
+        <div className="mt-3 md:mt-7 flex md:block items-center gap-3">
+          <div className="hidden md:block w-3 h-[1.5px] bg-[#cbb894]/70 mb-3" />
+          <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#cbb894]/75 md:mb-2">
             COLOR
           </div>
           <div className="flex items-center gap-2">
@@ -117,30 +117,32 @@ export const VinylSleeveView: React.FC<SharedViewProps> = ({
         </div>
       </div>
 
-      {/* Bottom-Left Editorial Numbering & Micro Controls */}
-      <div className="absolute bottom-8 left-7 sm:left-11 z-20 max-w-[240px]">
-        <div className="w-3 h-[1.5px] bg-[#cbb894]/60 mb-3" />
-        <div className="flex items-center gap-3 mb-3">
+      {/* Bottom-Left Editorial Numbering & Micro Controls (order-3 at bottom on mobile, pinned bottom-left on desktop!) */}
+      <div className="order-3 md:order-none relative md:absolute md:bottom-8 md:left-11 z-20 w-full md:w-auto md:max-w-[240px] shrink-0">
+        <div className="hidden md:block w-3 h-[1.5px] bg-[#cbb894]/60 mb-3" />
+        <div className="flex items-center justify-center md:justify-start gap-4 md:gap-3 mb-3">
           <button
             onClick={() => {
               sound.playDiscSpin();
               onPrev();
             }}
-            className="p-1.5 rounded-full text-[#e7d8bd]/70 hover:text-white hover:bg-white/10 transition-colors active:scale-90"
+            aria-label="Previous track"
+            className="touch-target p-2 md:p-1.5 rounded-full flex items-center justify-center text-[#e7d8bd]/70 hover:text-white hover:bg-white/10 transition-colors active:scale-90"
           >
-            <SkipBack className="w-3.5 h-3.5" />
+            <SkipBack className="w-4 h-4 md:w-3.5 md:h-3.5" />
           </button>
           <button
             onClick={() => {
               sound.playSwitch();
               onTogglePlay();
             }}
-            className="w-8 h-8 rounded-full bg-[#e7d8bd] text-[#362c20] flex items-center justify-center hover:bg-white transition-colors active:scale-90"
+            aria-label={isPlaying ? 'Pause' : 'Play'}
+            className="w-11 h-11 md:w-8 md:h-8 rounded-full bg-[#e7d8bd] text-[#362c20] flex items-center justify-center hover:bg-white transition-colors active:scale-90"
           >
             {isPlaying ? (
-              <Pause className="w-3.5 h-3.5 fill-current" />
+              <Pause className="w-4 h-4 md:w-3.5 md:h-3.5 fill-current" />
             ) : (
-              <Play className="w-3.5 h-3.5 fill-current translate-x-[0.5px]" />
+              <Play className="w-4 h-4 md:w-3.5 md:h-3.5 fill-current translate-x-[0.5px]" />
             )}
           </button>
           <button
@@ -148,9 +150,10 @@ export const VinylSleeveView: React.FC<SharedViewProps> = ({
               sound.playDiscSpin();
               onNext();
             }}
-            className="p-1.5 rounded-full text-[#e7d8bd]/70 hover:text-white hover:bg-white/10 transition-colors active:scale-90"
+            aria-label="Next track"
+            className="touch-target p-2 md:p-1.5 rounded-full flex items-center justify-center text-[#e7d8bd]/70 hover:text-white hover:bg-white/10 transition-colors active:scale-90"
           >
-            <SkipForward className="w-3.5 h-3.5" />
+            <SkipForward className="w-4 h-4 md:w-3.5 md:h-3.5" />
           </button>
         </div>
 
@@ -161,15 +164,17 @@ export const VinylSleeveView: React.FC<SharedViewProps> = ({
             const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
             onSeek(ratio * duration);
           }}
-          className="w-44 h-[2px] bg-[#cbb894]/25 rounded-full overflow-hidden cursor-pointer mb-2"
+          className="w-full md:w-44 py-2 md:py-0 cursor-pointer mb-1 md:mb-2"
         >
-          <div
-            className="h-full bg-[#e6c576] transition-[width] duration-150"
-            style={{ width: `${pct}%` }}
-          />
+          <div className="w-full h-[3px] md:h-[2px] bg-[#cbb894]/25 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-[#e6c576] transition-[width] duration-150"
+              style={{ width: `${pct}%` }}
+            />
+          </div>
         </div>
 
-        <div className="font-mono text-[9.5px] tracking-widest text-[#cbb894]/70 tabular-nums flex items-center gap-2">
+        <div className="font-mono text-[9.5px] tracking-widest text-[#cbb894]/70 tabular-nums flex items-center justify-center md:justify-start gap-2">
           <span>
             {String(activeIndex + 1).padStart(2, '0')} / {String(tracks.length).padStart(2, '0')}
           </span>
@@ -188,10 +193,10 @@ export const VinylSleeveView: React.FC<SharedViewProps> = ({
           animate={{ opacity: 1, x: 0, scale: 1 }}
           exit={{ opacity: 0, x: 24, scale: 0.97 }}
           transition={{ type: 'spring', stiffness: 160, damping: 24 }}
-          className="relative z-10 flex items-center justify-center ml-8 sm:ml-16"
+          className="order-2 md:order-none relative z-10 flex items-center justify-center -ml-10 md:ml-16 my-auto"
         >
           {/* Container anchored around the square cardboard sleeve */}
-          <div className="relative w-[min(56vh,62vw)] max-w-[430px] aspect-square">
+          <div className="relative w-[min(38dvh,56vw)] md:w-[min(56vh,62vw)] max-w-[430px] aspect-square">
             {/* Sliding Glossy Black Vinyl Disc peeking/sliding smoothly from the right! */}
             <motion.div
               initial={false}

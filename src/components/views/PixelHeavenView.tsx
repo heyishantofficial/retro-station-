@@ -161,8 +161,10 @@ export const PixelHeavenView: React.FC<SharedViewProps> = ({
   const coverBufRef = useRef<HTMLCanvasElement | null>(null);
   const sparksRef = useRef<SparkParticle[]>([]);
 
-  // Dynamic virtual canvas width so pixel grid fills 100% of any viewport with 1:1 square pixels
+  // Dynamic virtual canvas width so pixel grid fills 100% of any desktop viewport with 1:1 square pixels;
+  // on portrait phones (< md), lock a crisp 1:1-pixel 420x270 stage so the vinyl NEVER stretches into an oval!
   const [virtualWidth, setVirtualWidth] = useState<number>(480);
+  const [isPortraitMobile, setIsPortraitMobile] = useState<boolean>(false);
   const virtualWidthRef = useRef<number>(480);
 
   // Live animation refs
@@ -201,7 +203,11 @@ export const PixelHeavenView: React.FC<SharedViewProps> = ({
       const w = el ? el.clientWidth : window.innerWidth;
       const h = el ? el.clientHeight : window.innerHeight;
       if (w > 0 && h > 0) {
-        const nextPW = Math.max(360, Math.min(620, Math.round(PH * (w / h))));
+        const portrait = w < 768 && h > w;
+        setIsPortraitMobile(portrait);
+        const nextPW = portrait
+          ? 400
+          : Math.max(360, Math.min(620, Math.round(PH * (w / h))));
         virtualWidthRef.current = nextPW;
         setVirtualWidth(nextPW);
       }
@@ -564,60 +570,80 @@ export const PixelHeavenView: React.FC<SharedViewProps> = ({
   return (
     <div
       ref={stageRef}
-      className="relative w-full h-full overflow-hidden select-none bg-[#1c2a38]"
+      className="relative w-full h-full overflow-hidden select-none bg-[#1c2a38] flex items-center justify-center"
+      style={
+        isPortraitMobile
+          ? {
+              background:
+                'linear-gradient(180deg, #162230 0%, #24374a 36%, #2c4154 62%, #131d29 100%)',
+            }
+          : undefined
+      }
     >
-      {/* Full-Viewport Razor-Sharp Pixel-Art Canvas (1:1 square pixels, exact screen aspect!) */}
-      <canvas
-        ref={canvasRef}
-        className="w-full h-full block"
-        style={{ imageRendering: 'pixelated' }}
-      />
-
-      {/* Interactive Click-Hold-Rotate Scrub Hitbox locked directly over the Pixel Vinyl */}
+      {/* Aspect-locked stage wrapper: full-bleed on desktop, crisp 1:1 square pixels (400:270) on portrait phones! */}
       <div
-        ref={containerRef}
-        {...handlers}
-        title="Click to Play/Pause • Hold & rotate to scrub"
-        className={`absolute rounded-full z-20 ${
-          isScrubbing ? 'cursor-grabbing' : 'cursor-grab'
-        }`}
-        style={{
-          left: `${vinylLeftPct}%`,
-          top: `${vinylTopPct}%`,
-          width: `${vinylWidthPct}%`,
-          height: `${vinylHeightPct}%`,
-        }}
-      />
+        className={
+          isPortraitMobile
+            ? 'relative w-full aspect-[400/270] -translate-y-[8dvh]'
+            : 'relative w-full h-full'
+        }
+      >
+        {/* Full-Viewport Razor-Sharp Pixel-Art Canvas (1:1 square pixels!) */}
+        <canvas
+          ref={canvasRef}
+          className="w-full h-full block"
+          style={{ imageRendering: 'pixelated' }}
+        />
 
-      {/* Clickable Reaching Hand Zone (toggles Play/Pause so clicking Adam's hand sparks the vinyl!) */}
-      <button
-        type="button"
-        aria-label={isPlaying ? 'Pause playback' : 'Reach out and play'}
-        onClick={() => {
-          sound.playSwitch();
-          onTogglePlay();
-        }}
-        className="absolute right-0 bottom-0 w-[52%] h-[50%] z-20 cursor-pointer bg-transparent border-0 focus:outline-none"
-      />
-
-      {/* Crisp 16-Bit Pixel Scrub Intensity HUD Badge */}
-      {isScrubbing && (
+        {/* Interactive Click-Hold-Rotate Scrub Hitbox locked directly over the Pixel Vinyl */}
         <div
-          className="pointer-events-none absolute z-30 px-3 py-1 border-2 border-[#f3d99b] text-[#fff2cc] font-mono text-[11px] uppercase tracking-[0.14em] flex items-center gap-2 shadow-[4px_4px_0_rgba(0,0,0,0.65)]"
+          ref={containerRef}
+          {...handlers}
+          title="Click to Play/Pause • Hold & rotate to scrub"
+          className={`absolute rounded-full z-20 touch-none ${
+            isScrubbing ? 'cursor-grabbing' : 'cursor-grab'
+          }`}
           style={{
-            backgroundColor: 'rgba(13, 20, 30, 0.94)',
-            left: `${(VINYL_BASE_X / virtualWidth) * 100}%`,
-            top: `${((VINYL_BASE_Y + VINYL_R + 8) / PH) * 100}%`,
-            transform: 'translateX(-50%)',
+            left: `${vinylLeftPct}%`,
+            top: `${vinylTopPct}%`,
+            width: `${vinylWidthPct}%`,
+            height: `${vinylHeightPct}%`,
           }}
-        >
-          <span className="text-[#ffd26a] font-bold">{intensityBadge}</span>
-          <span>{formatDelta(scrubDelta)}</span>
-        </div>
-      )}
+        />
 
-      {/* Minimal Retro 16-Bit Pixel Player Rectangle at Bottom Center (with Up Next Titles!) */}
-      <div className="absolute bottom-3.5 left-1/2 -translate-x-1/2 z-30 w-[min(92vw,490px)]">
+        {/* Clickable Reaching Hand Zone (toggles Play/Pause so clicking Adam's hand sparks the vinyl!) */}
+        <button
+          type="button"
+          aria-label={isPlaying ? 'Pause playback' : 'Reach out and play'}
+          onClick={() => {
+            sound.playSwitch();
+            onTogglePlay();
+          }}
+          className="absolute right-0 bottom-0 w-[52%] h-[50%] z-20 cursor-pointer bg-transparent border-0 focus:outline-none"
+        />
+
+        {/* Crisp 16-Bit Pixel Scrub Intensity HUD Badge */}
+        {isScrubbing && (
+          <div
+            className="pointer-events-none absolute z-30 px-3 py-1 border-2 border-[#f3d99b] text-[#fff2cc] font-mono text-[11px] uppercase tracking-[0.14em] flex items-center gap-2 shadow-[4px_4px_0_rgba(0,0,0,0.65)]"
+            style={{
+              backgroundColor: 'rgba(13, 20, 30, 0.94)',
+              left: `${(VINYL_BASE_X / virtualWidth) * 100}%`,
+              top: `${((VINYL_BASE_Y + VINYL_R + 8) / PH) * 100}%`,
+              transform: 'translateX(-50%)',
+            }}
+          >
+            <span className="text-[#ffd26a] font-bold">{intensityBadge}</span>
+            <span>{formatDelta(scrubDelta)}</span>
+          </div>
+        )}
+      </div>
+
+      {/* Minimal Retro 16-Bit Pixel Player Rectangle at Bottom Center (with Up Next Titles + Safe Area!) */}
+      <div
+        className="absolute left-1/2 -translate-x-1/2 z-30 w-[min(92vw,490px)]"
+        style={{ bottom: 'max(0.875rem, env(safe-area-inset-bottom, 0px))' }}
+      >
         <div
           className="border-2 border-[#e9cf92]/85 px-3.5 py-2.5 shadow-[5px_5px_0_rgba(8,12,18,0.78)]"
           style={{ backgroundColor: 'rgba(13, 20, 30, 0.92)' }}

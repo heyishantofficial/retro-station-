@@ -277,7 +277,14 @@ vec3 renderEmberSparks(vec2 uv, float t, float activity) {
 void main() {
   float minDim = min(u_resolution.x, u_resolution.y);
   vec2 uv = (gl_FragCoord.xy - 0.5 * u_resolution.xy) / minDim;
-  uv.y -= 0.025;
+  // Strictly on portrait phones (width < height): gently zoom out so full left flames + sleeve + vinyl fit cleanly!
+  // Desktop (width >= height) stays 100.00% untouched!
+  if (u_resolution.x < u_resolution.y) {
+    uv *= 1.18;
+    uv.y -= 0.065;
+  } else {
+    uv.y -= 0.025;
+  }
 
   float aa = 1.35 / minDim;
   // Sequenced thermal phases:
@@ -883,7 +890,8 @@ export const EmberVinylView: React.FC<SharedViewProps> = ({
     let lastNow = start;
 
     const resize = () => {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const maxDpr = window.innerWidth < 768 ? 1.5 : 2;
+      const dpr = Math.min(window.devicePixelRatio || 1, maxDpr);
       const w = Math.floor(canvas.clientWidth * dpr);
       const h = Math.floor(canvas.clientHeight * dpr);
       if (canvas.width !== w || canvas.height !== h) {
@@ -1060,7 +1068,7 @@ export const EmberVinylView: React.FC<SharedViewProps> = ({
         fm.u = nextU;
         fm.v = nextV;
       }}
-      className="relative w-full h-full bg-[#0b0a0a] overflow-hidden select-none flex items-center justify-center"
+      className="relative w-full h-full bg-[#0b0a0a] overflow-hidden select-none touch-none flex items-center justify-center"
     >
       {/* Fullscreen WebGL2 Full-Widescreen Navier-Stokes Fluid Fire + PBR Brushed Metal Shader */}
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full block" />
@@ -1070,13 +1078,16 @@ export const EmberVinylView: React.FC<SharedViewProps> = ({
         ref={containerRef}
         {...handlers}
         title="Click to Play/Pause • Hold & rotate steel vinyl to scrub • Swipe across flames for wind!"
-        className={`relative z-10 w-[min(66vh,66vw)] h-[min(66vh,66vw)] -translate-y-[1.5vh] rounded-full touch-none ${
+        className={`relative z-10 w-[min(56dvh,56vw)] h-[min(56dvh,56vw)] md:w-[min(66vh,66vw)] md:h-[min(66vh,66vw)] -translate-y-[4dvh] md:-translate-y-[1.5vh] rounded-full touch-none ${
           isScrubbing ? 'cursor-grabbing' : 'cursor-grab'
         }`}
       />
 
-      {/* Bottom Translucent Obsidian-Ember Player Card (with Up Next Titles!) */}
-      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-20 w-[min(92vw,470px)] rounded-2xl bg-black/65 backdrop-blur-2xl border border-orange-500/25 text-white/90 shadow-[0_14px_40px_rgba(0,0,0,0.82)] px-4 py-2.5">
+      {/* Bottom Translucent Obsidian-Ember Player Card (with Up Next Titles + Safe Area!) */}
+      <div
+        className="fixed left-1/2 -translate-x-1/2 z-20 w-[min(92vw,470px)] rounded-2xl bg-black/68 backdrop-blur-2xl border border-orange-500/25 text-white/90 shadow-[0_14px_40px_rgba(0,0,0,0.82)] px-4 py-2.5"
+        style={{ bottom: 'max(1rem, env(safe-area-inset-bottom, 0px))' }}
+      >
         {/* Top Row: Transport Controls + Active Track Title + Time */}
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 shrink-0">

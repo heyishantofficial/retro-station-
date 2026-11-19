@@ -19,9 +19,12 @@ import { BinderView } from './components/views/BinderView';
 import { GlamPaletteView } from './components/views/GlamPaletteView';
 import { YouTubeSyncModal } from './components/YouTubeSyncModal';
 import { MenuDrawer } from './components/MenuDrawer';
+import { SongSearchModal } from './components/SongSearchModal';
 import { YouTubeIcon } from './components/YouTubeIcon';
 import { useYouTubePlayer } from './hooks/useYouTubePlayer';
 import { buildTrackFromYouTubeId, fetchVideoMetadata } from './services/youtube';
+import { convertSearchResultToTrack, SearchSongResult } from './services/musicSearch';
+import { STARTER_CRATES } from './data/starterCrates';
 import { VIEW_CATALOG, PlayerViewMode, SharedViewProps } from './utils/viewCatalog';
 import { sound } from './utils/soundEffects';
 import { AlertCircle, X } from 'lucide-react';
@@ -35,14 +38,14 @@ export function App() {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved) as Playlist[];
-        if (Array.isArray(parsed)) {
+        if (Array.isArray(parsed) && parsed.length > 0) {
           return parsed;
         }
       }
     } catch {
       // ignore storage errors
     }
-    return [];
+    return STARTER_CRATES;
   });
 
   const [viewMode, setViewMode] = useState<PlayerViewMode>(() => {
@@ -58,8 +61,8 @@ export function App() {
   const [viewToast, setViewToast] = useState<string | null>(null);
 
   const [activePlaylistId, setActivePlaylistId] = useState<string>(() => {
-    const last = playlists[playlists.length - 1];
-    return last ? last.id : '';
+    const first = playlists[0];
+    return first ? first.id : (STARTER_CRATES[0]?.id || '');
   });
   const [activeTrackIndex, setActiveTrackIndex] = useState<number>(0);
 
@@ -74,6 +77,7 @@ export function App() {
 
   // UI overlays
   const [isSyncModalOpen, setIsSyncModalOpen] = useState<boolean>(false);
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState<boolean>(false);
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [chromeHudVisible, setChromeHudVisible] = useState<boolean>(true);
@@ -124,6 +128,42 @@ export function App() {
     const t = window.setTimeout(() => setViewToast(null), 1300);
     return () => window.clearTimeout(t);
   }, [viewToast]);
+
+  // Read shared mixtape links on load: e.g. #mixtape=Title:ytId1,ytId2,...
+  useEffect(() => {
+    try {
+      const hash = window.location.hash;
+      if (hash && hash.startsWith('#mixtape=')) {
+        const payload = decodeURIComponent(hash.slice(9));
+        const [rawTitle, idsStr] = payload.split(':');
+        if (idsStr) {
+          const ids = idsStr.split(',').filter((id) => /^[a-zA-Z0-9_-]{11}$/.test(id.trim()));
+          if (ids.length > 0) {
+            const title = (rawTitle || 'Shared Mixtape').trim();
+            const mixtapeId = `mixtape-${Date.now()}`;
+            const newTracks = ids.map((id, idx) =>
+              buildTrackFromYouTubeId(id, idx, undefined, title)
+            );
+            const sharedPl: Playlist = {
+              id: mixtapeId,
+              title,
+              subtitle: `Shared Mixtape • ${newTracks.length} discs`,
+              category: 'Shared Mixtape',
+              tracks: newTracks,
+            };
+            setPlaylists((prev) => [sharedPl, ...prev.filter((p) => p.id !== mixtapeId)]);
+            setActivePlaylistId(mixtapeId);
+            setActiveTrackIndex(0);
+            setIsPlaying(true);
+            setViewToast(`Loaded "${title}" ✦`);
+            window.history.replaceState(null, '', window.location.pathname + window.location.search);
+          }
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
 
   // Prevent macOS Chrome two-finger horizontal swipe from triggering browser Back/Forward navigation
   // (runs in bubble phase with passive:false so React onWheel track-switchers still fire first!)
@@ -210,6 +250,13 @@ export function App() {
     const onKeyDown = (e: KeyboardEvent) => {
       if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement).tagName)) return;
       if (e.metaKey || e.ctrlKey || e.altKey) return;
+
+      if (e.key === '/' || e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        sound.playClick();
+        setIsSearchModalOpen((o) => !o);
+        return;
+      }
 
       if (e.key.toLowerCase() === 'f') {
         e.preventDefault();
@@ -438,6 +485,128 @@ export function App() {
     }
   };
 
+  const handleAddSong = useCallback(
+    (result: SearchSongResult) => {
+      let targetPlaylistId = activePlaylistId;
+      let targetPl = activePlaylist;
+
+      if (!targetPl) {
+        const newId = `custom-crate-${Date.now()}`;
+        const newPl: Playlist = {
+          id: newId,
+          title: 'My Custom Mixtape',
+          subtitle: '1 disc • Custom Crate',
+          category: 'Custom Crate',
+          tracks: [],
+        };
+        setPlaylists((prev) => [newPl, ...prev]);
+        setActivePlaylistId(newId);
+        targetPlaylistId = newId;
+        targetPl = newPl;
+      }
+
+      const newTrack = convertSearchResultToTrack(
+        result,
+        targetPl.tracks.length,
+        targetPl.title
+      );
+
+      setPlaylists((prev) =>
+        prev.map((pl) => {
+          if (pl.id !== targetPlaylistId) return pl;
+          const nextTracks = [...pl.tracks, newTrack];
+          return {
+            ...pl,
+            subtitle: `${nextTracks.length} discs • ${pl.category}`,
+            tracks: nextTracks,
+          };
+        })
+      );
+
+      setViewToast(`Pressed "${result.title}" onto disc! ✦`);
+    },
+    [activePlaylistId, activePlaylist]
+  );
+
+  const handleCreateNewCrate = useCallback(() => {
+    const customCount = playlists.filter((p) => p.category === 'Custom Crate').length;
+    const defaultName = `Mixtape #${customCount + 1}`;
+    const name = window.prompt('Name your new custom crate:', defaultName);
+    if (!name || !name.trim()) return;
+
+    const newId = `custom-crate-${Date.now()}`;
+    const newPl: Playlist = {
+      id: newId,
+      title: name.trim(),
+      subtitle: '0 discs • Custom Crate',
+      category: 'Custom Crate',
+      tracks: [],
+    };
+
+    setPlaylists((prev) => [newPl, ...prev]);
+    setActivePlaylistId(newId);
+    setActiveTrackIndex(0);
+    setIsPlaying(false);
+    setViewToast(`Created "${name.trim()}"`);
+    setIsSearchModalOpen(true);
+  }, [playlists]);
+
+  const handleDeleteTrack = useCallback(
+    (trackIdx: number) => {
+      if (!activePlaylist) return;
+      const trackToRemove = activePlaylist.tracks[trackIdx];
+      const nextTracks = activePlaylist.tracks.filter((_, i) => i !== trackIdx);
+
+      setPlaylists((prev) =>
+        prev.map((pl) => {
+          if (pl.id !== activePlaylist.id) return pl;
+          return {
+            ...pl,
+            subtitle: `${nextTracks.length} discs • ${pl.category}`,
+            tracks: nextTracks,
+          };
+        })
+      );
+
+      if (activeTrackIndex >= nextTracks.length) {
+        setActiveTrackIndex(Math.max(0, nextTracks.length - 1));
+      }
+      if (trackToRemove) {
+        setViewToast(`Removed "${trackToRemove.title}"`);
+      }
+    },
+    [activePlaylist, activeTrackIndex]
+  );
+
+  const handleShareCrate = useCallback(() => {
+    if (!activePlaylist || activePlaylist.tracks.length === 0) {
+      setViewToast('No tracks in crate to share');
+      return;
+    }
+    const ytIds = activePlaylist.tracks
+      .map((t) => t.youtubeId)
+      .filter((id): id is string => Boolean(id && id.length === 11));
+
+    if (ytIds.length === 0) {
+      setViewToast('No YouTube tracks in crate');
+      return;
+    }
+
+    const payload = `${encodeURIComponent(activePlaylist.title)}:${ytIds.join(',')}`;
+    const shareUrl = `${window.location.origin}${window.location.pathname}#mixtape=${payload}`;
+
+    try {
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(shareUrl);
+        setViewToast('Mixtape link copied to clipboard 🔗');
+      } else {
+        window.prompt('Copy your mixtape link:', shareUrl);
+      }
+    } catch {
+      window.prompt('Copy your mixtape link:', shareUrl);
+    }
+  }, [activePlaylist]);
+
   const isSyncedYouTube = playlists.length > 0;
 
   const sharedViewProps: SharedViewProps = {
@@ -472,7 +641,7 @@ export function App() {
 
   return (
     <div
-      className={`relative h-screen w-screen flex flex-col justify-between overflow-hidden select-none transition-colors duration-300 ${activeViewMeta.bgClass}`}
+      className={`relative h-[100dvh] w-[100dvw] flex flex-col justify-between overflow-hidden select-none transition-colors duration-300 ${activeViewMeta.bgClass}`}
     >
       {/* Ultra-Minimal Floating Top Bar (adapts automatically to Dark / Light views) */}
       <div className="absolute top-0 left-0 right-0 z-50 pointer-events-none">
@@ -484,6 +653,7 @@ export function App() {
           isHudHidden={!chromeHudVisible && isFullscreen && !isMenuOpen}
           onToggleFullscreen={toggleFullscreen}
           onToggleMenu={() => setIsMenuOpen((o) => !o)}
+          onOpenSearch={() => setIsSearchModalOpen(true)}
         />
       </div>
 
@@ -554,7 +724,7 @@ export function App() {
                 }}
               />
 
-              <div className="absolute top-14 sm:top-16 left-5 sm:left-9 z-30 pointer-events-none">
+              <div className="absolute top-12 sm:top-16 left-4 right-16 sm:right-auto sm:left-9 z-30 pointer-events-none pt-safe sm:pt-0">
                 {activeTrack && <TrackMetadata track={activeTrack} />}
               </div>
 
@@ -573,7 +743,10 @@ export function App() {
                 />
               </div>
 
-              <footer className="relative z-30 w-full pb-5 sm:pb-7 pt-4">
+              <footer
+                className="relative z-30 w-full sm:pb-7 pt-2 sm:pt-4"
+                style={{ paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom, 0px))' }}
+              >
                 <PlayerControls
                   isPlaying={isPlaying}
                   currentTime={currentTime}
@@ -830,6 +1003,14 @@ export function App() {
         onAddSingleVideo={handleAddSingleVideo}
       />
 
+      {/* Song Search & Press to Disc Modal */}
+      <SongSearchModal
+        isOpen={isSearchModalOpen}
+        activePlaylistTitle={activePlaylist?.title || 'Active Crate'}
+        onClose={() => setIsSearchModalOpen(false)}
+        onAddSong={handleAddSong}
+      />
+
       {/* Right-Side Minimal Hamburger Menu Drawer */}
       <MenuDrawer
         isOpen={isMenuOpen}
@@ -844,11 +1025,15 @@ export function App() {
         onSelectPlaylist={handleSelectPlaylist}
         onDeletePlaylist={handleDeletePlaylist}
         onSelectTrack={sharedViewProps.onSelectTrack}
+        onDeleteTrack={handleDeleteTrack}
         onOpenSyncModal={() => {
           setSyncError(null);
           setSyncStatus(null);
           setIsSyncModalOpen(true);
         }}
+        onOpenSearch={() => setIsSearchModalOpen(true)}
+        onCreateNewCrate={handleCreateNewCrate}
+        onShareCrate={handleShareCrate}
         onToggleMiniVideo={() => setShowMiniVideo((v) => !v)}
       />
     </div>

@@ -10,6 +10,8 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
+  ListMusic,
+  MoreHorizontal,
 } from 'lucide-react';
 import {
   SharedViewProps,
@@ -19,6 +21,7 @@ import {
   getBestCoverUrl,
 } from '../../utils/viewCatalog';
 import { useDiscScrub } from '../../hooks/useDiscScrub';
+import { useViewportMode } from '../../hooks/useViewportMode';
 import { sound } from '../../utils/soundEffects';
 
 // ============================================================================
@@ -369,6 +372,7 @@ export const GlamPaletteView: React.FC<SharedViewProps> = ({
   onSetPlaybackRate,
 }) => {
   const activeTrack = tracks[activeIndex] || tracks[0];
+  const { isMobile } = useViewportMode();
 
   const cdCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const glRef = useRef<WebGL2RenderingContext | null>(null);
@@ -583,6 +587,17 @@ export const GlamPaletteView: React.FC<SharedViewProps> = ({
     coverTexRef.current = tex;
     prevCoverTexRef.current = prevTex;
 
+    // Re-upload cached cover art immediately when switching between mobile & desktop canvases
+    if (lastCoverCanvasRef.current) {
+      try {
+        gl.bindTexture(gl.TEXTURE_2D, tex);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, lastCoverCanvasRef.current);
+        hasCoverRef.current = 1;
+      } catch {
+        hasCoverRef.current = 0;
+      }
+    }
+
     const uCoverTex = gl.getUniformLocation(program, 'u_coverTex');
     const uPrevCoverTex = gl.getUniformLocation(program, 'u_prevCoverTex');
     const uHasCover = gl.getUniformLocation(program, 'u_hasCover');
@@ -605,7 +620,7 @@ export const GlamPaletteView: React.FC<SharedViewProps> = ({
       const dt = Math.min(0.033, Math.max(0.004, (now - lastNow) / 1000));
       lastNow = now;
 
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const dpr = Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 2);
       const cw = Math.floor(canvas.clientWidth * dpr);
       const ch = Math.floor(canvas.clientHeight * dpr);
       if (canvas.width !== cw || canvas.height !== ch) {
@@ -673,7 +688,7 @@ export const GlamPaletteView: React.FC<SharedViewProps> = ({
       coverTexRef.current = null;
       prevCoverTexRef.current = null;
     };
-  }, []);
+  }, [isMobile]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -704,6 +719,572 @@ export const GlamPaletteView: React.FC<SharedViewProps> = ({
   const displayArtist = activeTrack?.artist || playlistTitle || 'YouTube Music';
   const shownTime = isScrubbing && scrubTime !== null ? scrubTime : currentTime;
   const shownPct = duration > 0 ? Math.min(100, Math.max(0, (shownTime / duration) * 100)) : 0;
+
+  // ============================================================================
+  // PORTRAIT MOBILE TRANSLUCENT JELLY-PINK LUCITE COMPACT (< 768px ONLY)
+  // Desktop (>= 768px) below stays 100% untouched!
+  // ============================================================================
+  if (isMobile) {
+    return (
+      <div
+        className="relative w-full h-full overflow-hidden select-none flex flex-col items-center justify-center px-3 pt-[calc(3.6rem+env(safe-area-inset-top))] pb-[calc(0.9rem+env(safe-area-inset-bottom))]"
+        style={{
+          background: 'radial-gradient(circle at 50% 25%, #ffd9ec 0%, #f9c8e1 55%, #f2b4d6 100%)',
+        }}
+        onPointerMove={(e) => {
+          mouseRef.current.x = (e.clientX / window.innerWidth - 0.5) * 2;
+          mouseRef.current.y = (e.clientY / window.innerHeight - 0.5) * 2;
+        }}
+      >
+        <style>{`
+          @keyframes glamTwinkle {
+            0%, 100% { opacity: 0.24; transform: scale(0.75) rotate(0deg); }
+            50% { opacity: 0.96; transform: scale(1.18) rotate(18deg); }
+          }
+        `}</style>
+
+        {/* Vertical Translucent Jelly-Pink Lucite Makeup Compact Shell */}
+        <div
+          className="relative w-full max-w-[404px] h-full max-h-[740px] rounded-[34px] p-[9px] flex flex-col overflow-hidden"
+          style={{
+            background:
+              'linear-gradient(155deg, rgba(255,222,240,0.88) 0%, rgba(235,146,192,0.86) 45%, rgba(212,110,164,0.90) 100%)',
+            border: '1.5px solid rgba(255,244,250,0.82)',
+            boxShadow:
+              '0 22px 50px rgba(154,54,106,0.34), inset 0 2px 5px rgba(255,255,255,0.78), inset 0 -4px 10px rgba(158,52,106,0.38)',
+          }}
+        >
+          {/* Molded Acrylic Top Hinge Tabs */}
+          <div className="pointer-events-none absolute top-[2px] left-1/2 -translate-x-1/2 flex gap-16 z-20">
+            <div className="w-12 h-[5px] rounded-b-full bg-white/50 shadow-inner" />
+            <div className="w-12 h-[5px] rounded-b-full bg-white/50 shadow-inner" />
+          </div>
+
+          {/* Inner Recessed Acrylic Tray */}
+          <div
+            className="relative flex-1 rounded-[26px] px-3.5 pt-3.5 pb-3 flex flex-col justify-between overflow-hidden"
+            style={{
+              background:
+                'linear-gradient(180deg, rgba(218,120,170,0.68) 0%, rgba(196,94,148,0.76) 52%, rgba(178,78,132,0.82) 100%)',
+              border: '1px solid rgba(255,232,245,0.65)',
+              boxShadow:
+                'inset 0 6px 18px rgba(110,24,68,0.28), inset 0 -2px 6px rgba(255,230,245,0.45)',
+            }}
+          >
+            {/* Ambient Fairy Shimmer Sparkles */}
+            {fairyDust && (
+              <div className="pointer-events-none absolute inset-0 overflow-hidden z-10">
+                {[
+                  { l: '8%', t: '18%', d: '3.1s', s: 11 },
+                  { l: '89%', t: '17%', d: '3.8s', s: 12 },
+                  { l: '7%', t: '58%', d: '3.5s', s: 10 },
+                  { l: '91%', t: '54%', d: '2.9s', s: 11 },
+                ].map((sp, i) => (
+                  <span
+                    key={i}
+                    className="absolute text-white drop-shadow-[0_0_8px_rgba(255,210,240,0.95)]"
+                    style={{
+                      left: sp.l,
+                      top: sp.t,
+                      fontSize: sp.s,
+                      animation: `glamTwinkle ${sp.d} ease-in-out infinite`,
+                      animationDelay: `${i * 0.45}s`,
+                    }}
+                  >
+                    ✦
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* TOP BAR: Etched cursive branding + 3 Lucite Circular Action Buttons */}
+            <div className="relative z-20 flex items-center justify-between gap-2 shrink-0">
+              <div
+                className="text-white/95 drop-shadow-[0_1px_4px_rgba(120,24,72,0.45)] truncate pl-0.5"
+                style={{ fontFamily: "'Dancing Script', cursive", fontSize: 22 }}
+              >
+                ✦ certifiedbaddie.club ♡
+              </div>
+
+              <div className="flex items-center gap-1.5 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => toggleLike(74, 10)}
+                  aria-label="Love track"
+                  className={`w-9 h-9 rounded-full flex items-center justify-center border transition-all active:scale-90 ${
+                    isLiked
+                      ? 'bg-[#ff74bd]/45 border-[#ffe8f5] text-white shadow-[0_0_14px_rgba(255,140,205,0.7)]'
+                      : 'bg-white/15 border-white/45 text-white/90 active:bg-white/25'
+                  }`}
+                >
+                  <Heart className={`w-4 h-4 ${isLiked ? 'fill-white' : ''}`} />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    sound.playClick(980, 0.02);
+                    setShowQueue((q) => !q);
+                  }}
+                  aria-label="Open playlist queue"
+                  className={`w-9 h-9 rounded-full flex items-center justify-center border transition-all active:scale-90 ${
+                    showQueue
+                      ? 'bg-white/32 border-white text-white shadow-[0_0_14px_rgba(255,220,240,0.65)]'
+                      : 'bg-white/15 border-white/45 text-white/90 active:bg-white/25'
+                  }`}
+                >
+                  <ListMusic className="w-4 h-4" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    sound.playClick(1360, 0.02);
+                    setHoloCoverMode((v) => !v);
+                    glitterSweepRef.current = 0.0;
+                    spawnBurst(88, 10);
+                    setToast(!holoCoverMode ? 'Cover Hologram CD ✦' : 'Pure Rainbow Chrome CD ✦');
+                  }}
+                  aria-label="Toggle CD hologram finish"
+                  className="w-9 h-9 rounded-full flex items-center justify-center border bg-white/15 border-white/45 text-white/90 active:bg-white/25 active:scale-90 transition-all"
+                >
+                  <MoreHorizontal className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* CENTER HERO: Recessed Holographic Prism CD + Highlighter Glitter Brush Transition */}
+            <div className="relative z-20 flex-1 flex items-center justify-center min-h-0 my-1">
+              <div
+                ref={cdContainerRef}
+                {...handlers}
+                className={`relative rounded-full touch-none p-[6px] ${
+                  isScrubbing ? 'cursor-grabbing' : 'cursor-grab'
+                }`}
+                style={{
+                  width: 'min(64vw, 31dvh, 250px)',
+                  height: 'min(64vw, 31dvh, 250px)',
+                  background:
+                    'linear-gradient(145deg, rgba(138,44,92,0.55) 0%, rgba(255,212,235,0.45) 100%)',
+                  boxShadow:
+                    'inset 0 4px 12px rgba(72,14,44,0.45), 0 8px 24px rgba(100,22,62,0.28), 0 0 0 1.5px rgba(255,232,245,0.52)',
+                }}
+              >
+                <canvas
+                  ref={cdCanvasRef}
+                  className="w-full h-full block rounded-full pointer-events-none"
+                />
+
+                <AnimatePresence>
+                  {isScrubbing && (intensityBadge || Math.abs(scrubDelta) >= 0.5) && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 4 }}
+                      className="pointer-events-none absolute top-[12%] left-1/2 -translate-x-1/2 px-2.5 py-0.5 rounded-full bg-[#4a1832]/90 border border-[#ffd8ec]/55 text-[#fff2f8] font-mono text-[10px] tracking-wider whitespace-nowrap shadow-lg backdrop-blur-md"
+                    >
+                      {intensityBadge || ''}
+                      {Math.abs(scrubDelta) >= 0.5
+                        ? `${intensityBadge ? ' · ' : ''}${formatDelta(scrubDelta)}`
+                        : ''}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
+
+            {/* INTERACTIVE MAKEUP PANS ROW: Butterfly Blush · 4 Glossy Shimmer Pans · Star Highlighter */}
+            <div className="relative z-20 flex items-center justify-between gap-2.5 px-1 mb-2 shrink-0">
+              {/* Left Pan: Butterfly Blush (Fairy Shimmer Toggle) */}
+              <button
+                type="button"
+                onClick={() => {
+                  sound.playClick(1280, 0.02);
+                  setFairyDust((v) => !v);
+                  spawnBurst(15, 62);
+                  setToast(!fairyDust ? 'Fairy Shimmer On ✦' : 'Fairy Shimmer Off');
+                }}
+                aria-label="Toggle fairy shimmer"
+                className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 active:scale-95 transition-transform"
+                style={{
+                  background:
+                    'radial-gradient(circle at 35% 30%, #ff9dce 0%, #f06da9 65%, #c74782 100%)',
+                  border: '1.5px solid rgba(255,235,246,0.75)',
+                  boxShadow:
+                    'inset 0 2px 6px rgba(255,255,255,0.45), 0 4px 12px rgba(108,24,68,0.34)',
+                }}
+              >
+                <span className="text-[15px] text-white/90 drop-shadow">✿</span>
+              </button>
+
+              {/* Center 4 Mini Glossy Eyeshadow Shimmer Pans */}
+              <div className="flex-1 grid grid-cols-4 gap-1.5 px-2 py-1.5 rounded-[14px] bg-[#7a2852]/35 border border-[#ffd8ec]/35 shadow-inner">
+                {[
+                  'linear-gradient(135deg, #ffdbe9, #f7a6c8)',
+                  'linear-gradient(135deg, #f376b0, #cf4686)',
+                  'linear-gradient(135deg, #e05b98, #a42f66)',
+                  'linear-gradient(135deg, #8b335f, #521836)',
+                ].map((bg, i) => (
+                  <div
+                    key={i}
+                    className="h-7 rounded-[7px] border border-white/30 shadow-inner"
+                    style={{ background: bg }}
+                  />
+                ))}
+              </div>
+
+              {/* Right Pan: Star Highlighter (Glitter Sweep & CD Finish Toggle) */}
+              <button
+                type="button"
+                onClick={() => {
+                  sound.playClick(1420, 0.02);
+                  setHoloCoverMode((v) => !v);
+                  glitterSweepRef.current = 0.0;
+                  spawnBurst(85, 62);
+                  setToast(!holoCoverMode ? 'Cover Hologram CD ✦' : 'Pure Rainbow Chrome CD ✦');
+                }}
+                aria-label="Trigger glitter sweep and toggle CD finish"
+                className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 active:scale-95 transition-transform"
+                style={{
+                  background:
+                    'radial-gradient(circle at 35% 30%, #fff4e8 0%, #f7c7db 62%, #d98fb2 100%)',
+                  border: '1.5px solid rgba(255,244,250,0.85)',
+                  boxShadow:
+                    'inset 0 2px 6px rgba(255,255,255,0.65), 0 4px 12px rgba(108,24,68,0.32)',
+                }}
+              >
+                <span className="text-[16px] text-white drop-shadow-[0_0_6px_rgba(255,150,210,0.9)]">
+                  ✦
+                </span>
+              </button>
+            </div>
+
+            {/* BOTTOM RECESSED FROSTED BERRY-GLASS DISPLAY:
+                UPPER: [Now Playing (Left)] | [Up Next 1-at-a-time (Right)]
+                LOWER: [44px Prev / Play-Pause / Next] + [Glowing Scrub Bar] + [Heart] */}
+            <div
+              className="relative z-20 rounded-[18px] overflow-hidden shrink-0 flex flex-col"
+              style={{
+                background:
+                  'linear-gradient(160deg, rgba(106,36,72,0.92) 0%, rgba(74,22,50,0.95) 100%)',
+                border: '1px solid rgba(255,218,238,0.42)',
+                boxShadow:
+                  'inset 0 2px 8px rgba(32,6,20,0.45), 0 6px 18px rgba(96,20,60,0.28)',
+              }}
+            >
+              {/* UPPER SECTION: Now Playing + Up Next */}
+              <div className="flex items-center gap-2.5 px-3 py-2.5 border-b border-[#ffd8ec]/18">
+                {/* Left: Now Playing */}
+                <div className="flex items-center gap-2.5 min-w-0 flex-[1.28]">
+                  <div className="w-10 h-10 rounded-[8px] overflow-hidden shrink-0 border border-[#ffd8ec]/35 bg-[#461a32] shadow">
+                    {thumbSrc && (
+                      <img
+                        src={thumbSrc}
+                        alt={prettyTitle}
+                        draggable={false}
+                        onError={() => {
+                          if (activeTrack?.youtubeId && !thumbSrc.includes('mqdefault')) {
+                            setThumbSrc(`https://i.ytimg.com/vi/${activeTrack.youtubeId}/mqdefault.jpg`);
+                          }
+                        }}
+                        className="w-full h-full object-cover"
+                      />
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1 min-w-0">
+                      <span className="text-[13px] text-white font-sans font-semibold truncate leading-tight">
+                        {prettyTitle}
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-[#ffe2f1]/80 font-sans truncate leading-tight mt-0.5">
+                      {displayArtist}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="w-[1px] h-8 bg-[#ffd8ec]/20 shrink-0" />
+
+                {/* Right: Up Next 1-at-a-time */}
+                <div className="flex items-center gap-1 min-w-0 flex-[0.95]">
+                  {upNextTrack ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        sound.playDiscSpin();
+                        onSelectTrack(upNextIndex);
+                      }}
+                      className="flex items-center gap-1.5 min-w-0 flex-1 text-left"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <div className="font-mono text-[8px] uppercase tracking-[0.14em] text-[#ffc6e5]/85 leading-none">
+                          UP NEXT
+                        </div>
+                        <div className="font-sans text-[11px] text-[#fff4fa] truncate leading-tight mt-0.5">
+                          {cleanDisplayTitle(upNextTrack.title)
+                            .toLowerCase()
+                            .replace(/\b\w/g, (ch) => ch.toUpperCase())}
+                        </div>
+                      </div>
+                    </button>
+                  ) : (
+                    <span className="font-mono text-[9px] text-[#ffe4f2]/55 truncate flex-1">
+                      UP NEXT · —
+                    </span>
+                  )}
+
+                  {upcomingCount > 1 && (
+                    <div className="flex items-center shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          sound.playClick(820, 0.012);
+                          setUpNextStep((s) => s - 1);
+                        }}
+                        aria-label="Previous up next"
+                        className="w-7 h-7 rounded-full flex items-center justify-center text-[#ffe6f3]/80 active:bg-white/15"
+                      >
+                        <ChevronLeft className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          sound.playClick(920, 0.012);
+                          setUpNextStep((s) => s + 1);
+                        }}
+                        aria-label="Next up next"
+                        className="w-7 h-7 rounded-full flex items-center justify-center text-[#ffe6f3]/80 active:bg-white/15"
+                      >
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* LOWER SECTION: Glowing Scrub Bar + Touch-Friendly Transport Controls */}
+              <div className="px-3 pt-2 pb-2.5 bg-black/15 flex flex-col gap-1.5">
+                {/* Glowing Rose-Pearl Scrub Bar */}
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-[9.5px] text-[#ffedf7]/85 tabular-nums shrink-0">
+                    {formatTime(shownTime)}
+                  </span>
+                  <div
+                    onClick={(e) => {
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+                      sound.playClick(960, 0.015);
+                      onSeek(ratio * duration);
+                    }}
+                    className="relative h-6 flex-1 flex items-center cursor-pointer"
+                  >
+                    <div className="w-full h-[3.5px] rounded-full bg-white/22 relative">
+                      <div
+                        className="h-full rounded-full relative"
+                        style={{
+                          width: `${shownPct}%`,
+                          background: 'linear-gradient(90deg, #ff9fd0 0%, #ffdcf0 75%, #ffffff 100%)',
+                          boxShadow: '0 0 10px rgba(255,180,224,0.88)',
+                        }}
+                      >
+                        <div
+                          className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-3 h-3 rounded-full bg-white"
+                          style={{ boxShadow: '0 0 10px 3px rgba(255,205,235,0.95)' }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <span className="font-mono text-[9.5px] text-[#ffedf7]/85 tabular-nums shrink-0">
+                    {formatTime(duration)}
+                  </span>
+                </div>
+
+                {/* Transport Row (44px touch targets) */}
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-[#ffd4ec]/70 w-10">
+                    {String(activeIndex + 1).padStart(2, '0')}/{String(tracks.length).padStart(2, '0')}
+                  </span>
+
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        sound.playDiscSpin();
+                        onPrev();
+                      }}
+                      aria-label="Previous track"
+                      className="w-11 h-11 rounded-full flex items-center justify-center text-white/90 active:bg-white/15 active:scale-90 transition-all"
+                    >
+                      <SkipBack className="w-5 h-5 fill-current" />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        sound.playSwitch();
+                        onTogglePlay();
+                      }}
+                      aria-label={isPlaying ? 'Pause' : 'Play'}
+                      className="w-12 h-12 rounded-full flex items-center justify-center text-white active:scale-90 transition-all"
+                      style={{
+                        background:
+                          'radial-gradient(circle at 35% 30%, rgba(255,228,244,0.52) 0%, rgba(214,120,170,0.68) 100%)',
+                        border: '1px solid rgba(255,238,248,0.72)',
+                        boxShadow:
+                          '0 4px 14px rgba(74,20,48,0.45), inset 0 1px 1.5px rgba(255,255,255,0.65)',
+                      }}
+                    >
+                      {isPlaying ? (
+                        <Pause className="w-5 h-5 fill-current" />
+                      ) : (
+                        <Play className="w-5 h-5 fill-current ml-0.5" />
+                      )}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        sound.playDiscSpin();
+                        onNext();
+                      }}
+                      aria-label="Next track"
+                      className="w-11 h-11 rounded-full flex items-center justify-center text-white/90 active:bg-white/15 active:scale-90 transition-all"
+                    >
+                      <SkipForward className="w-5 h-5 fill-current" />
+                    </button>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => toggleLike(85, 86)}
+                    aria-label="Favorite track"
+                    className="w-10 h-10 rounded-full flex items-center justify-center active:bg-white/15 active:scale-90 transition-all"
+                  >
+                    <Heart
+                      className={`w-4 h-4 transition-colors ${
+                        isLiked ? 'fill-[#ff9fd0] text-[#ff9fd0]' : 'text-[#ffe6f3]/85'
+                      }`}
+                    />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Sparkle Bursts */}
+            <AnimatePresence>
+              {bursts.map((b) => (
+                <motion.div
+                  key={b.id}
+                  initial={{ opacity: 1, scale: 0.4 }}
+                  animate={{ opacity: 0, scale: 1.8, y: -26 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.8, ease: 'easeOut' }}
+                  className="pointer-events-none absolute z-40 text-white drop-shadow-[0_0_10px_rgba(255,160,215,1)]"
+                  style={{ left: `${b.x}%`, top: `${b.y}%` }}
+                >
+                  <Sparkles className="w-6 h-6" />
+                </motion.div>
+              ))}
+            </AnimatePresence>
+
+            {/* Feedback Toast Pill */}
+            <AnimatePresence>
+              {toast && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 6 }}
+                  className="pointer-events-none absolute top-14 left-1/2 -translate-x-1/2 z-40 px-3.5 py-1 rounded-full bg-[#4a1832]/92 border border-[#ffd8ec]/50 text-[#fff0f8] font-mono text-[10px] uppercase tracking-[0.16em] whitespace-nowrap backdrop-blur-xl shadow-lg"
+                >
+                  {toast}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Full-Width Frosted Jelly-Pink Queue Overlay inside the portrait case */}
+            <AnimatePresence>
+              {showQueue && (
+                <motion.div
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 16 }}
+                  transition={{ duration: 0.22 }}
+                  className="absolute inset-2.5 z-40 rounded-[20px] overflow-hidden flex flex-col backdrop-blur-2xl"
+                  style={{
+                    background:
+                      'linear-gradient(155deg, rgba(84,28,58,0.95) 0%, rgba(52,16,36,0.97) 100%)',
+                    border: '1px solid rgba(255,214,238,0.5)',
+                    boxShadow: '0 22px 60px rgba(48,10,30,0.6)',
+                  }}
+                >
+                  <div className="px-4 py-3 border-b border-[#ffd8ec]/20 flex items-center justify-between">
+                    <div>
+                      <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#ffc4e2]/80">
+                        UP NEXT · {tracks.length} TRACKS
+                      </div>
+                      <div
+                        className="text-white leading-tight mt-0.5 truncate max-w-[230px]"
+                        style={{ fontFamily: "'Dancing Script', cursive", fontSize: 20 }}
+                      >
+                        {playlistTitle || 'certifiedbaddie.club'} ♡
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        sound.playClick();
+                        setShowQueue(false);
+                      }}
+                      aria-label="Close queue"
+                      className="w-10 h-10 rounded-full flex items-center justify-center text-[#ffd8ec]/85 active:bg-white/15"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  <div className="flex-1 overflow-y-auto px-2.5 py-2 space-y-1">
+                    {tracks.map((tr, idx) => {
+                      const isCurr = idx === activeIndex;
+                      return (
+                        <button
+                          key={`${tr.id}-${idx}`}
+                          type="button"
+                          onClick={() => {
+                            sound.playDiscSpin();
+                            onSelectTrack(idx);
+                            setShowQueue(false);
+                          }}
+                          className={`w-full px-3 py-2.5 rounded-[12px] flex items-center gap-2.5 text-left transition-all ${
+                            isCurr
+                              ? 'bg-[#ffaad6]/26 border border-[#ffd8ec]/45 text-white'
+                              : 'active:bg-white/[0.1] text-[#fce4ef]/88 border border-transparent'
+                          }`}
+                        >
+                          <span className="font-mono text-[10px] text-[#ffb8de] w-5 shrink-0">
+                            {String(idx + 1).padStart(2, '0')}
+                          </span>
+                          <span className="font-sans text-[12.5px] truncate flex-1">
+                            {cleanDisplayTitle(tr.title)}
+                          </span>
+                          {isCurr && (
+                            <span
+                              className={`w-2 h-2 rounded-full shrink-0 ${
+                                isPlaying ? 'bg-[#ffaad6] animate-pulse' : 'bg-white/50'
+                              }`}
+                            />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div

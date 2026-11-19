@@ -77,9 +77,9 @@ export const BraunTurntableView: React.FC<SharedViewProps> = ({
   const tonearmDeg = isPlaying || isScrubbing ? 7 + progress * 16 : -14;
 
   return (
-    <div className="relative w-full h-full bg-[#e6e6e4] text-[#3a3a38] flex flex-col items-center justify-between py-10 px-6 overflow-hidden select-none">
+    <div className="relative w-full h-full bg-[#e6e6e4] text-[#3a3a38] flex flex-col items-center justify-between pt-14 md:py-10 pb-safe px-5 sm:px-6 overflow-hidden select-none">
       {/* Top Recessed Progress Trough Slider */}
-      <div className="w-full max-w-[460px] flex items-center gap-4 z-20 pt-2">
+      <div className="w-full max-w-[460px] flex items-center gap-3 sm:gap-4 z-20 pt-1 sm:pt-2">
         <span className="font-sans text-[12px] text-neutral-500 tabular-nums w-10 text-right">
           {formatTime(displayTime)}
         </span>
@@ -91,16 +91,18 @@ export const BraunTurntableView: React.FC<SharedViewProps> = ({
             sound.playClick(1100, 0.015);
             onSeek(r * duration);
           }}
-          className="relative flex-1 h-2.5 rounded-full bg-[#d3d3d0] shadow-[inset_0_1px_3px_rgba(0,0,0,0.28),0_1px_0_rgba(255,255,255,0.8)] cursor-pointer"
+          className="relative flex-1 py-3 flex items-center cursor-pointer"
         >
-          <div
-            className="h-full rounded-full bg-gradient-to-b from-[#7a7a78] to-[#9b9b98] transition-[width] duration-150"
-            style={{ width: `${progress * 100}%` }}
-          />
-          <div
-            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-gradient-to-b from-white to-[#e2e2df] shadow-[0_2px_5px_rgba(0,0,0,0.32),inset_0_1px_1px_white] border border-black/10 pointer-events-none transition-[left] duration-150"
-            style={{ left: `${progress * 100}%` }}
-          />
+          <div className="relative w-full h-2.5 rounded-full bg-[#d3d3d0] shadow-[inset_0_1px_3px_rgba(0,0,0,0.28),0_1px_0_rgba(255,255,255,0.8)]">
+            <div
+              className="h-full rounded-full bg-gradient-to-b from-[#7a7a78] to-[#9b9b98] transition-[width] duration-150"
+              style={{ width: `${progress * 100}%` }}
+            />
+            <div
+              className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-gradient-to-b from-white to-[#e2e2df] shadow-[0_2px_5px_rgba(0,0,0,0.32),inset_0_1px_1px_white] border border-black/10 pointer-events-none transition-[left] duration-150"
+              style={{ left: `${progress * 100}%` }}
+            />
+          </div>
         </div>
 
         <span className="font-sans text-[12px] text-neutral-500 tabular-nums w-11 text-left">
@@ -109,9 +111,9 @@ export const BraunTurntableView: React.FC<SharedViewProps> = ({
       </div>
 
       {/* Center Turntable Platter + Articulated Chrome Tonearm */}
-      <div className="relative flex items-center justify-center my-2">
+      <div className="relative flex items-center justify-center my-2 scale-[0.90] sm:scale-100">
         {/* Recessed Matte Platter Well */}
-        <div className="relative w-[min(48vh,74vw)] max-w-[390px] aspect-square rounded-full bg-[#dadad7] p-2.5 shadow-[inset_0_4px_12px_rgba(0,0,0,0.16),0_2px_0_rgba(255,255,255,0.85)] flex items-center justify-center">
+        <div className="relative w-[min(44dvh,72vw)] md:w-[min(48vh,74vw)] max-w-[390px] aspect-square rounded-full bg-[#dadad7] p-2.5 shadow-[inset_0_4px_12px_rgba(0,0,0,0.16),0_2px_0_rgba(255,255,255,0.85)] flex items-center justify-center">
           {/* Interactive Matte-Black Vinyl Record */}
           <div
             ref={containerRef}

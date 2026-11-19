@@ -489,11 +489,11 @@ export const ChromeVinylView: React.FC<SharedViewProps> = ({
         const ny = (e.clientY / window.innerHeight - 0.5) * 2;
         mouseRef.current = { x: nx, y: ny };
       }}
-      className="relative w-full h-full bg-black overflow-hidden select-none flex items-center"
+      className="relative w-full h-full bg-black overflow-hidden select-none flex flex-col md:flex-row items-center"
     >
-      {/* LEFT STAGE: Dedicated WebGL Laser-Etched Brushed-Chrome Vinyl with Physical 180° 3D Flip! */}
+      {/* LEFT / TOP STAGE: Dedicated WebGL Laser-Etched Brushed-Chrome Vinyl with Physical 180° 3D Flip! */}
       <div
-        className="relative w-[54%] sm:w-[56%] h-full flex items-center justify-center shrink-0"
+        className="relative w-full h-[44dvh] md:w-[56%] md:h-full flex items-center justify-center shrink-0 pt-safe md:pt-0"
         style={{ perspective: '1400px' }}
       >
         <motion.div
@@ -507,12 +507,12 @@ export const ChromeVinylView: React.FC<SharedViewProps> = ({
         >
           <canvas ref={canvasRef} className="absolute inset-0 w-full h-full block" />
 
-          {/* Interactive Circular Hit-Target Centered Over the Left-Stage WebGL Vinyl */}
+          {/* Interactive Circular Hit-Target Centered Over the WebGL Vinyl */}
           <div
             ref={containerRef}
             {...handlers}
             title="Click to Play/Pause • Hold & rotate chrome vinyl to forward / rewind"
-            className={`relative z-10 w-[min(86vh,48vw)] h-[min(86vh,48vw)] rounded-full flex items-center justify-center touch-none ${isScrubbing ? 'cursor-grabbing' : 'cursor-grab'
+            className={`relative z-10 w-[min(38dvh,78vw)] h-[min(38dvh,78vw)] md:w-[min(86vh,48vw)] md:h-[min(86vh,48vw)] rounded-full flex items-center justify-center touch-none ${isScrubbing ? 'cursor-grabbing' : 'cursor-grab'
               }`}
           >
             {/* Cleanly Spaced Matte-Silver Center Label Typography (Swaps Invisibly at 90° Edge-On) */}
@@ -536,9 +536,9 @@ export const ChromeVinylView: React.FC<SharedViewProps> = ({
         </motion.div>
       </div>
 
-      {/* RIGHT STAGE: Translucent Smoked-Glass Playlist & Playback Controls */}
-      <div className="flex-1 h-full flex items-center justify-center pr-6 sm:pr-10 lg:pr-14 pl-2 py-12 z-20">
-        <div className="w-full max-w-[440px] max-h-[82vh] rounded-2xl bg-white/[0.035] backdrop-blur-2xl border border-white/[0.09] shadow-[0_24px_60px_rgba(0,0,0,0.65)] p-5 sm:p-6 flex flex-col">
+      {/* RIGHT / BOTTOM STAGE: Translucent Smoked-Glass Playlist & Playback Controls */}
+      <div className="w-full flex-1 min-h-0 md:h-full flex items-stretch md:items-center justify-center px-4 pb-safe pt-1 md:pr-10 lg:pr-14 md:pl-2 md:py-12 z-20">
+        <div className="w-full max-w-[440px] h-full md:h-auto md:max-h-[82vh] rounded-2xl bg-white/[0.035] backdrop-blur-2xl border border-white/[0.09] shadow-[0_24px_60px_rgba(0,0,0,0.65)] p-4 sm:p-6 flex flex-col">
           {/* Active Track Single-Line Header */}
           <div className="pb-4 border-b border-white/[0.08]">
             <div className="flex items-center justify-between font-mono text-[9px] uppercase tracking-[0.2em] text-white/40 mb-1.5">

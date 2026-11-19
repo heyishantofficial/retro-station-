@@ -548,14 +548,21 @@ export const PixelAtlasView: React.FC<SharedViewProps> = ({
   const maxOffset = Math.max(0, upcomingTracks.length - 2);
   const visibleUpcoming = upcomingTracks.slice(upNextOffset, upNextOffset + 2);
 
-  // Anchor the player card directly ON TOP of the flat stone half-pillar surface on the right!
-  const cardWidthPx = Math.max(300, Math.min(430, Math.round(layout.pillarWidthPx * 1.06)));
-  const cardLeftPx = Math.max(
-    16,
-    Math.min(layout.stageW - cardWidthPx - 16, layout.pillarCenterXPx - cardWidthPx / 2)
-  );
-  // Sit flush on the flat stone ledge (with +3px overlap into the top marble bevel so it feels physically seated!)
-  const cardBottomPx = Math.max(12, Math.round(layout.stageH - layout.pillarTopPx - 3));
+  // On desktop (>= 768px): anchor card physically ON TOP of the right stone half-pillar surface!
+  // On mobile portrait (< 768px): the right pillar is off-screen, so dock cleanly at bottom-center with safe-area!
+  const isMobileCard = layout.stageW < 768;
+  const cardWidthPx = isMobileCard
+    ? Math.max(280, layout.stageW - 24)
+    : Math.max(300, Math.min(430, Math.round(layout.pillarWidthPx * 1.06)));
+  const cardLeftPx = isMobileCard
+    ? Math.round((layout.stageW - cardWidthPx) / 2)
+    : Math.max(
+        16,
+        Math.min(layout.stageW - cardWidthPx - 16, layout.pillarCenterXPx - cardWidthPx / 2)
+      );
+  const cardBottomPx = isMobileCard
+    ? 14
+    : Math.max(12, Math.round(layout.stageH - layout.pillarTopPx - 3));
 
   return (
     <div
@@ -601,12 +608,14 @@ export const PixelAtlasView: React.FC<SharedViewProps> = ({
         </div>
       )}
 
-      {/* Retro 16-Bit Classical Gold Player Card SITTING PHYSICALLY ON THE RIGHT HALF-PILLAR SURFACE! */}
+      {/* Retro 16-Bit Classical Gold Player Card (Desktop: on right stone half-pillar | Mobile: bottom-center safe-area!) */}
       <div
         className="absolute z-30"
         style={{
           left: `${cardLeftPx}px`,
-          bottom: `${cardBottomPx}px`,
+          bottom: isMobileCard
+            ? `max(${cardBottomPx}px, env(safe-area-inset-bottom, 0px))`
+            : `${cardBottomPx}px`,
           width: `${cardWidthPx}px`,
         }}
       >

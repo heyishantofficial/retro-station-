@@ -54,9 +54,14 @@ export const CDCarousel: React.FC<CDCarouselProps> = ({
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
-  // Balanced disc diameter + generous spacing so discs have crisp gallery separation with zero overlap
-  const heroSize = Math.max(250, Math.min(380, Math.round(viewportWidth * 0.295)));
-  const spacingX = Math.max(295, Math.min(450, Math.round(viewportWidth * 0.355)));
+  // Balanced disc diameter + spacing: crisp portrait framing on <768px phones, 100% unchanged on desktop!
+  const isNarrow = viewportWidth < 768;
+  const heroSize = isNarrow
+    ? Math.max(210, Math.min(268, Math.round(viewportWidth * 0.62)))
+    : Math.max(250, Math.min(380, Math.round(viewportWidth * 0.295)));
+  const spacingX = isNarrow
+    ? Math.max(225, Math.min(285, Math.round(viewportWidth * 0.68)))
+    : Math.max(295, Math.min(450, Math.round(viewportWidth * 0.355)));
 
   const applyRubberBand = useCallback(
     (rawDelta: number) => {
@@ -202,9 +207,10 @@ export const CDCarousel: React.FC<CDCarouselProps> = ({
           const dragRatio = dragOffset / spacingX;
           const t = offset + dragRatio;
 
-          // Sweeping curved arc line with crisp separation
-          const translateX = t * spacingX * (1 + 0.04 * t) + 6;
-          const translateY = (isHeroEngaged ? -2 : 12) - t * 106 - 20 * t * t;
+          // Sweeping curved arc line with crisp separation (tighter Y sweep on mobile portrait!)
+          const translateX = t * spacingX * (1 + (isNarrow ? 0.02 : 0.04) * t) + (isNarrow ? 0 : 6);
+          const translateY =
+            (isHeroEngaged ? -2 : 12) - t * (isNarrow ? 58 : 106) - (isNarrow ? 14 : 20) * t * t;
           const translateZ = isHeroEngaged ? 54 : 12;
 
           // Perspective scale along curve + gentle elevation scale when playing or scrubbing

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Disc3, Play, Volume2, VolumeX, Tv, Trash2, Plus } from 'lucide-react';
+import { X, Disc3, Play, Volume2, VolumeX, Tv, Trash2, Plus, Search, Share2, FolderPlus } from 'lucide-react';
 import { Playlist, Track } from '../types';
 import { YouTubeIcon } from './YouTubeIcon';
 import { sound } from '../utils/soundEffects';
@@ -21,7 +21,11 @@ interface MenuDrawerProps {
   onSelectPlaylist: (id: string) => void;
   onDeletePlaylist: (id: string) => void;
   onSelectTrack: (index: number) => void;
+  onDeleteTrack?: (index: number) => void;
   onOpenSyncModal: () => void;
+  onOpenSearch?: () => void;
+  onCreateNewCrate?: () => void;
+  onShareCrate?: () => void;
   onToggleMiniVideo: () => void;
 }
 
@@ -54,7 +58,11 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
   onSelectPlaylist,
   onDeletePlaylist,
   onSelectTrack,
+  onDeleteTrack,
   onOpenSyncModal,
+  onOpenSearch,
+  onCreateNewCrate,
+  onShareCrate,
   onToggleMiniVideo,
 }) => {
   const [activeTab, setActiveTab] = useState<'views' | 'tracks' | 'playlists'>('views');
@@ -87,7 +95,8 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 32, stiffness: 320 }}
-            className="fixed right-0 top-0 bottom-0 w-full max-w-xs sm:max-w-[360px] z-50 bg-[#f2f2f0]/94 text-[#111111] backdrop-blur-2xl border-l border-black/10 shadow-[-16px_0_48px_rgba(0,0,0,0.18)] flex flex-col"
+            className="fixed right-0 top-0 bottom-0 h-[100dvh] w-full max-w-xs sm:max-w-[360px] z-50 bg-[#f2f2f0]/95 text-[#111111] backdrop-blur-2xl border-l border-black/10 shadow-[-16px_0_48px_rgba(0,0,0,0.18)] flex flex-col pb-safe"
+            style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
           >
             {/* Header */}
             <div className="px-5 pt-5 pb-3.5 border-b border-black/10 flex items-center justify-between">
@@ -116,19 +125,44 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
               </button>
             </div>
 
-            {/* YouTube Music Sync Primary Button */}
-            <div className="px-5 py-3 border-b border-black/10">
+            {/* Quick Action Buttons: Search Songs · New Crate · Sync YouTube */}
+            <div className="px-5 py-3 border-b border-black/10 space-y-2">
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => {
+                    sound.playClick();
+                    onClose();
+                    onOpenSearch?.();
+                  }}
+                  className="py-2.5 px-3 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-white text-[11px] font-medium tracking-wide flex items-center justify-center gap-1.5 transition-all active:scale-[0.98] shadow-sm"
+                >
+                  <Search className="w-3.5 h-3.5" />
+                  <span>Search Songs</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    sound.playClick();
+                    onCreateNewCrate?.();
+                  }}
+                  className="py-2.5 px-3 rounded-xl bg-white hover:bg-neutral-100 text-neutral-900 border border-black/15 text-[11px] font-medium tracking-wide flex items-center justify-center gap-1.5 transition-all active:scale-[0.98] shadow-sm"
+                >
+                  <FolderPlus className="w-3.5 h-3.5 text-neutral-600" />
+                  <span>New Crate</span>
+                </button>
+              </div>
+
               <button
                 onClick={() => {
                   sound.playClick();
                   onClose();
                   onOpenSyncModal();
                 }}
-                className="w-full py-2.5 px-3.5 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-white text-[11px] font-medium tracking-wide flex items-center justify-between transition-all active:scale-[0.98]"
+                className="w-full py-2 px-3 rounded-xl bg-black/[0.04] hover:bg-black/[0.07] text-neutral-700 text-[10.5px] font-medium tracking-wide flex items-center justify-between transition-all"
               >
                 <span className="flex items-center gap-2">
                   <YouTubeIcon className="w-3.5 h-3.5 text-red-500" />
-                  <span>Sync YouTube Music Playlist</span>
+                  <span>Sync YouTube Playlist Link</span>
                 </span>
                 <Plus className="w-3.5 h-3.5 text-neutral-400" />
               </button>
@@ -223,131 +257,221 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                   })}
                 </div>
               ) : activeTab === 'tracks' ? (
-                <div className="space-y-1">
+                <div className="space-y-2">
+                  {/* Tracks Sub-Actions */}
+                  <div className="flex items-center gap-1.5 pb-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        sound.playClick();
+                        onClose();
+                        onOpenSearch?.();
+                      }}
+                      className="flex-1 py-1.5 px-2.5 rounded-lg bg-black/[0.05] hover:bg-black/[0.09] text-[10.5px] font-mono uppercase tracking-wider flex items-center justify-center gap-1.5 transition-colors"
+                    >
+                      <Plus className="w-3 h-3 text-neutral-600" />
+                      <span>Add Song</span>
+                    </button>
+
+                    {activePlaylist && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          sound.playClick();
+                          onShareCrate?.();
+                        }}
+                        className="py-1.5 px-2.5 rounded-lg bg-black/[0.05] hover:bg-black/[0.09] text-[10.5px] font-mono uppercase tracking-wider flex items-center justify-center gap-1.5 transition-colors"
+                        title="Share this crate via link"
+                      >
+                        <Share2 className="w-3 h-3 text-neutral-600" />
+                        <span>Share</span>
+                      </button>
+                    )}
+                  </div>
+
                   {(!activePlaylist || activePlaylist.tracks.length === 0) && (
-                    <div className="py-10 text-center font-mono text-[10px] uppercase tracking-[0.16em] text-neutral-400">
-                      Sync a YouTube Music playlist above
+                    <div className="py-10 text-center font-mono text-[10.5px] uppercase tracking-[0.16em] text-neutral-400">
+                      Crate is empty. Search songs above to press discs.
                     </div>
                   )}
-                  {(activePlaylist?.tracks ?? []).map((track: Track, idx: number) => {
-                    const active = idx === activeTrackIndex;
-                    const thumbSrc = track.youtubeId
-                      ? `https://i.ytimg.com/vi/${track.youtubeId}/mqdefault.jpg`
-                      : track.coverUrl;
-                    return (
-                      <button
-                        key={track.id}
-                        onClick={() => {
-                          sound.playDiscSpin();
-                          onSelectTrack(idx);
-                        }}
-                        className={`w-full flex items-center gap-3 px-2.5 py-2 rounded-xl text-left transition-all group ${active
-                          ? 'bg-neutral-900 text-white shadow-sm'
-                          : 'hover:bg-black/[0.045] text-neutral-800'
-                          }`}
-                      >
-                        <div className="relative w-9 h-9 rounded-full overflow-hidden shrink-0 border border-black/15 shadow-sm bg-neutral-800">
-                          <img
-                            src={thumbSrc}
-                            alt={track.title}
-                            className={`w-full h-full object-cover scale-[1.08] ${active && isPlaying ? 'animate-spin-slow' : ''
-                              }`}
-                          />
-                          <div
-                            className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full border border-white/50 ${active ? 'bg-neutral-900' : 'bg-[#f2f2f0]'
-                              }`}
-                          />
-                        </div>
 
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <span className="font-mono text-[9px] tabular-nums text-neutral-400">
-                              {String(idx + 1).padStart(2, '0')}
-                            </span>
-                            <div className="font-serif text-[13px] font-semibold uppercase tracking-wide truncate">
-                              {track.title}
+                  <div className="space-y-1">
+                    {(activePlaylist?.tracks ?? []).map((track: Track, idx: number) => {
+                      const active = idx === activeTrackIndex;
+                      const thumbSrc = track.youtubeId
+                        ? `https://i.ytimg.com/vi/${track.youtubeId}/mqdefault.jpg`
+                        : track.coverUrl;
+                      return (
+                        <div
+                          key={track.id}
+                          className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-left transition-all group ${active
+                            ? 'bg-neutral-900 text-white shadow-sm'
+                            : 'hover:bg-black/[0.045] text-neutral-800'
+                            }`}
+                        >
+                          <button
+                            type="button"
+                            onClick={() => {
+                              sound.playDiscSpin();
+                              onSelectTrack(idx);
+                            }}
+                            className="flex items-center gap-2.5 flex-1 min-w-0 text-left"
+                          >
+                            <div className="relative w-9 h-9 rounded-full overflow-hidden shrink-0 border border-black/15 shadow-sm bg-neutral-800">
+                              <img
+                                src={thumbSrc}
+                                alt={track.title}
+                                className={`w-full h-full object-cover scale-[1.08] ${active && isPlaying ? 'animate-spin-slow' : ''
+                                  }`}
+                              />
+                              <div
+                                className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full border border-white/50 ${active ? 'bg-neutral-900' : 'bg-[#f2f2f0]'
+                                  }`}
+                              />
+                            </div>
+
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-mono text-[9px] tabular-nums text-neutral-400">
+                                  {String(idx + 1).padStart(2, '0')}
+                                </span>
+                                <div className="font-serif text-[13px] font-semibold uppercase tracking-wide truncate">
+                                  {track.title}
+                                </div>
+                              </div>
+                              <div
+                                className={`text-[10.5px] truncate ${active ? 'text-neutral-300' : 'text-neutral-500'
+                                  }`}
+                              >
+                                {track.artist}
+                              </div>
+                            </div>
+                          </button>
+
+                          <div className="flex items-center gap-1 shrink-0">
+                            {onDeleteTrack && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  sound.playClick();
+                                  onDeleteTrack(idx);
+                                }}
+                                title="Remove track from crate"
+                                className={`p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all ${
+                                  active
+                                    ? 'hover:bg-white/15 text-neutral-300 hover:text-red-300'
+                                    : 'hover:bg-black/5 text-neutral-400 hover:text-red-500'
+                                }`}
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                            <div className="shrink-0 w-4 flex justify-center">
+                              {active ? (
+                                <Disc3
+                                  className={`w-3.5 h-3.5 text-white ${isPlaying ? 'animate-spin' : 'opacity-60'
+                                    }`}
+                                />
+                              ) : (
+                                <Play className="w-3 h-3 text-neutral-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                              )}
                             </div>
                           </div>
-                          <div
-                            className={`text-[10.5px] truncate ${active ? 'text-neutral-300' : 'text-neutral-500'
-                              }`}
-                          >
-                            {track.artist}
-                          </div>
                         </div>
-
-                        <div className="shrink-0">
-                          {active ? (
-                            <Disc3
-                              className={`w-3.5 h-3.5 text-white ${isPlaying ? 'animate-spin' : 'opacity-60'
-                                }`}
-                            />
-                          ) : (
-                            <Play className="w-3 h-3 text-neutral-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                          )}
-                        </div>
-                      </button>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
               ) : (
-                <div className="space-y-1">
-                  {playlists.length === 0 && (
-                    <div className="py-10 text-center font-mono text-[10px] uppercase tracking-[0.16em] text-neutral-400">
-                      No playlists synced yet
-                    </div>
-                  )}
-                  {playlists.map((pl) => {
-                    const isActive = pl.id === activePlaylist?.id;
-                    return (
-                      <div
-                        key={pl.id}
-                        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all ${isActive
-                          ? 'bg-neutral-900 text-white'
-                          : 'hover:bg-black/[0.045] text-neutral-800'
-                          }`}
+                <div className="space-y-2">
+                  {/* Playlists Sub-Actions */}
+                  <div className="flex items-center gap-1.5 pb-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        sound.playClick();
+                        onCreateNewCrate?.();
+                      }}
+                      className="flex-1 py-1.5 px-2.5 rounded-lg bg-black/[0.05] hover:bg-black/[0.09] text-[10.5px] font-mono uppercase tracking-wider flex items-center justify-center gap-1.5 transition-colors"
+                    >
+                      <Plus className="w-3 h-3 text-neutral-600" />
+                      <span>New Crate</span>
+                    </button>
+                    {activePlaylist && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          sound.playClick();
+                          onShareCrate?.();
+                        }}
+                        className="py-1.5 px-2.5 rounded-lg bg-black/[0.05] hover:bg-black/[0.09] text-[10.5px] font-mono uppercase tracking-wider flex items-center justify-center gap-1.5 transition-colors"
+                        title="Share active crate link"
                       >
-                        <button
-                          onClick={() => {
-                            sound.playDiscSpin();
-                            onSelectPlaylist(pl.id);
-                            setActiveTab('tracks');
-                          }}
-                          className="flex-1 text-left min-w-0 pr-2"
-                        >
-                          <div className="text-[12px] font-medium truncate">{pl.title}</div>
-                          <div
-                            className={`text-[9.5px] font-mono uppercase tracking-wider mt-0.5 ${isActive ? 'text-neutral-400' : 'text-neutral-500'
-                              }`}
-                          >
-                            {pl.tracks.length} discs • {pl.category}
-                          </div>
-                        </button>
+                        <Share2 className="w-3 h-3 text-neutral-600" />
+                        <span>Share</span>
+                      </button>
+                    )}
+                  </div>
 
-                        <div className="flex items-center gap-1.5 shrink-0">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              sound.playClick();
-                              onDeletePlaylist(pl.id);
-                            }}
-                            title="Remove playlist"
-                            className={`p-1.5 rounded-lg transition-colors ${isActive
-                              ? 'text-neutral-400 hover:text-red-400 hover:bg-white/10'
-                              : 'text-neutral-400 hover:text-red-600 hover:bg-black/5'
-                              }`}
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                          {isActive && (
-                            <Disc3
-                              className={`w-3.5 h-3.5 ${isPlaying ? 'animate-spin' : 'opacity-60'}`}
-                            />
-                          )}
-                        </div>
+                  <div className="space-y-1">
+                    {playlists.length === 0 && (
+                      <div className="py-10 text-center font-mono text-[10px] uppercase tracking-[0.16em] text-neutral-400">
+                        No playlists yet
                       </div>
-                    );
-                  })}
+                    )}
+                    {playlists.map((pl) => {
+                      const isActive = pl.id === activePlaylist?.id;
+                      return (
+                        <div
+                          key={pl.id}
+                          className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all ${isActive
+                            ? 'bg-neutral-900 text-white'
+                            : 'hover:bg-black/[0.045] text-neutral-800'
+                            }`}
+                        >
+                          <button
+                            onClick={() => {
+                              sound.playDiscSpin();
+                              onSelectPlaylist(pl.id);
+                              setActiveTab('tracks');
+                            }}
+                            className="flex-1 text-left min-w-0 pr-2"
+                          >
+                            <div className="text-[12px] font-medium truncate">{pl.title}</div>
+                            <div
+                              className={`text-[9.5px] font-mono uppercase tracking-wider mt-0.5 ${isActive ? 'text-neutral-400' : 'text-neutral-500'
+                                }`}
+                            >
+                              {pl.tracks.length} discs • {pl.category}
+                            </div>
+                          </button>
+
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                sound.playClick();
+                                onDeletePlaylist(pl.id);
+                              }}
+                              title="Remove playlist"
+                              className={`p-1.5 rounded-lg transition-colors ${isActive
+                                ? 'text-neutral-400 hover:text-red-400 hover:bg-white/10'
+                                : 'text-neutral-400 hover:text-red-600 hover:bg-black/5'
+                                }`}
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                            {isActive && (
+                              <Disc3
+                                className={`w-3.5 h-3.5 ${isPlaying ? 'animate-spin' : 'opacity-60'}`}
+                              />
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
             </div>

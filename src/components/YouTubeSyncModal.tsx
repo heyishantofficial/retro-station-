@@ -86,7 +86,7 @@ export const YouTubeSyncModal: React.FC<YouTubeSyncModalProps> = ({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: 8 }}
             transition={{ type: 'spring', damping: 28, stiffness: 320 }}
-            className="relative w-full max-w-lg rounded-2xl bg-[#f3f3f1]/95 backdrop-blur-2xl border border-black/10 shadow-[0_32px_80px_rgba(0,0,0,0.22)] overflow-hidden"
+            className="relative w-full max-w-lg max-h-[88dvh] overflow-y-auto rounded-2xl bg-[#f3f3f1]/95 backdrop-blur-2xl border border-black/10 shadow-[0_32px_80px_rgba(0,0,0,0.22)]"
           >
             {/* Header */}
             <div className="px-6 pt-5 pb-4 border-b border-black/10 flex items-center justify-between">
@@ -131,7 +131,7 @@ export const YouTubeSyncModal: React.FC<YouTubeSyncModalProps> = ({
                       setLocalError(null);
                     }}
                     placeholder="https://music.youtube.com/playlist?list=PL..."
-                    className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-white/80 border border-black/15 text-[12px] font-sans text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-neutral-900 transition-colors"
+                    className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-white/80 border border-black/15 text-[16px] sm:text-[12px] font-sans text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-neutral-900 transition-colors"
                     autoFocus
                   />
                 </div>
@@ -146,7 +146,7 @@ export const YouTubeSyncModal: React.FC<YouTubeSyncModalProps> = ({
                   value={playlistTitle}
                   onChange={(e) => setPlaylistTitle(e.target.value)}
                   placeholder="e.g. Late Night Rotation"
-                  className="w-full px-3.5 py-2 rounded-xl bg-white/80 border border-black/15 text-[12px] font-sans text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-neutral-900 transition-colors"
+                  className="w-full px-3.5 py-2 rounded-xl bg-white/80 border border-black/15 text-[16px] sm:text-[12px] font-sans text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-neutral-900 transition-colors"
                 />
               </div>
 

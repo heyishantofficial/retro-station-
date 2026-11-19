@@ -424,24 +424,29 @@ export const ChromaVinylView: React.FC<SharedViewProps> = ({
         </div>
       </div>
 
-      {/* Minimal Matte Obsidian Control Pill Cleanly Below the Vinyl (Zero Overlap!) */}
-      <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-20 flex items-center gap-4 px-5 py-2 rounded-full bg-[#0e0e0f]/80 backdrop-blur-2xl border border-white/15 text-white/90 shadow-[0_14px_38px_rgba(0,0,0,0.42)] max-w-[92vw]">
-        <div className="flex items-center gap-2 shrink-0">
+      {/* Minimal Matte Obsidian Control Pill Cleanly Below the Vinyl (Zero Overlap + Safe Area!) */}
+      <div
+        className="fixed left-1/2 -translate-x-1/2 z-20 flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-2 rounded-full bg-[#0e0e0f]/82 backdrop-blur-2xl border border-white/15 text-white/90 shadow-[0_14px_38px_rgba(0,0,0,0.42)] max-w-[92vw]"
+        style={{ bottom: 'max(1.25rem, env(safe-area-inset-bottom, 0px))' }}
+      >
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           <button
             onClick={() => {
               sound.playDiscSpin();
               onPrev();
             }}
-            className="p-1 text-white/60 hover:text-white transition-colors active:scale-90"
+            aria-label="Previous track"
+            className="touch-target-sm p-1 flex items-center justify-center text-white/60 hover:text-white transition-colors active:scale-90"
           >
-            <SkipBack className="w-3.5 h-3.5" />
+            <SkipBack className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
           </button>
           <button
             onClick={() => {
               sound.playSwitch();
               onTogglePlay();
             }}
-            className="w-7 h-7 rounded-full bg-white text-black flex items-center justify-center hover:bg-neutral-200 transition-colors active:scale-90"
+            aria-label={isPlaying ? 'Pause' : 'Play'}
+            className="w-9 h-9 sm:w-7 sm:h-7 rounded-full bg-white text-black flex items-center justify-center hover:bg-neutral-200 transition-colors active:scale-90"
           >
             {isPlaying ? (
               <Pause className="w-3 h-3 fill-black" />
