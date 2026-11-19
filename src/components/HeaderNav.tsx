@@ -11,6 +11,7 @@ import {
   TrendingUp,
   User,
   Trophy,
+  Pencil,
 } from 'lucide-react';
 import { sound } from '../utils/soundEffects';
 import { useViewportMode } from '../hooks/useViewportMode';
@@ -39,6 +40,8 @@ interface HeaderNavProps {
   onCloseCommunityLeaderboard?: () => void;
   onImportCommunityPlaylist?: (playlist: Playlist) => void;
   onPlayCommunityPlaylist?: (playlist: Playlist) => void;
+  onRenamePlaylist?: (id: string, newTitle: string) => void;
+  initialPublishPlaylistId?: string;
   initialPublishCrateId?: string;
 }
 
@@ -63,6 +66,8 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
   onCloseCommunityLeaderboard,
   onImportCommunityPlaylist,
   onPlayCommunityPlaylist,
+  onRenamePlaylist,
+  initialPublishPlaylistId,
   initialPublishCrateId,
 }) => {
   const { isIOS } = useViewportMode();
@@ -132,7 +137,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
     };
   }, [isCommunityLeaderboardOpen, onCloseCommunityLeaderboard]);
 
-  const handleSelectCrate = (plId: string) => {
+  const handleSelectPlaylist = (plId: string) => {
     sound.playClick(1080, 0.015);
     onSelectPlaylist?.(plId);
     setIsPlaylistDropdownOpen(false);
@@ -226,17 +231,19 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
                       playlists.map((pl) => {
                         const isActive = pl.id === activePlaylistId;
                         return (
-                          <button
+                          <div
                             key={pl.id}
-                            type="button"
-                            onClick={() => handleSelectCrate(pl.id)}
-                            className={`w-full px-2.5 py-2 rounded-xl text-left transition-all flex items-center justify-between group cursor-pointer ${
+                            className={`w-full px-2.5 py-2 rounded-xl transition-all flex items-center justify-between group ${
                               isActive
                                 ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 shadow-sm'
                                 : 'hover:bg-black/[0.05] dark:hover:bg-white/[0.08] text-neutral-800 dark:text-neutral-200'
                             }`}
                           >
-                            <div className="flex items-center gap-2.5 min-w-0">
+                            <button
+                              type="button"
+                              onClick={() => handleSelectPlaylist(pl.id)}
+                              className="flex items-center gap-2.5 min-w-0 flex-1 text-left cursor-pointer"
+                            >
                               <div
                                 className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
                                   isActive
@@ -246,7 +253,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
                               >
                                 <ListMusic className="w-3.5 h-3.5" />
                               </div>
-                              <div className="min-w-0">
+                              <div className="min-w-0 flex-1">
                                 <h4 className="font-sans font-medium text-[13px] truncate leading-tight">
                                   {pl.title}
                                 </h4>
@@ -260,15 +267,37 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
                                   {pl.tracks.length} tracks • {pl.category}
                                 </p>
                               </div>
-                            </div>
+                            </button>
 
-                            {isActive && (
-                              <span className="font-mono text-[9px] uppercase tracking-wider px-2 py-0.5 rounded bg-white/20 dark:bg-black/20 font-bold shrink-0 flex items-center gap-1">
-                                <Check className="w-3 h-3" />
-                                Active
-                              </span>
-                            )}
-                          </button>
+                            <div className="flex items-center gap-1 shrink-0 ml-1.5">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  sound.playClick();
+                                  const newName = window.prompt('Rename playlist:', pl.title);
+                                  if (newName && newName.trim() && onRenamePlaylist) {
+                                    onRenamePlaylist(pl.id, newName.trim());
+                                  }
+                                }}
+                                title="Rename playlist"
+                                className={`w-6 h-6 rounded-md flex items-center justify-center transition-colors cursor-pointer ${
+                                  isActive
+                                    ? 'text-white/70 hover:text-white hover:bg-white/20 dark:text-black/70 dark:hover:text-black dark:hover:bg-black/10'
+                                    : 'text-neutral-400 hover:text-emerald-500 hover:bg-black/5 dark:hover:bg-white/10'
+                                }`}
+                              >
+                                <Pencil className="w-3 h-3" />
+                              </button>
+
+                              {isActive && (
+                                <span className="font-mono text-[9px] uppercase tracking-wider px-2 py-0.5 rounded bg-white/20 dark:bg-black/20 font-bold shrink-0 flex items-center gap-1">
+                                  <Check className="w-3 h-3" />
+                                  Active
+                                </span>
+                              )}
+                            </div>
+                          </div>
                         );
                       })
                     )}
@@ -390,7 +419,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
                   isOpen={isCommunityLeaderboardOpen}
                   userPlaylists={playlists}
                   activePlaylistId={activePlaylistId}
-                  initialPublishCrateId={initialPublishCrateId}
+                  initialPublishCrateId={initialPublishPlaylistId || initialPublishCrateId}
                   user={user}
                   onClose={() => onCloseCommunityLeaderboard?.()}
                   onImportCommunityPlaylist={(pl) => {

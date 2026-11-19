@@ -377,3 +377,5 @@ export const STARTER_CRATES: Playlist[] = [
     ],
   },
 ];
+
+export const STARTER_PLAYLISTS: Playlist[] = STARTER_CRATES;

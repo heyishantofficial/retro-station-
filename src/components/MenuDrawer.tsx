@@ -20,6 +20,8 @@ import {
   ArrowRight,
   Trophy,
   Globe2,
+  Pencil,
+  Check,
 } from 'lucide-react';
 import { Playlist, Track } from '../types';
 import { YouTubeIcon } from './YouTubeIcon';
@@ -48,7 +50,10 @@ interface MenuDrawerProps {
   onOpenSearch?: () => void;
   onOpenCharts?: () => void;
   onOpenAuthModal?: () => void;
+  onRenamePlaylist?: (id: string, newTitle: string) => void;
+  onCreateNewPlaylist?: () => void;
   onCreateNewCrate?: () => void;
+  onSharePlaylist?: () => void;
   onShareCrate?: () => void;
   onOpenCommunityLeaderboard?: (preselectedPlaylistId?: string) => void;
   onToggleMiniVideo: () => void;
@@ -96,7 +101,10 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
   onOpenSearch,
   onOpenCharts,
   onOpenAuthModal,
+  onRenamePlaylist,
+  onCreateNewPlaylist,
   onCreateNewCrate,
+  onSharePlaylist,
   onShareCrate,
   onOpenCommunityLeaderboard,
   onToggleMiniVideo,
@@ -111,6 +119,13 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
     return 'tracks';
   });
   const [sfxEnabled, setSfxEnabled] = useState(sound.enabled);
+  const [editingPlaylistId, setEditingPlaylistId] = useState<string | null>(null);
+  const [editingPlaylistTitle, setEditingPlaylistTitle] = useState('');
+  const [isEditingActiveTitle, setIsEditingActiveTitle] = useState(false);
+  const [activeTitleDraft, setActiveTitleDraft] = useState('');
+
+  const triggerCreatePlaylist = onCreateNewPlaylist || onCreateNewCrate;
+  const triggerSharePlaylist = onSharePlaylist || onShareCrate;
 
   const toggleSfx = () => {
     const next = !sfxEnabled;
@@ -165,9 +180,77 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                   </span>
                 </div>
 
-                <h2 className="text-base sm:text-lg font-bold text-white tracking-tight mt-1 truncate">
-                  {activePlaylist?.title || 'No Playlist Selected'}
-                </h2>
+                {isEditingActiveTitle && activePlaylist ? (
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      if (activeTitleDraft.trim() && onRenamePlaylist) {
+                        sound.playClick();
+                        onRenamePlaylist(activePlaylist.id, activeTitleDraft.trim());
+                      }
+                      setIsEditingActiveTitle(false);
+                    }}
+                    className="flex items-center gap-1.5 mt-1.5"
+                  >
+                    <input
+                      type="text"
+                      autoFocus
+                      value={activeTitleDraft}
+                      onChange={(e) => setActiveTitleDraft(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Escape') setIsEditingActiveTitle(false);
+                      }}
+                      placeholder="Rename playlist..."
+                      className="flex-1 min-w-0 px-2.5 py-1 rounded-lg bg-[#22222a] border border-emerald-500/60 text-white text-sm font-semibold focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                    />
+                    <button
+                      type="submit"
+                      disabled={!activeTitleDraft.trim()}
+                      className="p-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-black transition-colors cursor-pointer disabled:opacity-40 shrink-0"
+                      title="Save name"
+                    >
+                      <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsEditingActiveTitle(false)}
+                      className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-zinc-300 transition-colors cursor-pointer shrink-0"
+                      title="Cancel"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </form>
+                ) : (
+                  <div className="flex items-center gap-2 mt-1 min-w-0 group">
+                    <h2
+                      onClick={() => {
+                        if (activePlaylist) {
+                          sound.playClick();
+                          setActiveTitleDraft(activePlaylist.title);
+                          setIsEditingActiveTitle(true);
+                        }
+                      }}
+                      className="text-base sm:text-lg font-bold text-white tracking-tight truncate cursor-pointer hover:text-emerald-300 transition-colors"
+                      title="Click or tap pencil to rename playlist"
+                    >
+                      {activePlaylist?.title || 'No Playlist Selected'}
+                    </h2>
+                    {activePlaylist && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          sound.playClick();
+                          setActiveTitleDraft(activePlaylist.title);
+                          setIsEditingActiveTitle(true);
+                        }}
+                        className="w-6 h-6 rounded-md flex items-center justify-center text-zinc-400 hover:text-emerald-300 hover:bg-white/10 transition-colors cursor-pointer shrink-0"
+                        title="Rename playlist"
+                      >
+                        <Pencil className="w-3 h-3" />
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
 
               <button
@@ -275,7 +358,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                   type="button"
                   onClick={() => {
                     sound.playClick();
-                    onCreateNewCrate?.();
+                    triggerCreatePlaylist?.();
                   }}
                   className="p-2.5 rounded-xl bg-[#18181d] hover:bg-[#22222a] border border-white/10 hover:border-white/20 flex items-center gap-2.5 text-left transition-all active:scale-[0.98] group cursor-pointer"
                 >
@@ -414,7 +497,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                         type="button"
                         onClick={() => {
                           sound.playClick();
-                          onShareCrate?.();
+                          triggerSharePlaylist?.();
                         }}
                         className="py-1.5 px-3 rounded-lg bg-[#18181d] hover:bg-[#22222a] text-xs font-semibold text-zinc-300 hover:text-white flex items-center gap-1.5 transition-colors border border-white/10 cursor-pointer"
                         title="Share playlist link"
@@ -600,7 +683,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                     type="button"
                     onClick={() => {
                       sound.playClick();
-                      onCreateNewCrate?.();
+                      triggerCreatePlaylist?.();
                     }}
                     className="w-full py-2.5 px-3 rounded-xl border border-dashed border-white/25 hover:border-white/50 bg-[#16161b] hover:bg-[#202026] text-xs font-semibold text-zinc-200 hover:text-white flex items-center justify-center gap-2 transition-all cursor-pointer"
                   >
@@ -617,6 +700,8 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                   <div className="space-y-1.5">
                     {playlists.map((pl) => {
                       const isActive = pl.id === activePlaylist?.id;
+                      const isEditingThis = editingPlaylistId === pl.id;
+
                       return (
                         <div
                           key={pl.id}
@@ -626,84 +711,145 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                               : 'bg-[#16161b] hover:bg-[#202026] border-white/[0.08] text-zinc-200'
                           }`}
                         >
-                          <div className="flex items-center justify-between">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                sound.playDiscSpin();
-                                onSelectPlaylist(pl.id);
-                                setActiveTab('tracks');
+                          {isEditingThis ? (
+                            <form
+                              onSubmit={(e) => {
+                                e.preventDefault();
+                                if (editingPlaylistTitle.trim() && onRenamePlaylist) {
+                                  sound.playClick();
+                                  onRenamePlaylist(pl.id, editingPlaylistTitle.trim());
+                                }
+                                setEditingPlaylistId(null);
                               }}
-                              className="flex items-center gap-2.5 flex-1 min-w-0 text-left cursor-pointer"
+                              onClick={(e) => e.stopPropagation()}
+                              className="flex items-center gap-2 w-full"
                             >
-                              <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center shrink-0 border border-white/15">
-                                <Disc3
-                                  className={`w-4 h-4 ${
-                                    isActive ? 'text-emerald-400' : 'text-zinc-300'
-                                  }`}
-                                />
+                              <div className="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center shrink-0 text-emerald-400">
+                                <Pencil className="w-3.5 h-3.5" />
                               </div>
+                              <input
+                                type="text"
+                                autoFocus
+                                value={editingPlaylistTitle}
+                                onChange={(e) => setEditingPlaylistTitle(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Escape') setEditingPlaylistId(null);
+                                }}
+                                placeholder="Playlist name..."
+                                className="flex-1 min-w-0 px-2.5 py-1.5 rounded-lg bg-[#202028] border border-emerald-500/60 text-xs font-semibold text-white focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                              />
+                              <button
+                                type="submit"
+                                disabled={!editingPlaylistTitle.trim()}
+                                className="px-2.5 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer disabled:opacity-40 shrink-0"
+                                title="Save name"
+                              >
+                                <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                                <span>Save</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setEditingPlaylistId(null)}
+                                className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-zinc-300 transition-colors cursor-pointer shrink-0"
+                                title="Cancel"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            </form>
+                          ) : (
+                            <div className="flex items-center justify-between">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  sound.playDiscSpin();
+                                  onSelectPlaylist(pl.id);
+                                  setActiveTab('tracks');
+                                }}
+                                className="flex items-center gap-2.5 flex-1 min-w-0 text-left cursor-pointer"
+                              >
+                                <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center shrink-0 border border-white/15">
+                                  <Disc3
+                                    className={`w-4 h-4 ${
+                                      isActive ? 'text-emerald-400' : 'text-zinc-300'
+                                    }`}
+                                  />
+                                </div>
 
-                              <div className="min-w-0 flex-1">
-                                <div className="flex items-center gap-2">
-                                  <span className="text-xs font-semibold text-white truncate">
-                                    {pl.title}
-                                  </span>
-                                  {isActive && (
-                                    <span className="px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[9px] font-bold tracking-wider uppercase shrink-0">
-                                      Active
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-xs font-semibold text-white truncate">
+                                      {pl.title}
                                     </span>
-                                  )}
+                                    {isActive && (
+                                      <span className="px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[9px] font-bold tracking-wider uppercase shrink-0">
+                                        Active
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div className="text-xs text-zinc-300 truncate mt-0.5">
+                                    {pl.tracks.length} {pl.tracks.length === 1 ? 'track' : 'tracks'} •{' '}
+                                    {pl.category || 'Collection'}
+                                  </div>
                                 </div>
-                                <div className="text-xs text-zinc-300 truncate mt-0.5">
-                                  {pl.tracks.length} {pl.tracks.length === 1 ? 'track' : 'tracks'} •{' '}
-                                  {pl.category || 'Collection'}
-                                </div>
+                              </button>
+
+                              <div className="flex items-center gap-1 shrink-0 ml-2">
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    sound.playClick();
+                                    setEditingPlaylistId(pl.id);
+                                    setEditingPlaylistTitle(pl.title);
+                                  }}
+                                  title="Rename playlist"
+                                  className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-emerald-400 hover:bg-emerald-500/20 transition-colors cursor-pointer touch-target-sm"
+                                >
+                                  <Pencil className="w-3.5 h-3.5" />
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    sound.playClick();
+                                    onClose();
+                                    onOpenCommunityLeaderboard?.(pl.id);
+                                  }}
+                                  title="Publish playlist to Community Leaderboard"
+                                  className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-amber-400 hover:bg-amber-500/20 transition-colors cursor-pointer touch-target-sm"
+                                >
+                                  <Globe2 className="w-4 h-4" />
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    sound.playClick();
+                                    triggerSharePlaylist?.();
+                                  }}
+                                  title="Share playlist link"
+                                  className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/15 transition-colors cursor-pointer touch-target-sm"
+                                >
+                                  <Share2 className="w-4 h-4" />
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    sound.playClick();
+                                    onDeletePlaylist(pl.id);
+                                  }}
+                                  title="Delete playlist"
+                                  className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-red-400 hover:bg-red-500/20 transition-colors cursor-pointer touch-target-sm"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
                               </div>
-                            </button>
-
-                            <div className="flex items-center gap-1 shrink-0 ml-2">
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  sound.playClick();
-                                  onClose();
-                                  onOpenCommunityLeaderboard?.(pl.id);
-                                }}
-                                title="Publish playlist to Community Leaderboard"
-                                className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-amber-400 hover:bg-amber-500/20 transition-colors cursor-pointer touch-target-sm"
-                              >
-                                <Globe2 className="w-4 h-4" />
-                              </button>
-
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  sound.playClick();
-                                  onShareCrate?.();
-                                }}
-                                title="Share playlist link"
-                                className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/15 transition-colors cursor-pointer touch-target-sm"
-                              >
-                                <Share2 className="w-4 h-4" />
-                              </button>
-
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  sound.playClick();
-                                  onDeletePlaylist(pl.id);
-                                }}
-                                title="Delete playlist"
-                                className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-red-400 hover:bg-red-500/20 transition-colors cursor-pointer touch-target-sm"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
                             </div>
-                          </div>
+                          )}
                         </div>
                       );
                     })}

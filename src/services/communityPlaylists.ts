@@ -227,3 +227,10 @@ export function generateCrateShareUrl(playlistId: string): string {
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
   return `${origin}/?crate=${encodeURIComponent(playlistId)}`;
 }
+
+// Clean Playlist Aliases
+export const publishPlaylistToCommunity = publishCrateToCommunity;
+export const saveCommunityPlaylist = saveCommunityCrate;
+export const fetchCommunityPlaylistById = fetchCommunityCrateById;
+export const isPlaylistSavedInLibrary = isCrateSavedInLibrary;
+export const generatePlaylistShareUrl = generateCrateShareUrl;

@@ -664,6 +664,22 @@ export function App() {
     }
   }, [activePlaylist]);
 
+  const handleRenamePlaylist = useCallback(
+    (id: string, newTitle: string) => {
+      const trimmed = newTitle.trim();
+      if (!trimmed) return;
+      setPlaylists((prev) => {
+        const next = prev.map((pl) => (pl.id === id ? { ...pl, title: trimmed } : pl));
+        if (user) {
+          saveUserCloudPlaylists(user.id, next).catch(() => {});
+        }
+        return next;
+      });
+      setViewToast(`Renamed playlist to "${trimmed}" ✦`);
+    },
+    [user]
+  );
+
   const handleImportCommunityPlaylist = useCallback(
     (communityPlaylist: Playlist) => {
       setPlaylists((prev) => {
@@ -767,6 +783,7 @@ export function App() {
           }}
           onImportCommunityPlaylist={handleImportCommunityPlaylist}
           onPlayCommunityPlaylist={handlePlayCommunityPlaylist}
+          onRenamePlaylist={handleRenamePlaylist}
           initialPublishCrateId={communityCrateToPublishId}
         />
       </div>
@@ -1244,7 +1261,10 @@ export function App() {
         onOpenSearch={() => setIsSearchModalOpen(true)}
         onOpenCharts={() => setIsChartsModalOpen(true)}
         onOpenAuthModal={() => setIsAuthModalOpen(true)}
+        onRenamePlaylist={handleRenamePlaylist}
+        onCreateNewPlaylist={handleCreateNewCrate}
         onCreateNewCrate={handleCreateNewCrate}
+        onSharePlaylist={handleShareCrate}
         onShareCrate={handleShareCrate}
         onOpenCommunityLeaderboard={handleOpenCommunityLeaderboard}
         onToggleMiniVideo={() => setShowMiniVideo((v) => !v)}
