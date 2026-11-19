@@ -21,7 +21,6 @@ import { YouTubeSyncModal } from './components/YouTubeSyncModal';
 import { MenuDrawer } from './components/MenuDrawer';
 import { SongSearchModal } from './components/SongSearchModal';
 import { YouTubeChartsModal } from './components/YouTubeChartsModal';
-import { CommunityLeaderboardModal } from './components/CommunityLeaderboardModal';
 import { AuthModal } from './components/AuthModal';
 import { YouTubeIcon } from './components/YouTubeIcon';
 import { useYouTubePlayer } from './hooks/useYouTubePlayer';
@@ -695,8 +694,12 @@ export function App() {
   );
 
   const handleOpenCommunityLeaderboard = useCallback((preselectedId?: string) => {
-    setCommunityCrateToPublishId(preselectedId);
-    setIsCommunityModalOpen(true);
+    if (preselectedId) {
+      setCommunityCrateToPublishId(preselectedId);
+      setIsCommunityModalOpen(true);
+    } else {
+      setIsCommunityModalOpen((prev) => !prev);
+    }
   }, []);
 
   const isSyncedYouTube = playlists.length > 0;
@@ -754,6 +757,14 @@ export function App() {
           onCreatePlaylist={handleCreateNewCrate}
           onOpenCharts={() => setIsChartsModalOpen(true)}
           onOpenCommunityLeaderboard={() => handleOpenCommunityLeaderboard()}
+          isCommunityLeaderboardOpen={isCommunityModalOpen}
+          onCloseCommunityLeaderboard={() => {
+            setIsCommunityModalOpen(false);
+            setCommunityCrateToPublishId(undefined);
+          }}
+          onImportCommunityPlaylist={handleImportCommunityPlaylist}
+          onPlayCommunityPlaylist={handlePlayCommunityPlaylist}
+          initialPublishCrateId={communityCrateToPublishId}
         />
       </div>
 
@@ -1234,20 +1245,6 @@ export function App() {
         onShareCrate={handleShareCrate}
         onOpenCommunityLeaderboard={handleOpenCommunityLeaderboard}
         onToggleMiniVideo={() => setShowMiniVideo((v) => !v)}
-      />
-
-      {/* Community Leaderboard & Crate Sharing Modal */}
-      <CommunityLeaderboardModal
-        isOpen={isCommunityModalOpen}
-        userPlaylists={playlists}
-        activePlaylistId={communityCrateToPublishId || activePlaylistId}
-        user={user}
-        onClose={() => {
-          setIsCommunityModalOpen(false);
-          setCommunityCrateToPublishId(undefined);
-        }}
-        onImportCommunityPlaylist={handleImportCommunityPlaylist}
-        onPlayCommunityPlaylist={handlePlayCommunityPlaylist}
       />
     </div>
   );

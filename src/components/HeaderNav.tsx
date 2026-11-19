@@ -16,6 +16,7 @@ import { sound } from '../utils/soundEffects';
 import { useViewportMode } from '../hooks/useViewportMode';
 import { Playlist } from '../types';
 import { UserProfile } from '../services/cloudSync';
+import { CommunityLeaderboardDropdown } from './CommunityLeaderboardDropdown';
 
 interface HeaderNavProps {
   isMenuOpen: boolean;
@@ -34,6 +35,11 @@ interface HeaderNavProps {
   onCreatePlaylist?: (title: string) => void;
   onOpenCharts?: () => void;
   onOpenCommunityLeaderboard?: () => void;
+  isCommunityLeaderboardOpen?: boolean;
+  onCloseCommunityLeaderboard?: () => void;
+  onImportCommunityPlaylist?: (playlist: Playlist) => void;
+  onPlayCommunityPlaylist?: (playlist: Playlist) => void;
+  initialPublishCrateId?: string;
 }
 
 export const HeaderNav: React.FC<HeaderNavProps> = ({
@@ -53,6 +59,11 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
   onCreatePlaylist,
   onOpenCharts,
   onOpenCommunityLeaderboard,
+  isCommunityLeaderboardOpen = false,
+  onCloseCommunityLeaderboard,
+  onImportCommunityPlaylist,
+  onPlayCommunityPlaylist,
+  initialPublishCrateId,
 }) => {
   const { isIOS } = useViewportMode();
   const [isPlaylistDropdownOpen, setIsPlaylistDropdownOpen] = useState(false);
@@ -60,6 +71,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
   const [newCrateTitle, setNewCrateTitle] = useState('');
 
   const dropdownRef = useRef<HTMLDivElement | null>(null);
+  const leaderboardRef = useRef<HTMLDivElement | null>(null);
 
   const lineColor = isDark && !isMenuOpen ? 'bg-white' : 'bg-neutral-900';
   const iconColor =
@@ -95,6 +107,30 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [isPlaylistDropdownOpen]);
+
+  // Close community leaderboard dropdown on click outside or escape key
+  useEffect(() => {
+    if (!isCommunityLeaderboardOpen) return;
+
+    const handleClickOutside = (e: MouseEvent) => {
+      if (leaderboardRef.current && !leaderboardRef.current.contains(e.target as Node)) {
+        onCloseCommunityLeaderboard?.();
+      }
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onCloseCommunityLeaderboard?.();
+      }
+    };
+
+    window.addEventListener('mousedown', handleClickOutside);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isCommunityLeaderboardOpen, onCloseCommunityLeaderboard]);
 
   const handleSelectCrate = (plId: string) => {
     sound.playClick(1080, 0.015);
@@ -322,21 +358,51 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
           </div>
         )}
 
-        {/* 3. Community Crates Leaderboard Trigger */}
-        {!isMenuOpen && onOpenCommunityLeaderboard && (
-          <button
-            type="button"
-            onClick={() => {
-              sound.playClick();
-              setIsPlaylistDropdownOpen(false);
-              onOpenCommunityLeaderboard();
-            }}
-            aria-label="Community Crates Leaderboard"
-            title="Community Leaderboard — Most Saved Playlists"
-            className={`touch-target w-9 h-9 rounded-full flex items-center justify-center ${iconColor} ${hoverBg} active:scale-90 transition-all cursor-pointer`}
-          >
-            <Trophy className="w-4 h-4" strokeWidth={1.75} />
-          </button>
+        {/* 3. Community Crates Leaderboard Trigger & Anchored Dropdown Below Rank Button */}
+        {!isMenuOpen && (
+          <div className="relative" ref={leaderboardRef}>
+            <button
+              type="button"
+              onClick={() => {
+                sound.playClick();
+                setIsPlaylistDropdownOpen(false);
+                if (isCommunityLeaderboardOpen) {
+                  onCloseCommunityLeaderboard?.();
+                } else {
+                  onOpenCommunityLeaderboard?.();
+                }
+              }}
+              aria-label="Community Crates Leaderboard"
+              title="Community Leaderboard — Most Saved Playlists"
+              className={`touch-target w-9 h-9 rounded-full flex items-center justify-center ${
+                isCommunityLeaderboardOpen
+                  ? 'bg-amber-500/20 text-amber-400 ring-1 ring-amber-500/40'
+                  : `${iconColor} ${hoverBg}`
+              } active:scale-90 transition-all cursor-pointer`}
+            >
+              <Trophy className="w-4 h-4" strokeWidth={1.75} />
+            </button>
+
+            {/* Anchored Community Leaderboard Dropdown */}
+            <AnimatePresence>
+              {isCommunityLeaderboardOpen && (
+                <CommunityLeaderboardDropdown
+                  isOpen={isCommunityLeaderboardOpen}
+                  userPlaylists={playlists}
+                  activePlaylistId={activePlaylistId}
+                  initialPublishCrateId={initialPublishCrateId}
+                  user={user}
+                  onClose={() => onCloseCommunityLeaderboard?.()}
+                  onImportCommunityPlaylist={(pl) => {
+                    onImportCommunityPlaylist?.(pl);
+                  }}
+                  onPlayCommunityPlaylist={(pl) => {
+                    onPlayCommunityPlaylist?.(pl);
+                  }}
+                />
+              )}
+            </AnimatePresence>
+          </div>
         )}
 
         {/* 4. User Google Account & Cloud Sync Trigger */}
