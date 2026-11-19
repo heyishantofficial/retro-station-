@@ -51,7 +51,7 @@ export const SongSearchModal: React.FC<SongSearchModalProps> = ({
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchSongResult[]>(POPULAR_HITS_CATALOG.slice(0, 8));
   const [isSearching, setIsSearching] = useState(false);
-  const [addedIds, setAddedIds] = useState<Record<string, boolean>>({});
+  const [addedIds, setAddedIds] = useState<Record<string, string>>({});
 
   // Target Crate State
   const [targetId, setTargetId] = useState<string>(activePlaylistId);
@@ -59,8 +59,14 @@ export const SongSearchModal: React.FC<SongSearchModalProps> = ({
   const [isCreatingNewCrate, setIsCreatingNewCrate] = useState(false);
   const [newCrateName, setNewCrateName] = useState('');
 
+  // Per-song Add Button Hover Dropdown State
+  const [hoveredSongDropdownId, setHoveredSongDropdownId] = useState<string | null>(null);
+  const [inlineCreateName, setInlineCreateName] = useState('');
+  const [inlineCreatingForSongId, setInlineCreatingForSongId] = useState<string | null>(null);
+
   const inputRef = useRef<HTMLInputElement | null>(null);
   const hoverTimeoutRef = useRef<number | null>(null);
+  const songHoverTimeoutRef = useRef<number | null>(null);
 
   // Sync target ID when active playlist changes
   useEffect(() => {
@@ -81,6 +87,9 @@ export const SongSearchModal: React.FC<SongSearchModalProps> = ({
       setIsHoverDropdownOpen(false);
       setIsCreatingNewCrate(false);
       setNewCrateName('');
+      setHoveredSongDropdownId(null);
+      setInlineCreatingForSongId(null);
+      setInlineCreateName('');
     }
   }, [isOpen]);
 
@@ -124,6 +133,22 @@ export const SongSearchModal: React.FC<SongSearchModalProps> = ({
     }, 240);
   };
 
+  const handleMouseEnterSongBtn = (songId: string) => {
+    if (songHoverTimeoutRef.current) {
+      window.clearTimeout(songHoverTimeoutRef.current);
+      songHoverTimeoutRef.current = null;
+    }
+    setHoveredSongDropdownId(songId);
+  };
+
+  const handleMouseLeaveSongBtn = () => {
+    songHoverTimeoutRef.current = window.setTimeout(() => {
+      setHoveredSongDropdownId(null);
+      setInlineCreatingForSongId(null);
+      setInlineCreateName('');
+    }, 260);
+  };
+
   const handleSelectCrate = (pl: Playlist) => {
     sound.playClick(1080, 0.015);
     setTargetId(pl.id);
@@ -148,10 +173,51 @@ export const SongSearchModal: React.FC<SongSearchModalProps> = ({
     if (!destinationPl) return;
 
     onAddSongToPlaylist(song, destinationPl.id);
-    setAddedIds((prev) => ({ ...prev, [song.id]: true }));
+    setAddedIds((prev) => ({ ...prev, [song.id]: destinationPl.title }));
     window.setTimeout(() => {
-      setAddedIds((prev) => ({ ...prev, [song.id]: false }));
-    }, 2000);
+      setAddedIds((prev) => {
+        const next = { ...prev };
+        delete next[song.id];
+        return next;
+      });
+    }, 2400);
+  };
+
+  const handleAddSongToSpecificPlaylist = (song: SearchSongResult, playlist: Playlist) => {
+    sound.playClick(1160, 0.02);
+    onAddSongToPlaylist(song, playlist.id);
+    setTargetId(playlist.id);
+    onSelectPlaylist?.(playlist.id);
+    setHoveredSongDropdownId(null);
+    setAddedIds((prev) => ({ ...prev, [song.id]: playlist.title }));
+    window.setTimeout(() => {
+      setAddedIds((prev) => {
+        const next = { ...prev };
+        delete next[song.id];
+        return next;
+      });
+    }, 2400);
+  };
+
+  const handleInlineCreateAndAdd = (e: React.FormEvent, song: SearchSongResult) => {
+    e.preventDefault();
+    if (!inlineCreateName.trim() || !onCreatePlaylist) return;
+    sound.playClick(1280, 0.02);
+    const createdId = onCreatePlaylist(inlineCreateName.trim());
+    setTargetId(createdId);
+    onAddSongToPlaylist(song, createdId);
+    onSelectPlaylist?.(createdId);
+    setAddedIds((prev) => ({ ...prev, [song.id]: inlineCreateName.trim() }));
+    setHoveredSongDropdownId(null);
+    setInlineCreatingForSongId(null);
+    setInlineCreateName('');
+    window.setTimeout(() => {
+      setAddedIds((prev) => {
+        const next = { ...prev };
+        delete next[song.id];
+        return next;
+      });
+    }, 2400);
   };
 
   const handleTagClick = (tag: string) => {
@@ -440,28 +506,154 @@ export const SongSearchModal: React.FC<SongSearchModalProps> = ({
                         </div>
                       </div>
 
-                      {/* Add Button -> Adds directly to selected Target Crate */}
-                      <button
-                        type="button"
-                        onClick={() => handleAddSong(item)}
-                        className={`shrink-0 px-3.5 py-2 rounded-xl flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-wider font-medium transition-all active:scale-95 ${
-                          isAdded
-                            ? 'bg-emerald-500 text-white shadow-sm'
-                            : 'bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 hover:opacity-90 shadow-sm'
-                        }`}
+                      {/* Add Button with Hover Playlist Menu */}
+                      <div
+                        className="relative shrink-0"
+                        onMouseEnter={() => handleMouseEnterSongBtn(item.id)}
+                        onMouseLeave={handleMouseLeaveSongBtn}
                       >
-                        {isAdded ? (
-                          <>
-                            <Check className="w-3.5 h-3.5" />
-                            <span>Added</span>
-                          </>
-                        ) : (
-                          <>
-                            <Plus className="w-3.5 h-3.5" />
-                            <span>Add</span>
-                          </>
-                        )}
-                      </button>
+                        <button
+                          type="button"
+                          onClick={() => handleAddSong(item)}
+                          className={`px-3 py-1.5 rounded-xl flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-wider font-medium transition-all active:scale-95 cursor-pointer ${
+                            isAdded
+                              ? 'bg-emerald-500 text-white shadow-sm'
+                              : 'bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 hover:opacity-90 shadow-sm'
+                          }`}
+                          title="Click to add to target playlist, or hover to choose/create playlist"
+                        >
+                          {isAdded ? (
+                            <>
+                              <Check className="w-3.5 h-3.5" />
+                              <span className="truncate max-w-[120px]">
+                                Added
+                              </span>
+                            </>
+                          ) : (
+                            <>
+                              <Plus className="w-3.5 h-3.5" />
+                              <span>Add</span>
+                              <ChevronDown className="w-3 h-3 opacity-60 ml-0.5" />
+                            </>
+                          )}
+                        </button>
+
+                        {/* Hover Dropdown Menu listing user playlists */}
+                        <AnimatePresence>
+                          {hoveredSongDropdownId === item.id && (
+                            <motion.div
+                              initial={{ opacity: 0, y: 4, scale: 0.96 }}
+                              animate={{ opacity: 1, y: 0, scale: 1 }}
+                              exit={{ opacity: 0, y: 4, scale: 0.96 }}
+                              transition={{ duration: 0.15 }}
+                              className="absolute right-0 top-full mt-1.5 z-50 w-72 sm:w-80 rounded-2xl bg-white/95 dark:bg-[#1e1e22]/95 backdrop-blur-2xl border border-black/10 dark:border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.35)] p-2.5 flex flex-col gap-1.5 text-neutral-900 dark:text-white"
+                            >
+                              <div className="px-2 py-1 border-b border-black/[0.06] dark:border-white/[0.06] flex items-center justify-between">
+                                <span className="font-mono text-[9px] uppercase tracking-wider text-neutral-400">
+                                  Add to Playlist
+                                </span>
+                                <span className="font-mono text-[9px] text-neutral-400">
+                                  {playlists.length} playlists
+                                </span>
+                              </div>
+
+                              {/* Playlists List */}
+                              <div className="max-h-44 overflow-y-auto space-y-0.5 pr-0.5">
+                                {playlists.length === 0 ? (
+                                  <div className="py-2 px-2 text-center text-[11px] font-mono text-neutral-400">
+                                    No playlists created yet
+                                  </div>
+                                ) : (
+                                  playlists.map((pl) => {
+                                    const isTarget = pl.id === targetId;
+                                    return (
+                                      <button
+                                        key={pl.id}
+                                        type="button"
+                                        onClick={() =>
+                                          handleAddSongToSpecificPlaylist(item, pl)
+                                        }
+                                        className={`w-full px-2.5 py-1.5 rounded-xl text-left transition-colors flex items-center justify-between group/pl ${
+                                          isTarget
+                                            ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 font-medium'
+                                            : 'hover:bg-black/[0.05] dark:hover:bg-white/[0.07] text-neutral-800 dark:text-neutral-200'
+                                        }`}
+                                      >
+                                        <div className="flex items-center gap-2 min-w-0">
+                                          <ListMusic
+                                            className={`w-3.5 h-3.5 shrink-0 ${
+                                              isTarget
+                                                ? 'text-white dark:text-neutral-900'
+                                                : 'text-neutral-400'
+                                            }`}
+                                          />
+                                          <span className="text-[12px] truncate">
+                                            {pl.title}
+                                          </span>
+                                        </div>
+                                        <span
+                                          className={`font-mono text-[9.5px] shrink-0 ${
+                                            isTarget
+                                              ? 'opacity-80'
+                                              : 'text-neutral-400 group-hover/pl:text-neutral-600 dark:group-hover/pl:text-neutral-300'
+                                          }`}
+                                        >
+                                          {pl.tracks.length} tracks
+                                        </span>
+                                      </button>
+                                    );
+                                  })
+                                )}
+                              </div>
+
+                              {/* Inline Create New Playlist Section */}
+                              {inlineCreatingForSongId === item.id ? (
+                                <form
+                                  onSubmit={(e) => handleInlineCreateAndAdd(e, item)}
+                                  className="p-2 rounded-xl bg-black/[0.04] dark:bg-white/[0.05] border border-black/10 dark:border-white/10 flex flex-col gap-1.5"
+                                >
+                                  <input
+                                    type="text"
+                                    autoFocus
+                                    value={inlineCreateName}
+                                    onChange={(e) => setInlineCreateName(e.target.value)}
+                                    placeholder="New playlist name…"
+                                    className="w-full px-2.5 py-1.5 rounded-lg bg-white dark:bg-black/40 border border-black/15 dark:border-white/15 text-[12px] focus:outline-none focus:ring-1 focus:ring-neutral-900 dark:focus:ring-white"
+                                  />
+                                  <div className="flex items-center justify-end gap-1.5">
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setInlineCreatingForSongId(null);
+                                        setInlineCreateName('');
+                                      }}
+                                      className="px-2 py-0.5 text-[10px] font-mono text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200"
+                                    >
+                                      Cancel
+                                    </button>
+                                    <button
+                                      type="submit"
+                                      disabled={!inlineCreateName.trim()}
+                                      className="px-2.5 py-1 rounded-md bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-mono text-[10px] font-medium disabled:opacity-40"
+                                    >
+                                      Create & Add
+                                    </button>
+                                  </div>
+                                </form>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => setInlineCreatingForSongId(item.id)}
+                                  className="w-full py-1.5 px-2.5 rounded-xl border border-dashed border-neutral-300 dark:border-neutral-600 hover:border-neutral-900 dark:hover:border-white text-neutral-700 dark:text-neutral-200 text-[11px] font-mono uppercase tracking-wider flex items-center justify-center gap-1.5 hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors"
+                                >
+                                  <FolderPlus className="w-3.5 h-3.5" />
+                                  <span>+ Create New Playlist</span>
+                                </button>
+                              )}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
                     </div>
                   );
                 })

@@ -20,6 +20,7 @@ import { GlamPaletteView } from './components/views/GlamPaletteView';
 import { YouTubeSyncModal } from './components/YouTubeSyncModal';
 import { MenuDrawer } from './components/MenuDrawer';
 import { SongSearchModal } from './components/SongSearchModal';
+import { YouTubeChartsModal } from './components/YouTubeChartsModal';
 import { YouTubeIcon } from './components/YouTubeIcon';
 import { useYouTubePlayer } from './hooks/useYouTubePlayer';
 import { buildTrackFromYouTubeId, fetchVideoMetadata } from './services/youtube';
@@ -78,6 +79,7 @@ export function App() {
   // UI overlays
   const [isSyncModalOpen, setIsSyncModalOpen] = useState<boolean>(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState<boolean>(false);
+  const [isChartsModalOpen, setIsChartsModalOpen] = useState<boolean>(false);
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [chromeHudVisible, setChromeHudVisible] = useState<boolean>(true);
@@ -949,7 +951,7 @@ export function App() {
         className="fixed -left-[9999px] -top-[9999px] w-1 h-1 opacity-0 pointer-events-none"
       />
 
-      {/* YouTube Music Sync Modal */}
+      {/* YouTube Music Sync & Account Connect Modal */}
       <YouTubeSyncModal
         isOpen={isSyncModalOpen}
         isSyncing={isSyncing}
@@ -958,6 +960,17 @@ export function App() {
         onClose={() => setIsSyncModalOpen(false)}
         onSyncPlaylist={handleSyncPlaylist}
         onAddSingleVideo={handleAddSingleVideo}
+        onOpenCharts={() => {
+          setIsSyncModalOpen(false);
+          setIsChartsModalOpen(true);
+        }}
+        onImportCustomPlaylist={(newPl) => {
+          setPlaylists((prev) => [newPl, ...prev]);
+          setActivePlaylistId(newPl.id);
+          setActiveTrackIndex(0);
+          setIsPlaying(true);
+          setViewToast(`Imported "${newPl.title}" ✦`);
+        }}
       />
 
       {/* Song Search & Press to Disc Modal */}
@@ -1011,6 +1024,17 @@ export function App() {
         }}
       />
 
+      {/* Live YouTube Music Charts Modal */}
+      <YouTubeChartsModal
+        isOpen={isChartsModalOpen}
+        isSyncing={isSyncing}
+        syncStatus={syncStatus}
+        onClose={() => setIsChartsModalOpen(false)}
+        onSelectChart={(playlistId, chartTitle) => {
+          handleSyncPlaylist(playlistId, chartTitle);
+        }}
+      />
+
       {/* Right-Side Minimal Hamburger Menu Drawer */}
       <MenuDrawer
         isOpen={isMenuOpen}
@@ -1032,6 +1056,7 @@ export function App() {
           setIsSyncModalOpen(true);
         }}
         onOpenSearch={() => setIsSearchModalOpen(true)}
+        onOpenCharts={() => setIsChartsModalOpen(true)}
         onCreateNewCrate={handleCreateNewCrate}
         onShareCrate={handleShareCrate}
         onToggleMiniVideo={() => setShowMiniVideo((v) => !v)}

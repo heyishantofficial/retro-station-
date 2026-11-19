@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Disc3, Play, Volume2, VolumeX, Tv, Trash2, Plus, Search, Share2, FolderPlus } from 'lucide-react';
+import { X, Disc3, Play, Volume2, VolumeX, Tv, Trash2, Plus, Search, Share2, FolderPlus, TrendingUp } from 'lucide-react';
 import { Playlist, Track } from '../types';
 import { YouTubeIcon } from './YouTubeIcon';
 import { sound } from '../utils/soundEffects';
@@ -24,6 +24,7 @@ interface MenuDrawerProps {
   onDeleteTrack?: (index: number) => void;
   onOpenSyncModal: () => void;
   onOpenSearch?: () => void;
+  onOpenCharts?: () => void;
   onCreateNewCrate?: () => void;
   onShareCrate?: () => void;
   onToggleMiniVideo: () => void;
@@ -61,6 +62,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
   onDeleteTrack,
   onOpenSyncModal,
   onOpenSearch,
+  onOpenCharts,
   onCreateNewCrate,
   onShareCrate,
   onToggleMiniVideo,
@@ -125,7 +127,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
               </button>
             </div>
 
-            {/* Quick Action Buttons: Search Songs · New Crate · Sync YouTube */}
+            {/* Quick Action Buttons: Search Songs · New Crate · Live Charts · Sync YouTube */}
             <div className="px-5 py-3 border-b border-black/10 space-y-2">
               <div className="grid grid-cols-2 gap-2">
                 <button
@@ -152,20 +154,31 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                 </button>
               </div>
 
-              <button
-                onClick={() => {
-                  sound.playClick();
-                  onClose();
-                  onOpenSyncModal();
-                }}
-                className="w-full py-2 px-3 rounded-xl bg-black/[0.04] hover:bg-black/[0.07] text-neutral-700 text-[10.5px] font-medium tracking-wide flex items-center justify-between transition-all"
-              >
-                <span className="flex items-center gap-2">
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => {
+                    sound.playClick();
+                    onClose();
+                    onOpenCharts?.();
+                  }}
+                  className="py-2 px-3 rounded-xl bg-gradient-to-r from-purple-950 to-indigo-950 hover:from-purple-900 hover:to-indigo-900 text-white text-[10.5px] font-medium tracking-wide flex items-center justify-center gap-1.5 transition-all active:scale-[0.98] shadow-sm border border-purple-800/40"
+                >
+                  <TrendingUp className="w-3.5 h-3.5 text-purple-300" />
+                  <span>Live Charts</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    sound.playClick();
+                    onClose();
+                    onOpenSyncModal();
+                  }}
+                  className="py-2 px-3 rounded-xl bg-black/[0.04] hover:bg-black/[0.07] text-neutral-700 text-[10.5px] font-medium tracking-wide flex items-center justify-center gap-1.5 transition-all"
+                >
                   <YouTubeIcon className="w-3.5 h-3.5 text-red-500" />
-                  <span>Sync YouTube Playlist Link</span>
-                </span>
-                <Plus className="w-3.5 h-3.5 text-neutral-400" />
-              </button>
+                  <span>Sync Link</span>
+                </button>
+              </div>
             </div>
 
             {/* 3-Tab Segmented Switcher: Views / Tracks / Playlists */}
