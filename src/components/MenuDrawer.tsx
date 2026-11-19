@@ -153,11 +153,10 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                 <div className="flex items-center gap-2">
                   <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white/[0.06] border border-white/[0.08]">
                     <span
-                      className={`w-1.5 h-1.5 rounded-full ${
-                        isPlaying
-                          ? 'bg-emerald-400 animate-pulse ring-2 ring-emerald-400/30'
-                          : 'bg-neutral-500'
-                      }`}
+                      className={`w-1.5 h-1.5 rounded-full ${isPlaying
+                        ? 'bg-emerald-400 animate-pulse ring-2 ring-emerald-400/30'
+                        : 'bg-neutral-500'
+                        }`}
                     />
                     <span className="text-[10px] font-medium tracking-wider uppercase text-neutral-300">
                       {isPlaying ? 'Playing' : 'Standby'}
@@ -321,20 +320,18 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                     sound.playClick();
                     setActiveTab('tracks');
                   }}
-                  className={`py-1.5 px-2 rounded-lg text-xs font-medium transition-all flex items-center justify-center gap-1.5 ${
-                    activeTab === 'tracks'
-                      ? 'bg-white text-neutral-950 font-semibold shadow-md'
-                      : 'text-neutral-400 hover:text-white'
-                  }`}
+                  className={`py-1.5 px-2 rounded-lg text-xs font-medium transition-all flex items-center justify-center gap-1.5 ${activeTab === 'tracks'
+                    ? 'bg-white text-neutral-950 font-semibold shadow-md'
+                    : 'text-neutral-400 hover:text-white'
+                    }`}
                 >
                   <Music className="w-3 h-3" />
                   <span>Tracks</span>
                   <span
-                    className={`text-[10px] px-1.5 py-0.2 rounded-full ${
-                      activeTab === 'tracks'
-                        ? 'bg-neutral-900/10 text-neutral-950'
-                        : 'bg-white/10 text-neutral-400'
-                    }`}
+                    className={`text-[10px] px-1.5 py-0.2 rounded-full ${activeTab === 'tracks'
+                      ? 'bg-neutral-900/10 text-neutral-950'
+                      : 'bg-white/10 text-neutral-400'
+                      }`}
                   >
                     {trackCount}
                   </span>
@@ -346,20 +343,18 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                     sound.playClick();
                     setActiveTab('crates');
                   }}
-                  className={`py-1.5 px-2 rounded-lg text-xs font-medium transition-all flex items-center justify-center gap-1.5 ${
-                    activeTab === 'crates'
-                      ? 'bg-white text-neutral-950 font-semibold shadow-md'
-                      : 'text-neutral-400 hover:text-white'
-                  }`}
+                  className={`py-1.5 px-2 rounded-lg text-xs font-medium transition-all flex items-center justify-center gap-1.5 ${activeTab === 'crates'
+                    ? 'bg-white text-neutral-950 font-semibold shadow-md'
+                    : 'text-neutral-400 hover:text-white'
+                    }`}
                 >
                   <Disc3 className="w-3 h-3" />
                   <span>Crates</span>
                   <span
-                    className={`text-[10px] px-1.5 py-0.2 rounded-full ${
-                      activeTab === 'crates'
-                        ? 'bg-neutral-900/10 text-neutral-950'
-                        : 'bg-white/10 text-neutral-400'
-                    }`}
+                    className={`text-[10px] px-1.5 py-0.2 rounded-full ${activeTab === 'crates'
+                      ? 'bg-neutral-900/10 text-neutral-950'
+                      : 'bg-white/10 text-neutral-400'
+                      }`}
                   >
                     {playlists.length}
                   </span>
@@ -371,20 +366,18 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                     sound.playClick();
                     setActiveTab('themes');
                   }}
-                  className={`py-1.5 px-2 rounded-lg text-xs font-medium transition-all flex items-center justify-center gap-1.5 ${
-                    activeTab === 'themes'
-                      ? 'bg-white text-neutral-950 font-semibold shadow-md'
-                      : 'text-neutral-400 hover:text-white'
-                  }`}
+                  className={`py-1.5 px-2 rounded-lg text-xs font-medium transition-all flex items-center justify-center gap-1.5 ${activeTab === 'themes'
+                    ? 'bg-white text-neutral-950 font-semibold shadow-md'
+                    : 'text-neutral-400 hover:text-white'
+                    }`}
                 >
                   <Layers className="w-3 h-3" />
                   <span>Themes</span>
                   <span
-                    className={`text-[10px] px-1.5 py-0.2 rounded-full ${
-                      activeTab === 'themes'
-                        ? 'bg-neutral-900/10 text-neutral-950'
-                        : 'bg-white/10 text-neutral-400'
-                    }`}
+                    className={`text-[10px] px-1.5 py-0.2 rounded-full ${activeTab === 'themes'
+                      ? 'bg-neutral-900/10 text-neutral-950'
+                      : 'bg-white/10 text-neutral-400'
+                      }`}
                   >
                     {VIEW_CATALOG.length}
                   </span>
@@ -462,11 +455,10 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                       return (
                         <div
                           key={track.id}
-                          className={`w-full flex items-center gap-3 px-2.5 py-2 rounded-xl transition-all group ${
-                            isActive
-                              ? 'bg-white/[0.12] border border-white/15 text-white shadow-sm'
-                              : 'hover:bg-white/[0.05] border border-transparent text-neutral-300'
-                          }`}
+                          className={`w-full flex items-center gap-3 px-2.5 py-2 rounded-xl transition-all group ${isActive
+                            ? 'bg-white/[0.12] border border-white/15 text-white shadow-sm'
+                            : 'hover:bg-white/[0.05] border border-transparent text-neutral-300'
+                            }`}
                         >
                           {/* Track Trigger & Art */}
                           <button
@@ -548,9 +540,8 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                             <div className="w-5 flex items-center justify-center">
                               {isActive ? (
                                 <Disc3
-                                  className={`w-3.5 h-3.5 text-emerald-400 ${
-                                    isPlaying ? 'animate-spin' : 'opacity-70'
-                                  }`}
+                                  className={`w-3.5 h-3.5 text-emerald-400 ${isPlaying ? 'animate-spin' : 'opacity-70'
+                                    }`}
                                 />
                               ) : (
                                 <span className="w-1.5 h-1.5 rounded-full bg-white/15 group-hover:hidden" />
@@ -621,11 +612,10 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                       return (
                         <div
                           key={pl.id}
-                          className={`w-full p-3 rounded-xl transition-all border ${
-                            isActive
-                              ? 'bg-white/[0.12] border-white/20 text-white shadow-sm'
-                              : 'bg-white/[0.03] hover:bg-white/[0.07] border-white/[0.06] text-neutral-300'
-                          }`}
+                          className={`w-full p-3 rounded-xl transition-all border ${isActive
+                            ? 'bg-white/[0.12] border-white/20 text-white shadow-sm'
+                            : 'bg-white/[0.03] hover:bg-white/[0.07] border-white/[0.06] text-neutral-300'
+                            }`}
                         >
                           <div className="flex items-center justify-between">
                             <button
@@ -639,9 +629,8 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                             >
                               <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center shrink-0 border border-white/10">
                                 <Disc3
-                                  className={`w-4 h-4 ${
-                                    isActive ? 'text-emerald-400' : 'text-neutral-400'
-                                  }`}
+                                  className={`w-4 h-4 ${isActive ? 'text-emerald-400' : 'text-neutral-400'
+                                    }`}
                                 />
                               </div>
 
@@ -732,11 +721,10 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                             sound.playSwitch();
                             onChangeViewMode(item.id);
                           }}
-                          className={`p-3 rounded-xl text-left border transition-all active:scale-[0.98] flex flex-col justify-between gap-2.5 relative overflow-hidden group ${
-                            isActive
-                              ? 'bg-white/[0.14] border-white/30 text-white shadow-md ring-1 ring-white/20'
-                              : 'bg-white/[0.04] hover:bg-white/[0.08] border-white/[0.08] text-neutral-300'
-                          }`}
+                          className={`p-3 rounded-xl text-left border transition-all active:scale-[0.98] flex flex-col justify-between gap-2.5 relative overflow-hidden group ${isActive
+                            ? 'bg-white/[0.14] border-white/30 text-white shadow-md ring-1 ring-white/20'
+                            : 'bg-white/[0.04] hover:bg-white/[0.08] border-white/[0.08] text-neutral-300'
+                            }`}
                         >
                           <div className="flex items-center justify-between w-full relative z-10">
                             {/* Visual Preview Swatch */}
@@ -780,11 +768,10 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                 <button
                   type="button"
                   onClick={toggleSfx}
-                  className={`py-2 px-3 rounded-xl text-xs font-medium flex items-center justify-center gap-2 border transition-all active:scale-95 ${
-                    sfxEnabled
-                      ? 'bg-white/[0.12] border-white/20 text-white shadow-sm'
-                      : 'bg-transparent border-white/[0.08] text-neutral-400'
-                  }`}
+                  className={`py-2 px-3 rounded-xl text-xs font-medium flex items-center justify-center gap-2 border transition-all active:scale-95 ${sfxEnabled
+                    ? 'bg-white/[0.12] border-white/20 text-white shadow-sm'
+                    : 'bg-transparent border-white/[0.08] text-neutral-400'
+                    }`}
                 >
                   {sfxEnabled ? (
                     <Volume2 className="w-3.5 h-3.5 text-emerald-400" />
@@ -800,11 +787,10 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                     sound.playClick();
                     onToggleMiniVideo();
                   }}
-                  className={`py-2 px-3 rounded-xl text-xs font-medium flex items-center justify-center gap-2 border transition-all active:scale-95 ${
-                    showMiniVideo
-                      ? 'bg-white text-neutral-950 font-semibold shadow-sm'
-                      : 'bg-white/[0.06] border-white/[0.08] text-neutral-300 hover:text-white'
-                  }`}
+                  className={`py-2 px-3 rounded-xl text-xs font-medium flex items-center justify-center gap-2 border transition-all active:scale-95 ${showMiniVideo
+                    ? 'bg-white text-neutral-950 font-semibold shadow-sm'
+                    : 'bg-white/[0.06] border-white/[0.08] text-neutral-300 hover:text-white'
+                    }`}
                 >
                   <Tv className="w-3.5 h-3.5" />
                   <span>Video {showMiniVideo ? 'On' : 'Off'}</span>
