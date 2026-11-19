@@ -295,32 +295,33 @@ export const SongSearchModal: React.FC<SongSearchModalProps> = ({
             className="relative w-full max-w-xl max-h-[88dvh] rounded-3xl bg-[#f6f6f4]/95 dark:bg-[#1a1a1a]/95 backdrop-blur-2xl border border-black/10 dark:border-white/10 shadow-[0_32px_80px_rgba(0,0,0,0.35)] flex flex-col overflow-visible text-neutral-900 dark:text-neutral-100"
           >
             {/* Header with Search Input */}
-            <div className="px-5 pt-5 pb-3 border-b border-black/[0.08] dark:border-white/[0.08] relative z-20">
+            <div className="px-5 pt-5 pb-3 border-b border-black/[0.08] dark:border-white/[0.08] relative z-20 font-sans">
               <div className="flex items-center justify-between gap-3 mb-3">
-                <div className="flex items-center gap-2 min-w-0">
-                  <div className="w-7 h-7 rounded-full bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 flex items-center justify-center shadow">
-                    <Music2 className="w-3.5 h-3.5" />
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500/20 via-blue-500/10 to-transparent border border-emerald-500/25 text-emerald-500 dark:text-emerald-400 flex items-center justify-center shrink-0 shadow-sm">
+                    <Music2 className="w-4 h-4" />
                   </div>
                   <div className="min-w-0">
-                    <h2 className="font-serif text-base sm:text-lg font-semibold uppercase tracking-wide leading-none truncate">
-                      Search & Press to Disc
+                    <h2 className="text-base font-semibold tracking-tight text-neutral-900 dark:text-white leading-tight truncate">
+                      Search & Add Songs
                     </h2>
 
                     {/* HOVER DROPDOWN FOR TARGET CRATE / PLAYLIST */}
                     <div
-                      className="relative inline-block mt-0.5"
+                      className="relative inline-block mt-1"
                       onMouseEnter={handleMouseEnterCrateBadge}
                       onMouseLeave={handleMouseLeaveCrateBadge}
                     >
                       <button
                         type="button"
                         onClick={() => setIsHoverDropdownOpen((o) => !o)}
-                        className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-black/[0.05] dark:bg-white/[0.08] hover:bg-black/[0.1] dark:hover:bg-white/[0.15] text-[10.5px] font-mono text-neutral-600 dark:text-neutral-300 transition-colors cursor-pointer"
-                        title="Hover or click to switch target playlist"
+                        className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-black/[0.04] dark:bg-white/[0.08] hover:bg-black/[0.07] dark:hover:bg-white/[0.14] border border-black/[0.06] dark:border-white/[0.08] text-xs text-neutral-600 dark:text-neutral-300 transition-all cursor-pointer group"
+                        title="Click to switch target playlist"
                       >
-                        <span className="text-neutral-400">Target Crate:</span>
-                        <span className="font-semibold text-neutral-900 dark:text-white truncate max-w-[190px]">
-                          {activeCrate?.title || 'Create a playlist'}
+                        <Disc3 className="w-3 h-3 text-emerald-500 dark:text-emerald-400 shrink-0" />
+                        <span className="text-neutral-400 dark:text-neutral-400 font-normal">Target Crate:</span>
+                        <span className="font-medium text-neutral-900 dark:text-white truncate max-w-[200px]">
+                          {activeCrate?.title || 'Select a playlist'}
                         </span>
                         <ChevronDown
                           className={`w-3 h-3 text-neutral-400 transition-transform ${
@@ -337,13 +338,13 @@ export const SongSearchModal: React.FC<SongSearchModalProps> = ({
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: 4, scale: 0.97 }}
                             transition={{ duration: 0.15 }}
-                            className="absolute left-0 top-full mt-1.5 z-50 w-72 sm:w-80 rounded-2xl bg-white/95 dark:bg-[#202020]/95 backdrop-blur-2xl border border-black/10 dark:border-white/10 shadow-[0_16px_40px_rgba(0,0,0,0.25)] p-2.5 flex flex-col gap-1.5"
+                            className="absolute left-0 top-full mt-1.5 z-50 w-72 sm:w-80 rounded-2xl bg-white/95 dark:bg-[#1c1c20]/95 backdrop-blur-2xl border border-black/10 dark:border-white/10 shadow-[0_16px_40px_rgba(0,0,0,0.3)] p-2.5 flex flex-col gap-1.5 font-sans"
                           >
-                            <div className="px-2 py-1 border-b border-black/[0.06] dark:border-white/[0.06] flex items-center justify-between">
-                              <span className="font-mono text-[9px] uppercase tracking-wider text-neutral-400">
+                            <div className="px-2 py-1 border-b border-black/[0.06] dark:border-white/[0.08] flex items-center justify-between">
+                              <span className="text-xs font-semibold text-neutral-900 dark:text-white">
                                 Select Target Crate
                               </span>
-                              <span className="font-mono text-[9px] text-neutral-400">
+                              <span className="text-[11px] text-neutral-400">
                                 {playlists.length} available
                               </span>
                             </div>
@@ -360,20 +361,20 @@ export const SongSearchModal: React.FC<SongSearchModalProps> = ({
                                   value={newCrateName}
                                   onChange={(e) => setNewCrateName(e.target.value)}
                                   placeholder="New playlist name…"
-                                  className="w-full px-2.5 py-1.5 rounded-lg bg-white dark:bg-black/40 border border-black/15 dark:border-white/15 text-[12px] focus:outline-none focus:ring-1 focus:ring-neutral-900"
+                                  className="w-full px-2.5 py-1.5 rounded-lg bg-white dark:bg-black/40 border border-black/15 dark:border-white/15 text-xs text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-neutral-900"
                                 />
                                 <div className="flex items-center justify-end gap-1.5">
                                   <button
                                     type="button"
                                     onClick={() => setIsCreatingNewCrate(false)}
-                                    className="px-2 py-0.5 text-[10px] font-mono text-neutral-500 hover:text-neutral-800"
+                                    className="px-2 py-0.5 text-xs text-neutral-400 hover:text-neutral-800 dark:hover:text-white transition-colors"
                                   >
                                     Cancel
                                   </button>
                                   <button
                                     type="submit"
                                     disabled={!newCrateName.trim()}
-                                    className="px-2.5 py-1 rounded-md bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-mono text-[10px] font-medium disabled:opacity-40"
+                                    className="px-2.5 py-1 rounded-md bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-medium disabled:opacity-40"
                                   >
                                     Create
                                   </button>
@@ -383,10 +384,10 @@ export const SongSearchModal: React.FC<SongSearchModalProps> = ({
                               <button
                                 type="button"
                                 onClick={() => setIsCreatingNewCrate(true)}
-                                className="w-full py-1.5 px-2.5 rounded-xl border border-dashed border-neutral-300 dark:border-neutral-600 hover:border-neutral-900 dark:hover:border-white text-neutral-700 dark:text-neutral-200 text-[11px] font-mono uppercase tracking-wider flex items-center justify-center gap-1.5 hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors"
+                                className="w-full py-2 px-3 rounded-xl border border-dashed border-neutral-300 dark:border-white/20 hover:border-neutral-500 dark:hover:border-white/40 text-neutral-700 dark:text-neutral-200 text-xs font-medium flex items-center justify-center gap-1.5 hover:bg-black/[0.02] dark:hover:bg-white/[0.04] transition-colors"
                               >
-                                <FolderPlus className="w-3.5 h-3.5" />
-                                <span>+ Create New Playlist</span>
+                                <FolderPlus className="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400" />
+                                <span>Create New Playlist</span>
                               </button>
                             )}
 
@@ -401,22 +402,24 @@ export const SongSearchModal: React.FC<SongSearchModalProps> = ({
                                     onClick={() => handleSelectCrate(pl)}
                                     className={`w-full px-2.5 py-2 rounded-xl text-left transition-colors flex items-center justify-between ${
                                       isSelected
-                                        ? 'bg-neutral-900 text-white font-medium'
+                                        ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 font-medium'
                                         : 'hover:bg-black/[0.05] dark:hover:bg-white/[0.07] text-neutral-800 dark:text-neutral-200'
                                     }`}
                                   >
                                     <div className="min-w-0 pr-2">
-                                      <div className="text-[12px] truncate">{pl.title}</div>
+                                      <div className="text-xs truncate">{pl.title}</div>
                                       <div
-                                        className={`font-mono text-[8.5px] truncate mt-0.5 ${
-                                          isSelected ? 'text-neutral-300' : 'text-neutral-400'
+                                        className={`text-[11px] truncate mt-0.5 ${
+                                          isSelected
+                                            ? 'text-neutral-300 dark:text-neutral-600'
+                                            : 'text-neutral-400'
                                         }`}
                                       >
-                                        {pl.tracks.length} tracks • {pl.category}
+                                        {pl.tracks.length} tracks • {pl.category || 'Collection'}
                                       </div>
                                     </div>
                                     {isSelected ? (
-                                      <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                                      <Check className="w-3.5 h-3.5 text-emerald-400 dark:text-emerald-600 shrink-0" />
                                     ) : (
                                       <ListMusic className="w-3.5 h-3.5 text-neutral-400 shrink-0 opacity-40" />
                                     )}
@@ -434,7 +437,7 @@ export const SongSearchModal: React.FC<SongSearchModalProps> = ({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200 hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                  className="w-8 h-8 rounded-full bg-black/[0.04] dark:bg-white/[0.06] hover:bg-black/[0.08] dark:hover:bg-white/[0.12] flex items-center justify-center text-neutral-400 hover:text-neutral-800 dark:hover:text-white transition-colors border border-black/[0.06] dark:border-white/[0.08]"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -491,10 +494,10 @@ export const SongSearchModal: React.FC<SongSearchModalProps> = ({
                   <span className="font-mono text-xs tracking-wider">Searching catalogue…</span>
                 </div>
               ) : results.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12 text-center text-neutral-400">
+                <div className="flex flex-col items-center justify-center py-12 text-center text-neutral-400 font-sans">
                   <Music2 className="w-8 h-8 stroke-1 mb-2 text-neutral-300 dark:text-neutral-600" />
-                  <p className="font-serif text-base text-neutral-700 dark:text-neutral-300">No tracks found</p>
-                  <p className="font-mono text-[11px] text-neutral-400 mt-1 max-w-xs">
+                  <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">No tracks found</p>
+                  <p className="text-xs text-neutral-400 mt-1 max-w-xs">
                     Try searching an artist, song title, or paste a direct YouTube video link.
                   </p>
                 </div>
@@ -568,7 +571,7 @@ export const SongSearchModal: React.FC<SongSearchModalProps> = ({
                             <button
                               type="button"
                               onClick={() => handleAddSong(item)}
-                              className={`px-3 py-1.5 rounded-xl flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-wider font-medium transition-all active:scale-95 cursor-pointer ${
+                              className={`px-3 py-1.5 rounded-xl flex items-center gap-1.5 font-sans text-xs font-semibold transition-all active:scale-95 cursor-pointer ${
                                 addedFeedback
                                   ? 'bg-emerald-500 text-white shadow-sm'
                                   : isAlreadyInActive

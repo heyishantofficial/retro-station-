@@ -90,7 +90,10 @@ export function App() {
 
   // UI overlays
   const [isSyncModalOpen, setIsSyncModalOpen] = useState<boolean>(false);
-  const [isSearchModalOpen, setIsSearchModalOpen] = useState<boolean>(false);
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return new URLSearchParams(window.location.search).has('search');
+  });
   const [isChartsModalOpen, setIsChartsModalOpen] = useState<boolean>(false);
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
