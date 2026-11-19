@@ -355,8 +355,11 @@ export function App() {
     setActiveTrackIndex(0);
     setCurrentTime(0);
     const pl = playlists.find((p) => p.id === id);
-    if (pl && pl.tracks[0]) {
-      setDuration(pl.tracks[0].duration);
+    if (pl) {
+      if (pl.tracks[0]) {
+        setDuration(pl.tracks[0].duration);
+      }
+      setViewToast(`Crate: "${pl.title}" (${pl.tracks.length} discs) ✦`);
     }
   };
 
@@ -610,9 +613,14 @@ export function App() {
           isDark={activeViewMeta.isDark}
           isFullscreen={isFullscreen}
           isHudHidden={!chromeHudVisible && isFullscreen && !isMenuOpen}
+          playlists={playlists}
+          activePlaylistId={activePlaylistId}
           onToggleFullscreen={toggleFullscreen}
           onToggleMenu={() => setIsMenuOpen((o) => !o)}
           onOpenSearch={() => setIsSearchModalOpen(true)}
+          onSelectPlaylist={handleSelectPlaylist}
+          onCreatePlaylist={handleCreateNewCrate}
+          onOpenCharts={() => setIsChartsModalOpen(true)}
         />
       </div>
 
