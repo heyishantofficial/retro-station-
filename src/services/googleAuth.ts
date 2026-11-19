@@ -67,6 +67,86 @@ export function loadGoogleGISScript(): Promise<void> {
   });
 }
 
+export interface GoogleUserInfo {
+  sub: string;
+  name: string;
+  email: string;
+  picture: string;
+}
+
+export async function fetchGoogleUserInfo(accessToken: string): Promise<GoogleUserInfo | null> {
+  try {
+    const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Initiates Google OAuth 2.0 flow to sign the user in with their Google account.
+ */
+export async function loginWithGoogleAccount(
+  onSuccess: (user: { id: string; name: string; email: string; avatarUrl: string; token?: string }) => void,
+  onError?: (err: string) => void,
+  customClientId?: string
+): Promise<void> {
+  await loadGoogleGISScript();
+  if (!window.google?.accounts?.oauth2) {
+    onError?.('Google Identity Services not ready');
+    return;
+  }
+
+  const clientId = (customClientId || localStorage.getItem(GOOGLE_CLIENT_ID_STORAGE) || DEFAULT_GOOGLE_CLIENT_ID).trim();
+  if (customClientId) {
+    try {
+      localStorage.setItem(GOOGLE_CLIENT_ID_STORAGE, customClientId);
+    } catch {
+      // ignore
+    }
+  }
+
+  const client = window.google.accounts.oauth2.initTokenClient({
+    client_id: clientId,
+    scope: 'email profile openid https://www.googleapis.com/auth/youtube.readonly',
+    callback: async (resp) => {
+      if (resp.error || !resp.access_token) {
+        onError?.(resp.error || 'Google authentication failed');
+        return;
+      }
+      try {
+        sessionStorage.setItem(GOOGLE_TOKEN_STORAGE, resp.access_token);
+      } catch {
+        // ignore
+      }
+
+      const info = await fetchGoogleUserInfo(resp.access_token);
+      if (info) {
+        onSuccess({
+          id: info.sub,
+          name: info.name,
+          email: info.email,
+          avatarUrl: info.picture,
+          token: resp.access_token,
+        });
+      } else {
+        onSuccess({
+          id: `google_${Date.now()}`,
+          name: 'Google User',
+          email: 'google.listener@gmail.com',
+          avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&q=80',
+          token: resp.access_token,
+        });
+      }
+    },
+  });
+
+  client.requestAccessToken();
+}
+
 /**
  * Initiates Google / YouTube OAuth 2.0 flow for read-only library access.
  */

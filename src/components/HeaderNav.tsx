@@ -9,10 +9,12 @@ import {
   Check,
   FolderPlus,
   TrendingUp,
+  User,
 } from 'lucide-react';
 import { sound } from '../utils/soundEffects';
 import { useViewportMode } from '../hooks/useViewportMode';
 import { Playlist } from '../types';
+import { UserProfile } from '../services/cloudSync';
 
 interface HeaderNavProps {
   isMenuOpen: boolean;
@@ -22,9 +24,11 @@ interface HeaderNavProps {
   isHudHidden?: boolean;
   playlists?: Playlist[];
   activePlaylistId?: string;
+  user?: UserProfile | null;
   onToggleFullscreen: () => void;
   onToggleMenu: () => void;
   onOpenSearch: () => void;
+  onOpenAuthModal?: () => void;
   onSelectPlaylist?: (playlistId: string) => void;
   onCreatePlaylist?: (title: string) => void;
   onOpenCharts?: () => void;
@@ -38,9 +42,11 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
   isHudHidden = false,
   playlists = [],
   activePlaylistId,
+  user,
   onToggleFullscreen,
   onToggleMenu,
   onOpenSearch,
+  onOpenAuthModal,
   onSelectPlaylist,
   onCreatePlaylist,
   onOpenCharts,
@@ -297,7 +303,39 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
           </div>
         )}
 
-        {/* 3. True Borderless Fullscreen Toggle */}
+        {/* 3. User Google Account & Cloud Sync Trigger */}
+        {!isMenuOpen && (
+          <button
+            type="button"
+            onClick={() => {
+              sound.playClick();
+              setIsPlaylistDropdownOpen(false);
+              onOpenAuthModal?.();
+            }}
+            aria-label={user ? `Account: ${user.name}` : 'Sign in with Google'}
+            title={
+              user
+                ? `${user.name} (${user.email}) — Cloud Backup Active`
+                : 'Sign in with Google — Keep Playlists Synced'
+            }
+            className={`touch-target relative w-9 h-9 rounded-full flex items-center justify-center ${hoverBg} active:scale-90 transition-all cursor-pointer`}
+          >
+            {user?.avatarUrl ? (
+              <div className="relative w-6 h-6 rounded-full overflow-hidden border border-black/15 dark:border-white/20 shadow-sm">
+                <img
+                  src={user.avatarUrl}
+                  alt={user.name}
+                  className="w-full h-full object-cover"
+                />
+                <span className="absolute bottom-0 right-0 w-1.5 h-1.5 rounded-full bg-emerald-400 ring-1 ring-black" />
+              </div>
+            ) : (
+              <User className={`w-4 h-4 ${iconColor}`} strokeWidth={1.75} />
+            )}
+          </button>
+        )}
+
+        {/* 4. True Borderless Fullscreen Toggle */}
         {!isMenuOpen && !isIOS && (
           <button
             type="button"

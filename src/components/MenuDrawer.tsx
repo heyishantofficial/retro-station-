@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Disc3, Play, Volume2, VolumeX, Tv, Trash2, Plus, Search, Share2, FolderPlus, TrendingUp } from 'lucide-react';
+import { X, Disc3, Play, Volume2, VolumeX, Tv, Trash2, Plus, Search, Share2, FolderPlus, TrendingUp, Cloud } from 'lucide-react';
 import { Playlist, Track } from '../types';
 import { YouTubeIcon } from './YouTubeIcon';
 import { sound } from '../utils/soundEffects';
 import { VIEW_CATALOG, PlayerViewMode } from '../utils/viewCatalog';
+import { UserProfile } from '../services/cloudSync';
 
 export type { PlayerViewMode };
 
@@ -16,6 +17,7 @@ interface MenuDrawerProps {
   activeTrackIndex: number;
   isPlaying: boolean;
   showMiniVideo: boolean;
+  user?: UserProfile | null;
   onClose: () => void;
   onChangeViewMode: (mode: PlayerViewMode) => void;
   onSelectPlaylist: (id: string) => void;
@@ -25,6 +27,7 @@ interface MenuDrawerProps {
   onOpenSyncModal: () => void;
   onOpenSearch?: () => void;
   onOpenCharts?: () => void;
+  onOpenAuthModal?: () => void;
   onCreateNewCrate?: () => void;
   onShareCrate?: () => void;
   onToggleMiniVideo: () => void;
@@ -54,6 +57,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
   activeTrackIndex,
   isPlaying,
   showMiniVideo,
+  user,
   onClose,
   onChangeViewMode,
   onSelectPlaylist,
@@ -63,6 +67,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
   onOpenSyncModal,
   onOpenSearch,
   onOpenCharts,
+  onOpenAuthModal,
   onCreateNewCrate,
   onShareCrate,
   onToggleMiniVideo,
@@ -124,6 +129,50 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                 className="p-1.5 rounded-full text-neutral-500 hover:text-black hover:bg-black/5 transition-colors"
               >
                 <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Google Cloud Account Status Bar */}
+            <div className="px-5 pt-3 pb-1">
+              <button
+                type="button"
+                onClick={() => {
+                  sound.playClick();
+                  onClose();
+                  onOpenAuthModal?.();
+                }}
+                className="w-full p-2.5 rounded-2xl bg-black/[0.04] hover:bg-black/[0.07] border border-black/[0.08] flex items-center justify-between text-left transition-all active:scale-[0.98] cursor-pointer"
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  {user?.avatarUrl ? (
+                    <img
+                      src={user.avatarUrl}
+                      alt={user.name}
+                      className="w-8 h-8 rounded-full border border-black/10 object-cover shrink-0"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-blue-500/10 text-blue-600 flex items-center justify-center shrink-0">
+                      <Cloud className="w-4 h-4" />
+                    </div>
+                  )}
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-sans text-xs font-semibold text-neutral-900 truncate">
+                        {user ? user.name : 'Sign in with Google'}
+                      </span>
+                      {user && (
+                        <span className="shrink-0 w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                      )}
+                    </div>
+                    <span className="font-mono text-[9.5px] text-neutral-500 block truncate">
+                      {user ? 'Playlists backed up to cloud' : 'Keep playlists safe across devices'}
+                    </span>
+                  </div>
+                </div>
+
+                <span className="font-mono text-[9.5px] uppercase tracking-wider text-blue-600 font-semibold shrink-0">
+                  {user ? 'Account ↗' : 'Sign In ↗'}
+                </span>
               </button>
             </div>
 

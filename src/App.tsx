@@ -21,10 +21,18 @@ import { YouTubeSyncModal } from './components/YouTubeSyncModal';
 import { MenuDrawer } from './components/MenuDrawer';
 import { SongSearchModal } from './components/SongSearchModal';
 import { YouTubeChartsModal } from './components/YouTubeChartsModal';
+import { AuthModal } from './components/AuthModal';
 import { YouTubeIcon } from './components/YouTubeIcon';
 import { useYouTubePlayer } from './hooks/useYouTubePlayer';
 import { buildTrackFromYouTubeId, fetchVideoMetadata } from './services/youtube';
 import { convertSearchResultToTrack } from './services/musicSearch';
+import {
+  UserProfile,
+  getStoredUser,
+  setStoredUser,
+  fetchUserCloudPlaylists,
+  saveUserCloudPlaylists,
+} from './services/cloudSync';
 import { STARTER_CRATES } from './data/starterCrates';
 import { VIEW_CATALOG, PlayerViewMode, SharedViewProps } from './utils/viewCatalog';
 import { sound } from './utils/soundEffects';
@@ -76,6 +84,10 @@ export function App() {
   const [isShuffle, setIsShuffle] = useState<boolean>(false);
   const [repeatMode, setRepeatMode] = useState<'off' | 'all' | 'one'>('all');
 
+  // User Account & Cloud Sync
+  const [user, setUser] = useState<UserProfile | null>(() => getStoredUser());
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
+
   // UI overlays
   const [isSyncModalOpen, setIsSyncModalOpen] = useState<boolean>(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState<boolean>(false);
@@ -108,6 +120,31 @@ export function App() {
       // ignore
     }
   }, [playlists]);
+
+  // Cloud Sync: Restore playlists when logged in with Google
+  useEffect(() => {
+    if (!user) return;
+    let isCancelled = false;
+
+    fetchUserCloudPlaylists(user.id).then((cloudPls) => {
+      if (isCancelled || !cloudPls || cloudPls.length === 0) return;
+      setPlaylists(cloudPls);
+      setViewToast(`Restored ${cloudPls.length} crates from Google Cloud! ☁️`);
+    });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [user]);
+
+  // Cloud Sync: Automatically back up playlists to Google Cloud on change
+  useEffect(() => {
+    if (!user) return;
+    const timer = window.setTimeout(() => {
+      saveUserCloudPlaylists(user.id, playlists);
+    }, 700);
+    return () => window.clearTimeout(timer);
+  }, [playlists, user]);
 
   useEffect(() => {
     try {
@@ -382,6 +419,45 @@ export function App() {
     });
   };
 
+  const handleLoginSuccess = async (profile: UserProfile, _hasCloudPlaylists: boolean) => {
+    setUser(profile);
+    setStoredUser(profile);
+    setIsAuthModalOpen(false);
+    setViewToast(`Signed in as ${profile.name} · Cloud Sync Active ☁️`);
+
+    try {
+      const cloudPls = await fetchUserCloudPlaylists(profile.id);
+      if (cloudPls && cloudPls.length > 0) {
+        setPlaylists(cloudPls);
+        setActivePlaylistId(cloudPls[0].id);
+        setActiveTrackIndex(0);
+        setViewToast(`Restored ${cloudPls.length} crates from your Google Cloud! ☁️`);
+      } else {
+        await saveUserCloudPlaylists(profile.id, playlists);
+        setViewToast(`Backed up ${playlists.length} crates to your Google Account! ☁️`);
+      }
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    setStoredUser(null);
+    setIsAuthModalOpen(false);
+    setViewToast('Signed out of Google Account');
+  };
+
+  const handleManualSync = async () => {
+    if (!user) return;
+    const ok = await saveUserCloudPlaylists(user.id, playlists);
+    if (ok) {
+      setViewToast(`Backed up ${playlists.length} crates to Google Cloud ☁️`);
+    } else {
+      setViewToast('Could not reach cloud backend. Local backup preserved.');
+    }
+  };
+
   const handleSyncPlaylist = async (playlistId: string, customTitle?: string) => {
     setIsSyncing(true);
     setSyncError(null);
@@ -615,9 +691,11 @@ export function App() {
           isHudHidden={!chromeHudVisible && isFullscreen && !isMenuOpen}
           playlists={playlists}
           activePlaylistId={activePlaylistId}
+          user={user}
           onToggleFullscreen={toggleFullscreen}
           onToggleMenu={() => setIsMenuOpen((o) => !o)}
           onOpenSearch={() => setIsSearchModalOpen(true)}
+          onOpenAuthModal={() => setIsAuthModalOpen(true)}
           onSelectPlaylist={handleSelectPlaylist}
           onCreatePlaylist={handleCreateNewCrate}
           onOpenCharts={() => setIsChartsModalOpen(true)}
@@ -1062,6 +1140,17 @@ export function App() {
         }}
       />
 
+      {/* Google Account & Cloud Sync Modal */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        user={user}
+        playlistsCount={playlists.length}
+        onClose={() => setIsAuthModalOpen(false)}
+        onLoginSuccess={handleLoginSuccess}
+        onLogout={handleLogout}
+        onManualSync={handleManualSync}
+      />
+
       {/* Right-Side Minimal Hamburger Menu Drawer */}
       <MenuDrawer
         isOpen={isMenuOpen}
@@ -1071,6 +1160,7 @@ export function App() {
         activeTrackIndex={activeTrackIndex}
         isPlaying={isPlaying}
         showMiniVideo={showMiniVideo}
+        user={user}
         onClose={() => setIsMenuOpen(false)}
         onChangeViewMode={switchViewWithToast}
         onSelectPlaylist={handleSelectPlaylist}
@@ -1084,6 +1174,7 @@ export function App() {
         }}
         onOpenSearch={() => setIsSearchModalOpen(true)}
         onOpenCharts={() => setIsChartsModalOpen(true)}
+        onOpenAuthModal={() => setIsAuthModalOpen(true)}
         onCreateNewCrate={handleCreateNewCrate}
         onShareCrate={handleShareCrate}
         onToggleMiniVideo={() => setShowMiniVideo((v) => !v)}

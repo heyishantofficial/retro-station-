@@ -5,6 +5,10 @@ node_modules/
 dist/
 dist-ssr/
 
+# Cloud Database dynamic data
+server/data/
+cloud_db.json
+
 # Local environment files
 .env
 .env.*
