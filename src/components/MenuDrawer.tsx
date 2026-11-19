@@ -18,6 +18,8 @@ import {
   Layers,
   Music,
   ArrowRight,
+  Trophy,
+  Globe2,
 } from 'lucide-react';
 import { Playlist, Track } from '../types';
 import { YouTubeIcon } from './YouTubeIcon';
@@ -48,6 +50,7 @@ interface MenuDrawerProps {
   onOpenAuthModal?: () => void;
   onCreateNewCrate?: () => void;
   onShareCrate?: () => void;
+  onOpenCommunityLeaderboard?: (preselectedPlaylistId?: string) => void;
   onToggleMiniVideo: () => void;
 }
 
@@ -95,6 +98,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
   onOpenAuthModal,
   onCreateNewCrate,
   onShareCrate,
+  onOpenCommunityLeaderboard,
   onToggleMiniVideo,
 }) => {
   const [activeTab, setActiveTab] = useState<'tracks' | 'crates' | 'themes'>(() => {
@@ -563,6 +567,35 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
               {/* TAB 2: CRATES / PLAYLISTS */}
               {activeTab === 'crates' && (
                 <div className="space-y-2 pb-4">
+                  {/* Community Crates Leaderboard Banner */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      sound.playClick();
+                      onClose();
+                      onOpenCommunityLeaderboard?.();
+                    }}
+                    className="w-full p-2.5 rounded-xl bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-transparent hover:from-amber-500/25 hover:via-orange-500/15 border border-amber-500/30 flex items-center justify-between text-left transition-all active:scale-[0.98] group"
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
+                        <Trophy className="w-3.5 h-3.5" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-xs font-semibold text-white flex items-center gap-1.5">
+                          <span>Community Leaderboard</span>
+                          <span className="px-1.5 py-0.2 rounded-full bg-amber-400 text-neutral-950 text-[9px] font-bold">
+                            HOT
+                          </span>
+                        </div>
+                        <div className="text-[10.5px] text-neutral-400 truncate">
+                          Explore most saved crates by collectors
+                        </div>
+                      </div>
+                    </div>
+                    <ArrowRight className="w-3.5 h-3.5 text-neutral-400 group-hover:text-amber-300 group-hover:translate-x-0.5 transition-all shrink-0" />
+                  </button>
+
                   {/* Create New Crate Quick Trigger */}
                   <button
                     type="button"
@@ -636,10 +669,24 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   sound.playClick();
+                                  onClose();
+                                  onOpenCommunityLeaderboard?.(pl.id);
+                                }}
+                                title="Publish crate to Community Leaderboard"
+                                className="p-1.5 rounded-lg text-neutral-400 hover:text-amber-400 hover:bg-amber-500/10 transition-colors cursor-pointer"
+                              >
+                                <Globe2 className="w-3.5 h-3.5" />
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  sound.playClick();
                                   onShareCrate?.();
                                 }}
                                 title="Share crate link"
-                                className="p-1.5 rounded-lg text-neutral-400 hover:text-white hover:bg-white/10 transition-colors"
+                                className="p-1.5 rounded-lg text-neutral-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
                               >
                                 <Share2 className="w-3.5 h-3.5" />
                               </button>

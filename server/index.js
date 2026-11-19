@@ -120,6 +120,85 @@ app.put('/api/user/playlists', (req, res) => {
   });
 });
 
+// Get Public Ranked Community Playlists
+app.get('/api/community/playlists', (req, res) => {
+  const db = ensureDatabase();
+  const list = Object.values(db.community || {}).sort(
+    (a, b) => (b.saveCount || 0) - (a.saveCount || 0)
+  );
+  return res.json({ success: true, playlists: list });
+});
+
+// Publish a Playlist to Community
+app.post('/api/community/publish', (req, res) => {
+  const { playlist, creatorName, creatorAvatar, creatorId } = req.body;
+  if (!playlist || !playlist.title) {
+    return res.status(400).json({ error: 'Playlist object with title is required' });
+  }
+
+  const db = ensureDatabase();
+  if (!db.community) db.community = {};
+
+  const playlistId = playlist.id || `pub_${Date.now()}`;
+  const existing = db.community[playlistId];
+
+  const publishedItem = {
+    id: playlistId,
+    title: playlist.title,
+    subtitle: playlist.subtitle || `${playlist.tracks?.length || 0} tracks`,
+    category: playlist.category || 'Community Crate',
+    creatorName: creatorName || 'Anonymous Collector',
+    creatorAvatar:
+      creatorAvatar ||
+      `https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(
+        creatorName || playlistId
+      )}`,
+    creatorId: creatorId || undefined,
+    tracks: playlist.tracks || [],
+    saveCount: existing ? existing.saveCount : 1,
+    isPublic: true,
+    createdAt: existing ? existing.createdAt : new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+
+  db.community[playlistId] = publishedItem;
+  saveDatabase(db);
+
+  return res.json({ success: true, playlist: publishedItem });
+});
+
+// Save Community Playlist (increments saves)
+app.post('/api/community/save', (req, res) => {
+  const { playlistId } = req.body;
+  if (!playlistId) {
+    return res.status(400).json({ error: 'playlistId is required' });
+  }
+
+  const db = ensureDatabase();
+  if (!db.community) db.community = {};
+
+  const item = db.community[playlistId];
+  if (!item) {
+    return res.status(404).json({ error: 'Community playlist not found' });
+  }
+
+  item.saveCount = (item.saveCount || 0) + 1;
+  item.updatedAt = new Date().toISOString();
+  saveDatabase(db);
+
+  return res.json({ success: true, newSaveCount: item.saveCount });
+});
+
+// Get Single Community Playlist by ID
+app.get('/api/community/playlist/:id', (req, res) => {
+  const db = ensureDatabase();
+  const item = db.community?.[req.params.id];
+  if (!item) {
+    return res.status(404).json({ error: 'Playlist not found' });
+  }
+  return res.json({ success: true, playlist: item });
+});
+
 app.listen(PORT, () => {
   console.log(`[Retro Station Backend] Listening on http://localhost:${PORT}`);
 });

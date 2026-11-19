@@ -10,6 +10,7 @@ import {
   FolderPlus,
   TrendingUp,
   User,
+  Trophy,
 } from 'lucide-react';
 import { sound } from '../utils/soundEffects';
 import { useViewportMode } from '../hooks/useViewportMode';
@@ -32,6 +33,7 @@ interface HeaderNavProps {
   onSelectPlaylist?: (playlistId: string) => void;
   onCreatePlaylist?: (title: string) => void;
   onOpenCharts?: () => void;
+  onOpenCommunityLeaderboard?: () => void;
 }
 
 export const HeaderNav: React.FC<HeaderNavProps> = ({
@@ -50,6 +52,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
   onSelectPlaylist,
   onCreatePlaylist,
   onOpenCharts,
+  onOpenCommunityLeaderboard,
 }) => {
   const { isIOS } = useViewportMode();
   const [isPlaylistDropdownOpen, setIsPlaylistDropdownOpen] = useState(false);
@@ -295,6 +298,22 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
                           <span>Charts</span>
                         </button>
                       )}
+
+                      {onOpenCommunityLeaderboard && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            sound.playClick();
+                            setIsPlaylistDropdownOpen(false);
+                            onOpenCommunityLeaderboard();
+                          }}
+                          className="py-1.5 px-2.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/20 text-[10.5px] font-mono uppercase tracking-wider flex items-center gap-1 transition-colors cursor-pointer"
+                          title="Open Community Leaderboard (Most Saved Crates)"
+                        >
+                          <Trophy className="w-3.5 h-3.5" />
+                          <span>Leaderboard</span>
+                        </button>
+                      )}
                     </div>
                   )}
                 </motion.div>
@@ -303,7 +322,24 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
           </div>
         )}
 
-        {/* 3. User Google Account & Cloud Sync Trigger */}
+        {/* 3. Community Crates Leaderboard Trigger */}
+        {!isMenuOpen && onOpenCommunityLeaderboard && (
+          <button
+            type="button"
+            onClick={() => {
+              sound.playClick();
+              setIsPlaylistDropdownOpen(false);
+              onOpenCommunityLeaderboard();
+            }}
+            aria-label="Community Crates Leaderboard"
+            title="Community Leaderboard — Most Saved Playlists"
+            className={`touch-target w-9 h-9 rounded-full flex items-center justify-center ${iconColor} ${hoverBg} active:scale-90 transition-all cursor-pointer`}
+          >
+            <Trophy className="w-4 h-4" strokeWidth={1.75} />
+          </button>
+        )}
+
+        {/* 4. User Google Account & Cloud Sync Trigger */}
         {!isMenuOpen && (
           <button
             type="button"

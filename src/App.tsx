@@ -21,6 +21,7 @@ import { YouTubeSyncModal } from './components/YouTubeSyncModal';
 import { MenuDrawer } from './components/MenuDrawer';
 import { SongSearchModal } from './components/SongSearchModal';
 import { YouTubeChartsModal } from './components/YouTubeChartsModal';
+import { CommunityLeaderboardModal } from './components/CommunityLeaderboardModal';
 import { AuthModal } from './components/AuthModal';
 import { YouTubeIcon } from './components/YouTubeIcon';
 import { useYouTubePlayer } from './hooks/useYouTubePlayer';
@@ -95,6 +96,16 @@ export function App() {
     return new URLSearchParams(window.location.search).has('search');
   });
   const [isChartsModalOpen, setIsChartsModalOpen] = useState<boolean>(false);
+  const [isCommunityModalOpen, setIsCommunityModalOpen] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return (
+      new URLSearchParams(window.location.search).has('leaderboard') ||
+      new URLSearchParams(window.location.search).has('crate')
+    );
+  });
+  const [communityCrateToPublishId, setCommunityCrateToPublishId] = useState<string | undefined>(
+    undefined
+  );
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
     return new URLSearchParams(window.location.search).has('menu');
@@ -651,6 +662,43 @@ export function App() {
     }
   }, [activePlaylist]);
 
+  const handleImportCommunityPlaylist = useCallback(
+    (communityPlaylist: Playlist) => {
+      setPlaylists((prev) => {
+        const exists = prev.some(
+          (p) =>
+            p.id === communityPlaylist.id ||
+            p.title.toLowerCase() === communityPlaylist.title.toLowerCase()
+        );
+        if (exists) return prev;
+        const updated = [communityPlaylist, ...prev];
+        if (user) {
+          saveUserCloudPlaylists(user.id, updated).catch(() => {});
+        }
+        return updated;
+      });
+
+      setActivePlaylistId(communityPlaylist.id);
+      setActiveTrackIndex(0);
+      setViewToast(`Saved "${communityPlaylist.title}" to Crates`);
+    },
+    [user]
+  );
+
+  const handlePlayCommunityPlaylist = useCallback(
+    (communityPlaylist: Playlist) => {
+      handleImportCommunityPlaylist(communityPlaylist);
+      setIsPlaying(true);
+      setViewToast(`Playing "${communityPlaylist.title}"`);
+    },
+    [handleImportCommunityPlaylist]
+  );
+
+  const handleOpenCommunityLeaderboard = useCallback((preselectedId?: string) => {
+    setCommunityCrateToPublishId(preselectedId);
+    setIsCommunityModalOpen(true);
+  }, []);
+
   const isSyncedYouTube = playlists.length > 0;
 
   const sharedViewProps: SharedViewProps = {
@@ -705,6 +753,7 @@ export function App() {
           onSelectPlaylist={handleSelectPlaylist}
           onCreatePlaylist={handleCreateNewCrate}
           onOpenCharts={() => setIsChartsModalOpen(true)}
+          onOpenCommunityLeaderboard={() => handleOpenCommunityLeaderboard()}
         />
       </div>
 
@@ -1183,7 +1232,22 @@ export function App() {
         onOpenAuthModal={() => setIsAuthModalOpen(true)}
         onCreateNewCrate={handleCreateNewCrate}
         onShareCrate={handleShareCrate}
+        onOpenCommunityLeaderboard={handleOpenCommunityLeaderboard}
         onToggleMiniVideo={() => setShowMiniVideo((v) => !v)}
+      />
+
+      {/* Community Leaderboard & Crate Sharing Modal */}
+      <CommunityLeaderboardModal
+        isOpen={isCommunityModalOpen}
+        userPlaylists={playlists}
+        activePlaylistId={communityCrateToPublishId || activePlaylistId}
+        user={user}
+        onClose={() => {
+          setIsCommunityModalOpen(false);
+          setCommunityCrateToPublishId(undefined);
+        }}
+        onImportCommunityPlaylist={handleImportCommunityPlaylist}
+        onPlayCommunityPlaylist={handlePlayCommunityPlaylist}
       />
     </div>
   );
