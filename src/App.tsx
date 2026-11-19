@@ -23,7 +23,7 @@ import { SongSearchModal } from './components/SongSearchModal';
 import { YouTubeIcon } from './components/YouTubeIcon';
 import { useYouTubePlayer } from './hooks/useYouTubePlayer';
 import { buildTrackFromYouTubeId, fetchVideoMetadata } from './services/youtube';
-import { convertSearchResultToTrack, SearchSongResult } from './services/musicSearch';
+import { convertSearchResultToTrack } from './services/musicSearch';
 import { STARTER_CRATES } from './data/starterCrates';
 import { VIEW_CATALOG, PlayerViewMode, SharedViewProps } from './utils/viewCatalog';
 import { sound } from './utils/soundEffects';
@@ -484,49 +484,6 @@ export function App() {
       setIsSyncing(false);
     }
   };
-
-  const handleAddSong = useCallback(
-    (result: SearchSongResult) => {
-      let targetPlaylistId = activePlaylistId;
-      let targetPl = activePlaylist;
-
-      if (!targetPl) {
-        const newId = `custom-crate-${Date.now()}`;
-        const newPl: Playlist = {
-          id: newId,
-          title: 'My Custom Mixtape',
-          subtitle: '1 disc • Custom Crate',
-          category: 'Custom Crate',
-          tracks: [],
-        };
-        setPlaylists((prev) => [newPl, ...prev]);
-        setActivePlaylistId(newId);
-        targetPlaylistId = newId;
-        targetPl = newPl;
-      }
-
-      const newTrack = convertSearchResultToTrack(
-        result,
-        targetPl.tracks.length,
-        targetPl.title
-      );
-
-      setPlaylists((prev) =>
-        prev.map((pl) => {
-          if (pl.id !== targetPlaylistId) return pl;
-          const nextTracks = [...pl.tracks, newTrack];
-          return {
-            ...pl,
-            subtitle: `${nextTracks.length} discs • ${pl.category}`,
-            tracks: nextTracks,
-          };
-        })
-      );
-
-      setViewToast(`Pressed "${result.title}" onto disc! ✦`);
-    },
-    [activePlaylistId, activePlaylist]
-  );
 
   const handleCreateNewCrate = useCallback(() => {
     const customCount = playlists.filter((p) => p.category === 'Custom Crate').length;
@@ -1006,9 +963,52 @@ export function App() {
       {/* Song Search & Press to Disc Modal */}
       <SongSearchModal
         isOpen={isSearchModalOpen}
-        activePlaylistTitle={activePlaylist?.title || 'Active Crate'}
+        playlists={playlists}
+        activePlaylistId={activePlaylistId}
         onClose={() => setIsSearchModalOpen(false)}
-        onAddSong={handleAddSong}
+        onSelectPlaylist={(id) => {
+          setActivePlaylistId(id);
+          setActiveTrackIndex(0);
+        }}
+        onAddSongToPlaylist={(result, playlistId) => {
+          const targetPl = playlists.find((p) => p.id === playlistId) || activePlaylist;
+          if (!targetPl) return;
+
+          const newTrack = convertSearchResultToTrack(
+            result,
+            targetPl.tracks.length,
+            targetPl.title
+          );
+
+          setPlaylists((prev) =>
+            prev.map((pl) => {
+              if (pl.id !== targetPl.id) return pl;
+              const nextTracks = [...pl.tracks, newTrack];
+              return {
+                ...pl,
+                subtitle: `${nextTracks.length} discs • ${pl.category}`,
+                tracks: nextTracks,
+              };
+            })
+          );
+
+          setViewToast(`Pressed "${result.title}" onto "${targetPl.title}"! ✦`);
+        }}
+        onCreatePlaylist={(title) => {
+          const newId = `custom-crate-${Date.now()}`;
+          const newPl: Playlist = {
+            id: newId,
+            title,
+            subtitle: '0 discs • Custom Crate',
+            category: 'Custom Crate',
+            tracks: [],
+          };
+          setPlaylists((prev) => [newPl, ...prev]);
+          setActivePlaylistId(newId);
+          setActiveTrackIndex(0);
+          setViewToast(`Created "${title}" ✦`);
+          return newId;
+        }}
       />
 
       {/* Right-Side Minimal Hamburger Menu Drawer */}
