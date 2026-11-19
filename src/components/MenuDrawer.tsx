@@ -97,7 +97,15 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
   onShareCrate,
   onToggleMiniVideo,
 }) => {
-  const [activeTab, setActiveTab] = useState<'tracks' | 'crates' | 'themes'>('tracks');
+  const [activeTab, setActiveTab] = useState<'tracks' | 'crates' | 'themes'>(() => {
+    if (typeof window !== 'undefined') {
+      const tabParam = new URLSearchParams(window.location.search).get('tab');
+      if (tabParam === 'crates' || tabParam === 'themes' || tabParam === 'tracks') {
+        return tabParam;
+      }
+    }
+    return 'tracks';
+  });
   const [sfxEnabled, setSfxEnabled] = useState(sound.enabled);
 
   const toggleSfx = () => {
@@ -503,7 +511,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                                   {track.title}
                                 </div>
                               </div>
-                              <div className="text-[11px] text-neutral-400 truncate mt-0.5">
+                              <div className="text-[11.5px] text-neutral-300 truncate mt-0.5">
                                 {track.artist}
                               </div>
                             </div>
@@ -512,7 +520,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                           {/* Right Controls: Duration, Play & Delete */}
                           <div className="flex items-center gap-1.5 shrink-0">
                             {durationStr && (
-                              <span className="text-[10px] font-mono tabular-nums text-neutral-400 group-hover:hidden">
+                              <span className="text-[11px] font-mono tabular-nums text-neutral-300 group-hover:hidden">
                                 {durationStr}
                               </span>
                             )}
@@ -615,7 +623,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                                     </span>
                                   )}
                                 </div>
-                                <div className="text-[11px] text-neutral-400 truncate mt-0.5">
+                                <div className="text-[11.5px] text-neutral-300 truncate mt-0.5">
                                   {pl.tracks.length} {pl.tracks.length === 1 ? 'track' : 'tracks'} •{' '}
                                   {pl.category || 'Collection'}
                                 </div>
@@ -707,7 +715,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                             <div className="text-xs font-semibold text-white truncate leading-tight">
                               {item.name}
                             </div>
-                            <div className="text-[10px] text-neutral-400 truncate mt-0.5">
+                            <div className="text-[11px] text-neutral-300 truncate mt-0.5">
                               {item.subtitle}
                             </div>
                           </div>

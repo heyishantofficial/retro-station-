@@ -92,7 +92,10 @@ export function App() {
   const [isSyncModalOpen, setIsSyncModalOpen] = useState<boolean>(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState<boolean>(false);
   const [isChartsModalOpen, setIsChartsModalOpen] = useState<boolean>(false);
-  const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
+  const [isMenuOpen, setIsMenuOpen] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return new URLSearchParams(window.location.search).has('menu');
+  });
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [chromeHudVisible, setChromeHudVisible] = useState<boolean>(true);
   const [showMiniVideo, setShowMiniVideo] = useState<boolean>(false);
