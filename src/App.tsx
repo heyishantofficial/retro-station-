@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Playlist, Track } from './types';
 import { HeaderNav } from './components/HeaderNav';
@@ -23,8 +23,11 @@ import { SongSearchModal } from './components/SongSearchModal';
 import { YouTubeChartsModal } from './components/YouTubeChartsModal';
 import { AuthModal } from './components/AuthModal';
 import { SharingIsCaringModal } from './components/SharingIsCaringModal';
+import { ShortcutsModal } from './components/ShortcutsModal';
 import { YouTubeIcon } from './components/YouTubeIcon';
 import { useYouTubePlayer } from './hooks/useYouTubePlayer';
+import { useSleepTimer } from './hooks/useSleepTimer';
+import { vinylCrackle } from './utils/vinylCrackle';
 import { buildTrackFromYouTubeId, fetchVideoMetadata } from './services/youtube';
 import { convertSearchResultToTrack } from './services/musicSearch';
 import {
@@ -122,6 +125,40 @@ export function App() {
   const [syncError, setSyncError] = useState<string | null>(null);
   const [playerNotice, setPlayerNotice] = useState<string | null>(null);
   const [arcScrubPreview, setArcScrubPreview] = useState<number | null>(null);
+
+  // Analog Warmth & Sleep Timer & Shortcuts
+  const [isShortcutsOpen, setIsShortcutsOpen] = useState<boolean>(false);
+  const [vinylCrackleLevel, setVinylCrackleLevel] = useState<'off' | 'subtle' | 'warm'>('off');
+  const baseVolumeRef = useRef<number>(80);
+
+  const sleepTimer = useSleepTimer({
+    onStop: () => {
+      setIsPlaying(false);
+      setViewToast('Drifted to sleep. Goodnight 🌙');
+    },
+    onVolumeFade: (ratio) => {
+      setVolume(Math.round(baseVolumeRef.current * ratio));
+    },
+    onTimerComplete: () => {
+      setVolume(baseVolumeRef.current);
+      setViewToast('Sleep timer finished. Rest well 💤');
+    },
+  });
+
+  // Sync Vinyl Crackle with playback state
+  useEffect(() => {
+    if (isPlaying) {
+      vinylCrackle.setLevel(vinylCrackleLevel);
+    } else {
+      vinylCrackle.setLevel('off');
+    }
+  }, [isPlaying, vinylCrackleLevel]);
+
+  useEffect(() => {
+    return () => {
+      vinylCrackle.setLevel('off');
+    };
+  }, []);
 
   const activePlaylist =
     playlists.find((p) => p.id === activePlaylistId) || playlists[0] || null;
@@ -305,47 +342,7 @@ export function App() {
     }
   }, []);
 
-  // Global Shortcuts: 'F' borderless fullscreen, 'V' cycles views, '1'-'9' & '0' jump directly to views
-  useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement).tagName)) return;
-      if (e.metaKey || e.ctrlKey || e.altKey) return;
 
-      if (e.key === '/' || e.key.toLowerCase() === 's') {
-        e.preventDefault();
-        sound.playClick();
-        setIsSearchModalOpen((o) => !o);
-        return;
-      }
-
-      if (e.key.toLowerCase() === 'f') {
-        e.preventDefault();
-        sound.playClick();
-        toggleFullscreen();
-        return;
-      }
-
-      if (e.key.toLowerCase() === 'v') {
-        sound.playSwitch();
-        const idx = VIEW_CATALOG.findIndex((v) => v.id === viewMode);
-        const nextIdx = e.shiftKey
-          ? (idx - 1 + VIEW_CATALOG.length) % VIEW_CATALOG.length
-          : (idx + 1) % VIEW_CATALOG.length;
-        switchViewWithToast(VIEW_CATALOG[nextIdx].id);
-        return;
-      }
-
-      if (/^[0-9]$/.test(e.key)) {
-        const slot = e.key === '0' ? 9 : Number(e.key) - 1;
-        if (VIEW_CATALOG[slot]) {
-          sound.playSwitch();
-          switchViewWithToast(VIEW_CATALOG[slot].id);
-        }
-      }
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [viewMode, switchViewWithToast, toggleFullscreen]);
 
   const handleSelectTrack = useCallback(
     (idx: number) => {
@@ -407,6 +404,129 @@ export function App() {
     onCurrentTimeUpdate: setCurrentTime,
     onErrorNotice: setPlayerNotice,
   });
+
+  // Global Keyboard Shortcuts (Space, K/→, J/←, M, S//, V, F, H, T, ?, Esc, 0-9)
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      // Ignore if user is typing in any text box or input field
+      if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement).tagName)) return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+
+      // Play / Pause toggle
+      if (e.code === 'Space' || e.key === ' ') {
+        e.preventDefault();
+        sound.playClick();
+        setIsPlaying((p) => !p);
+        return;
+      }
+
+      // Next Disc / Track
+      if (e.key.toLowerCase() === 'k' || e.key === 'ArrowRight') {
+        e.preventDefault();
+        sound.playClick();
+        handleNext();
+        return;
+      }
+
+      // Previous Track
+      if (e.key.toLowerCase() === 'j' || e.key === 'ArrowLeft') {
+        e.preventDefault();
+        sound.playClick();
+        handlePrev();
+        return;
+      }
+
+      // Mute / Unmute
+      if (e.key.toLowerCase() === 'm') {
+        e.preventDefault();
+        sound.playClick();
+        setIsMuted((m) => !m);
+        return;
+      }
+
+      // Search & Add Songs
+      if (e.key === '/' || e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        sound.playClick();
+        setIsSearchModalOpen((o) => !o);
+        return;
+      }
+
+      // Fullscreen
+      if (e.key.toLowerCase() === 'f') {
+        e.preventDefault();
+        sound.playClick();
+        toggleFullscreen();
+        return;
+      }
+
+      // Cycle Theme Views
+      if (e.key.toLowerCase() === 'v') {
+        sound.playSwitch();
+        const idx = VIEW_CATALOG.findIndex((v) => v.id === viewMode);
+        const nextIdx = e.shiftKey
+          ? (idx - 1 + VIEW_CATALOG.length) % VIEW_CATALOG.length
+          : (idx + 1) % VIEW_CATALOG.length;
+        switchViewWithToast(VIEW_CATALOG[nextIdx].id);
+        return;
+      }
+
+      // Sharing is Caring Lounge
+      if (e.key.toLowerCase() === 'h') {
+        e.preventDefault();
+        sound.playClick();
+        setIsSharingIsCaringOpen((o) => !o);
+        return;
+      }
+
+      // Community Leaderboard
+      if (e.key.toLowerCase() === 't') {
+        e.preventDefault();
+        sound.playClick();
+        setIsCommunityModalOpen((o) => !o);
+        return;
+      }
+
+      // Keyboard Shortcuts HUD
+      if (e.key === '?') {
+        e.preventDefault();
+        sound.playClick();
+        setIsShortcutsOpen((o) => !o);
+        return;
+      }
+
+      // Close all modals / drawers
+      if (e.key === 'Escape') {
+        setIsMenuOpen(false);
+        setIsSearchModalOpen(false);
+        setIsChartsModalOpen(false);
+        setIsCommunityModalOpen(false);
+        setIsSharingIsCaringOpen(false);
+        setIsShortcutsOpen(false);
+        setIsSyncModalOpen(false);
+        setIsAuthModalOpen(false);
+        return;
+      }
+
+      // View modes directly via 0-9
+      if (/^[0-9]$/.test(e.key)) {
+        const slot = e.key === '0' ? 9 : Number(e.key) - 1;
+        if (VIEW_CATALOG[slot]) {
+          sound.playSwitch();
+          switchViewWithToast(VIEW_CATALOG[slot].id);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [
+    viewMode,
+    switchViewWithToast,
+    toggleFullscreen,
+    handleNext,
+    handlePrev,
+  ]);
 
   const handleSelectPlaylist = (id: string) => {
     setActivePlaylistId(id);
@@ -746,6 +866,7 @@ export function App() {
     onSeek: seekTo,
     onSetPlaybackRate: setPlaybackRate,
     onVolumeChange: (v) => {
+      baseVolumeRef.current = v;
       setVolume(v);
       if (v > 0 && isMuted) setIsMuted(false);
     },
@@ -1249,6 +1370,27 @@ export function App() {
         userPlaylists={playlists}
         activePlaylistId={activePlaylistId}
         currentTrack={activeTrack}
+        onPlaySongAtTimestamp={(song, timestampSeconds) => {
+          const existingIdx = activePlaylist?.tracks.findIndex(
+            (t) => t.youtubeId === song.youtubeId || t.id === song.id
+          );
+          if (existingIdx !== undefined && existingIdx >= 0) {
+            setActiveTrackIndex(existingIdx);
+            setIsPlaying(true);
+            setTimeout(() => seekTo(timestampSeconds), 450);
+          } else if (activePlaylist) {
+            const updatedTracks = [song, ...activePlaylist.tracks];
+            setPlaylists((prev) =>
+              prev.map((pl) => (pl.id === activePlaylist.id ? { ...pl, tracks: updatedTracks } : pl))
+            );
+            setActiveTrackIndex(0);
+            setIsPlaying(true);
+            setTimeout(() => seekTo(timestampSeconds), 450);
+          }
+          const m = Math.floor(timestampSeconds / 60);
+          const s = timestampSeconds % 60;
+          setViewToast(`Jumping to ${m}:${s < 10 ? '0' : ''}${s} on "${song.title}"! ✦`);
+        }}
         onPlaySong={(song) => {
           const existingIdx = activePlaylist?.tracks.findIndex(
             (t) => t.youtubeId === song.youtubeId || t.id === song.id
@@ -1320,6 +1462,30 @@ export function App() {
         onShareCrate={handleShareCrate}
         onOpenCommunityLeaderboard={handleOpenCommunityLeaderboard}
         onToggleMiniVideo={() => setShowMiniVideo((v) => !v)}
+        vinylCrackleLevel={vinylCrackleLevel}
+        onChangeVinylCrackle={(lvl) => {
+          setVinylCrackleLevel(lvl);
+          setViewToast(
+            lvl === 'off'
+              ? 'Vinyl Crackle: Off'
+              : lvl === 'subtle'
+              ? 'Vinyl Crackle: Subtle (Analog Warmth) 📻'
+              : 'Vinyl Crackle: Warm (Dust & Groove) 📻'
+          );
+        }}
+        sleepTimerRemaining={sleepTimer.formattedRemaining}
+        sleepTimerMinutes={sleepTimer.selectedMinutes}
+        onSetSleepTimer={(mins) => {
+          sleepTimer.setTimer(mins);
+          setViewToast(mins ? `Drift Off Timer set for ${mins} mins 🌙` : 'Sleep timer turned off');
+        }}
+        onOpenShortcuts={() => setIsShortcutsOpen(true)}
+      />
+
+      {/* Keyboard Shortcuts HUD Dialog */}
+      <ShortcutsModal
+        isOpen={isShortcutsOpen}
+        onClose={() => setIsShortcutsOpen(false)}
       />
     </div>
   );

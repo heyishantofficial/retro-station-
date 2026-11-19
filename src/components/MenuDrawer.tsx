@@ -22,6 +22,8 @@ import {
   Pencil,
   Check,
   ChevronDown,
+  Moon,
+  Keyboard,
 } from 'lucide-react';
 import { Playlist, Track } from '../types';
 import { YouTubeIcon } from './YouTubeIcon';
@@ -57,6 +59,12 @@ interface MenuDrawerProps {
   onShareCrate?: () => void;
   onOpenCommunityLeaderboard?: (preselectedPlaylistId?: string) => void;
   onToggleMiniVideo: () => void;
+  vinylCrackleLevel?: 'off' | 'subtle' | 'warm';
+  onChangeVinylCrackle?: (level: 'off' | 'subtle' | 'warm') => void;
+  sleepTimerRemaining?: string | null;
+  sleepTimerMinutes?: number | null;
+  onSetSleepTimer?: (minutes: number | null) => void;
+  onOpenShortcuts?: () => void;
 }
 
 const VIEW_GRADIENTS: Record<PlayerViewMode, string> = {
@@ -108,6 +116,12 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
   onShareCrate,
   onOpenCommunityLeaderboard,
   onToggleMiniVideo,
+  vinylCrackleLevel = 'off',
+  onChangeVinylCrackle,
+  sleepTimerRemaining,
+  sleepTimerMinutes,
+  onSetSleepTimer,
+  onOpenShortcuts,
 }) => {
   const [activeTab, setActiveTab] = useState<'tracks' | 'themes'>(() => {
     if (typeof window !== 'undefined') {
@@ -1029,9 +1043,88 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                 </button>
               </div>
 
+              {/* Analog Warmth & Sleep Timer Row */}
+              <div className="grid grid-cols-2 gap-2.5">
+                {/* Vinyl Crackle */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    sound.playSwitch();
+                    const next =
+                      vinylCrackleLevel === 'off'
+                        ? 'subtle'
+                        : vinylCrackleLevel === 'subtle'
+                        ? 'warm'
+                        : 'off';
+                    onChangeVinylCrackle?.(next);
+                  }}
+                  className={`py-2 px-3 rounded-2xl text-xs font-semibold flex items-center justify-between border transition-all active:scale-95 cursor-pointer ${
+                    vinylCrackleLevel && vinylCrackleLevel !== 'off'
+                      ? 'liquid-glass-active text-amber-200 border-amber-400/40 shadow-[0_0_12px_rgba(245,158,11,0.25)]'
+                      : 'liquid-glass-interactive text-white/70 hover:text-white'
+                  }`}
+                  title="Cycle Vinyl Crackle: Off / Subtle / Warm"
+                >
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <Disc3
+                      className={`w-3.5 h-3.5 shrink-0 ${
+                        vinylCrackleLevel !== 'off' ? 'text-amber-400 animate-spin' : ''
+                      }`}
+                    />
+                    <span className="truncate">Crackle</span>
+                  </div>
+                  <span className="text-[10px] font-mono uppercase font-bold px-1.5 py-0.5 rounded-full bg-white/10 text-white shrink-0">
+                    {vinylCrackleLevel || 'off'}
+                  </span>
+                </button>
+
+                {/* Sleep Timer */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    sound.playClick();
+                    const nextMinutes =
+                      !sleepTimerMinutes
+                        ? 15
+                        : sleepTimerMinutes === 15
+                        ? 30
+                        : sleepTimerMinutes === 30
+                        ? 45
+                        : sleepTimerMinutes === 45
+                        ? 60
+                        : null;
+                    onSetSleepTimer?.(nextMinutes);
+                  }}
+                  className={`py-2 px-3 rounded-2xl text-xs font-semibold flex items-center justify-between border transition-all active:scale-95 cursor-pointer ${
+                    sleepTimerRemaining
+                      ? 'liquid-glass-active text-indigo-200 border-indigo-400/40 shadow-[0_0_12px_rgba(99,102,241,0.25)]'
+                      : 'liquid-glass-interactive text-white/70 hover:text-white'
+                  }`}
+                  title="Cycle Sleep Timer: Off / 15m / 30m / 45m / 60m"
+                >
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <Moon className="w-3.5 h-3.5 shrink-0 text-indigo-300" />
+                    <span className="truncate">Sleep</span>
+                  </div>
+                  <span className="text-[10px] font-mono uppercase font-bold px-1.5 py-0.5 rounded-full bg-white/10 text-white shrink-0">
+                    {sleepTimerRemaining || (sleepTimerMinutes ? `${sleepTimerMinutes}m` : 'Off')}
+                  </span>
+                </button>
+              </div>
+
               <div className="flex items-center justify-between text-xs text-white/60 pt-1 font-medium">
                 <span>V Themes • Space Play</span>
-                <span>Esc Close</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    sound.playClick();
+                    onOpenShortcuts?.();
+                  }}
+                  className="hover:text-white underline underline-offset-2 cursor-pointer flex items-center gap-1"
+                >
+                  <Keyboard className="w-3 h-3" />
+                  <span>? Shortcuts</span>
+                </button>
               </div>
             </div>
           </motion.aside>

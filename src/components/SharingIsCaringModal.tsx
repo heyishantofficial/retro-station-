@@ -29,6 +29,7 @@ import {
 import { searchSongs, SearchSongResult } from '../services/musicSearch';
 import { Playlist, Track } from '../types';
 import { sound } from '../utils/soundEffects';
+import { ShareCardModal } from './ShareCardModal';
 
 interface SharingIsCaringModalProps {
   isOpen: boolean;
@@ -38,6 +39,7 @@ interface SharingIsCaringModalProps {
   activePlaylistId: string;
   currentTrack?: Track;
   onPlaySong: (track: Track) => void;
+  onPlaySongAtTimestamp?: (track: Track, timestampSeconds: number) => void;
   onPlayPlaylist: (playlist: Playlist) => void;
   onImportPlaylist: (playlist: Playlist) => void;
   onAddSongToPlaylist: (track: Track, playlistId: string) => void;
@@ -45,6 +47,34 @@ interface SharingIsCaringModalProps {
 }
 
 const MAX_NOTE_LENGTH = 200;
+
+const DAILY_PROMPTS = [
+  { day: 0, theme: 'Sunday Chill & Nostalgia', prompt: 'A song that feels like slow Sunday coffee ☕' },
+  { day: 1, theme: 'Monday Focus & Drive', prompt: 'Your ultimate deep-work hyperfocus anthem ⚡' },
+  { day: 2, theme: 'Hidden Gems', prompt: 'A masterpiece that nobody in your circle knows about 💎' },
+  { day: 3, theme: 'Late Night Reverie', prompt: 'A track best played at 2 AM with headphones on 🌧' },
+  { day: 4, theme: 'Analog Heat', prompt: 'Best bassline or guitar riff in existence 🔥' },
+  { day: 5, theme: 'Friday Night Drive', prompt: 'Top song for an empty highway with windows down 🌃' },
+  { day: 6, theme: 'Weekend Groove', prompt: 'Instant mood booster to kick off the weekend 🪩' },
+];
+
+function parseTimestampToSeconds(str: string): number | undefined {
+  if (!str.trim()) return undefined;
+  const parts = str.trim().split(':');
+  if (parts.length === 2) {
+    const m = parseInt(parts[0], 10);
+    const s = parseInt(parts[1], 10);
+    if (!isNaN(m) && !isNaN(s)) return m * 60 + s;
+  }
+  const direct = parseInt(str, 10);
+  return !isNaN(direct) && direct > 0 ? direct : undefined;
+}
+
+function formatSecondsToTimestamp(sec: number): string {
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return `${m}:${s < 10 ? '0' : ''}${s}`;
+}
 
 export const SharingIsCaringModal: React.FC<SharingIsCaringModalProps> = ({
   isOpen,
@@ -54,6 +84,7 @@ export const SharingIsCaringModal: React.FC<SharingIsCaringModalProps> = ({
   activePlaylistId,
   currentTrack,
   onPlaySong,
+  onPlaySongAtTimestamp,
   onPlayPlaylist,
   onImportPlaylist,
   onAddSongToPlaylist,
@@ -67,8 +98,16 @@ export const SharingIsCaringModal: React.FC<SharingIsCaringModalProps> = ({
   const [isComposerOpen, setIsComposerOpen] = useState(false);
   const [postType, setPostType] = useState<'song' | 'playlist'>('song');
   const [note, setNote] = useState('');
+  const [timestampInput, setTimestampInput] = useState('');
   const [selectedPlaylistId, setSelectedPlaylistId] = useState<string>(activePlaylistId);
   const [selectedSong, setSelectedSong] = useState<Track | null>(currentTrack || null);
+
+  // Story Card Modal state
+  const [selectedPostForCard, setSelectedPostForCard] = useState<SocialPost | null>(null);
+
+  // Daily Prompt logic
+  const dayOfWeek = new Date().getDay();
+  const todayPrompt = DAILY_PROMPTS.find((p) => p.day === dayOfWeek) || DAILY_PROMPTS[0];
 
   // Song search inside composer
   const [songSearchQuery, setSongSearchQuery] = useState('');
@@ -146,10 +185,13 @@ export const SharingIsCaringModal: React.FC<SharingIsCaringModalProps> = ({
 
     try {
       const chosenPlaylist = userPlaylists.find((p) => p.id === selectedPlaylistId);
+      const parsedTimestamp =
+        postType === 'song' ? parseTimestampToSeconds(timestampInput) : undefined;
 
       const newPost = await createSocialPost({
         type: postType,
         note: note.trim().slice(0, MAX_NOTE_LENGTH),
+        timestampSeconds: parsedTimestamp,
         author: {
           id: user?.id,
           name: user ? user.name : 'Anonymous Collector',
@@ -171,6 +213,7 @@ export const SharingIsCaringModal: React.FC<SharingIsCaringModalProps> = ({
 
       setFeed((prev) => [newPost, ...prev]);
       setNote('');
+      setTimestampInput('');
       setIsComposerOpen(false);
       setSongSearchQuery('');
       setSongSearchResults([]);
@@ -259,6 +302,10 @@ export const SharingIsCaringModal: React.FC<SharingIsCaringModalProps> = ({
             </div>
 
             <div className="flex items-center gap-2">
+              <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-400/30 text-emerald-300 text-[10px] font-mono">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                <span>16 listening now</span>
+              </div>
               <button
                 type="button"
                 onClick={() => {
@@ -324,6 +371,35 @@ export const SharingIsCaringModal: React.FC<SharingIsCaringModalProps> = ({
             >
               {isComposerOpen ? <X className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5 stroke-[2.5]" />}
               <span>{isComposerOpen ? 'Close Composer' : 'Share Something'}</span>
+            </button>
+          </div>
+
+          {/* Daily Community Prompt Banner */}
+          <div className="px-5 py-2.5 bg-gradient-to-r from-rose-500/15 via-pink-500/10 to-transparent border-b border-white/[0.10] flex items-center justify-between gap-3 relative z-10">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-6 h-6 rounded-lg bg-rose-500/20 border border-rose-400/30 flex items-center justify-center text-rose-300 shrink-0 text-xs">
+                ✦
+              </div>
+              <div className="min-w-0">
+                <div className="text-[10px] font-mono uppercase tracking-wider text-rose-300 font-bold">
+                  TODAY'S PROMPT • {todayPrompt.theme}
+                </div>
+                <div className="text-xs text-white/90 font-medium truncate mt-0.5">
+                  {todayPrompt.prompt}
+                </div>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                sound.playClick();
+                setIsComposerOpen(true);
+                setPostType('song');
+                if (!note) setNote(`[#DailyDisc] `);
+              }}
+              className="px-2.5 py-1 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white text-[10.5px] font-semibold shrink-0 cursor-pointer transition-colors"
+            >
+              Drop Answer
             </button>
           </div>
 
@@ -519,6 +595,20 @@ export const SharingIsCaringModal: React.FC<SharingIsCaringModalProps> = ({
                   </div>
                 )}
 
+                {postType === 'song' && (
+                  <div className="flex items-center gap-2 pt-1">
+                    <Clock className="w-3.5 h-3.5 text-white/50 shrink-0" />
+                    <span className="text-[11px] text-white/70 font-medium">Highlight timestamp (optional):</span>
+                    <input
+                      type="text"
+                      value={timestampInput}
+                      onChange={(e) => setTimestampInput(e.target.value)}
+                      placeholder="e.g. 1:45"
+                      className="w-20 px-2 py-0.5 rounded-lg bg-black/40 border border-white/15 text-white text-xs font-mono placeholder-white/40 focus:outline-none focus:ring-1 focus:ring-rose-400 text-center"
+                    />
+                  </div>
+                )}
+
                 {/* Submit Row */}
                 <div className="flex items-center justify-between pt-1">
                   <div className="flex items-center gap-2">
@@ -629,6 +719,17 @@ export const SharingIsCaringModal: React.FC<SharingIsCaringModalProps> = ({
                           {post.type === 'song' ? '♫ Song Story' : '🗂 Playlist Drop'}
                         </span>
 
+                        {/* Story Card Trigger */}
+                        <button
+                          type="button"
+                          onClick={() => setSelectedPostForCard(post)}
+                          title="Generate aesthetic Story Card"
+                          className="h-7 px-2 rounded-lg liquid-glass-interactive flex items-center gap-1 text-[11px] font-medium text-white/70 hover:text-white cursor-pointer"
+                        >
+                          <Sparkles className="w-3 h-3 text-rose-300" />
+                          <span className="hidden sm:inline">Story Card</span>
+                        </button>
+
                         <button
                           type="button"
                           onClick={(e) => handleShareLink(post, e)}
@@ -675,6 +776,25 @@ export const SharingIsCaringModal: React.FC<SharingIsCaringModalProps> = ({
                         </div>
 
                         <div className="flex items-center gap-1.5 shrink-0">
+                          {typeof post.timestampSeconds === 'number' && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                sound.playDiscSpin();
+                                if (onPlaySongAtTimestamp) {
+                                  onPlaySongAtTimestamp(post.song as Track, post.timestampSeconds!);
+                                } else {
+                                  onPlaySong(post.song as Track);
+                                }
+                              }}
+                              className="px-2 py-1 rounded-full bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/40 text-emerald-300 text-[10.5px] font-mono flex items-center gap-1 cursor-pointer transition-colors"
+                              title={`Jump to ${formatSecondsToTimestamp(post.timestampSeconds)}`}
+                            >
+                              <Clock className="w-3 h-3 text-emerald-400" />
+                              <span>{formatSecondsToTimestamp(post.timestampSeconds)}</span>
+                            </button>
+                          )}
+
                           {/* Play on turntable */}
                           <button
                             type="button"
@@ -829,6 +949,13 @@ export const SharingIsCaringModal: React.FC<SharingIsCaringModalProps> = ({
             )}
           </div>
         </motion.div>
+
+        {/* Story Card Modal */}
+        <ShareCardModal
+          isOpen={!!selectedPostForCard}
+          post={selectedPostForCard}
+          onClose={() => setSelectedPostForCard(null)}
+        />
       </div>
     </AnimatePresence>
   );

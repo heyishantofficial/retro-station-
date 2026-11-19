@@ -238,7 +238,7 @@ app.get('/api/feed/posts', (req, res) => {
 
 // 2. Create a Post (Playlist Drop or Song Story)
 app.post('/api/feed/posts', (req, res) => {
-  const { type, note, playlist, song, author } = req.body;
+  const { type, note, playlist, song, author, timestampSeconds } = req.body;
 
   if (!type || (type !== 'playlist' && type !== 'song')) {
     return res.status(400).json({ error: 'Valid post type ("playlist" or "song") is required' });
@@ -258,6 +258,7 @@ app.post('/api/feed/posts', (req, res) => {
     id: `post_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
     type,
     note: trimmedNote,
+    timestampSeconds: typeof timestampSeconds === 'number' ? timestampSeconds : undefined,
     author: {
       id: author?.id || undefined,
       name: author?.name || 'Anonymous Collector',

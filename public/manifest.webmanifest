@@ -1,6 +1,7 @@
 {
-  "name": "A24 Minimal Music Player",
-  "short_name": "A24 Player",
+  "name": "Retro Station — Analog & Vinyl Web Audio Player",
+  "short_name": "Retro Station",
+  "description": "Aesthetic retro turntable, CD carousel & vinyl player with social lounge and authentic Web Audio analog warmth.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#090808",
@@ -9,7 +10,8 @@
     {
       "src": "/vinyl-disc.svg",
       "sizes": "any",
-      "type": "image/svg+xml"
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
     }
   ]
 }

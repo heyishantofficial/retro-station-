@@ -6,6 +6,7 @@ export interface SocialPost {
   id: string;
   type: 'playlist' | 'song';
   note: string; // Enforced max 200 characters
+  timestampSeconds?: number; // Optional deep-link into song (e.g. 145 for 2:25)
   author: {
     id?: string;
     name: string;
@@ -31,6 +32,7 @@ export interface SocialPost {
 export interface CreatePostPayload {
   type: 'playlist' | 'song';
   note: string;
+  timestampSeconds?: number;
   author: {
     id?: string;
     name: string;
@@ -56,6 +58,7 @@ export const SEED_POSTS: SocialPost[] = [
     id: 'seed_post_1',
     type: 'song',
     note: 'The synth lead at the drop gives me goosebumps every single time. Peak night drive energy.',
+    timestampSeconds: 52,
     author: {
       name: 'Elena Vance',
       avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&q=80',
@@ -136,6 +139,7 @@ export const SEED_POSTS: SocialPost[] = [
     id: 'seed_post_3',
     type: 'song',
     note: 'Kavinsky and Lovefoxxx created the definitive modern synthwave anthem. That vocoder is immortal.',
+    timestampSeconds: 68,
     author: {
       name: 'Marcus Brody',
       avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&q=80',
@@ -232,6 +236,7 @@ export async function createSocialPost(payload: CreatePostPayload): Promise<Soci
     id: `post_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
     type: payload.type,
     note: trimmedNote,
+    timestampSeconds: payload.timestampSeconds,
     author: {
       id: payload.author.id,
       name: payload.author.name || 'Anonymous Collector',
