@@ -159,42 +159,61 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Deep Dark Backdrop Scrim to block underlying white/black themes from washing out */}
+          {/* Ambient Frosted Backdrop Scrim */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             onClick={onClose}
-            className="fixed inset-0 z-40 bg-black/75 backdrop-blur-md"
+            className="fixed inset-0 z-40 bg-black/45 backdrop-blur-md"
           />
 
-          {/* Solid Obsidian Console Drawer — 100% High Contrast on Both White and Black Themes */}
+          {/* Liquid Glass Console Drawer — VisionOS & macOS Translucent Frosted Glass Architecture */}
           <motion.aside
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
-            transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="fixed right-0 top-0 bottom-0 h-[100dvh] w-full sm:w-[420px] sm:max-w-[420px] z-50 bg-[#0f0f12] text-white border-l border-white/10 shadow-[-24px_0_60px_rgba(0,0,0,0.9)] flex flex-col font-sans select-none pb-safe"
-            style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
+            transition={{ type: 'spring', damping: 28, stiffness: 280 }}
+            className="fixed right-0 top-0 bottom-0 h-[100dvh] w-full sm:w-[420px] sm:max-w-[420px] z-50 text-white flex flex-col font-sans select-none pb-safe overflow-hidden"
+            style={{
+              paddingTop: 'env(safe-area-inset-top, 0px)',
+              background: 'linear-gradient(145deg, rgba(22, 27, 40, 0.82) 0%, rgba(11, 14, 22, 0.92) 100%)',
+              backdropFilter: 'blur(45px) saturate(190%)',
+              WebkitBackdropFilter: 'blur(45px) saturate(190%)',
+              borderLeft: '1px solid rgba(255, 255, 255, 0.18)',
+              boxShadow: 'inset 1px 0 0 rgba(255, 255, 255, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.2), -24px 0 80px rgba(0, 0, 0, 0.65)',
+            }}
           >
-            {/* Header: Title, Playing Status & Close */}
-            <div className="px-5 pt-4 pb-3.5 border-b border-white/10 bg-[#141418] flex items-center justify-between relative z-10">
+            {/* Ambient Liquid Glass Specular Orbs */}
+            <div className="pointer-events-none absolute -top-24 -right-24 w-80 h-80 rounded-full bg-blue-500/12 blur-3xl" />
+            <div className="pointer-events-none absolute top-1/3 -left-24 w-72 h-72 rounded-full bg-indigo-500/10 blur-3xl" />
+            <div className="pointer-events-none absolute -bottom-24 -right-16 w-80 h-80 rounded-full bg-emerald-500/10 blur-3xl" />
+
+            {/* Header: Title, Playing Status & Liquid Glass Close */}
+            <div
+              className="px-5 pt-4 pb-3.5 border-b border-white/[0.12] flex items-center justify-between relative z-10"
+              style={{
+                background: 'rgba(255, 255, 255, 0.04)',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+              }}
+            >
               <div className="min-w-0 pr-3">
                 <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/10 border border-white/15">
+                  <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/35 shadow-[0_0_12px_rgba(16,185,129,0.3),inset_0_1px_1px_rgba(255,255,255,0.3)]">
                     <span
                       className={`w-2 h-2 rounded-full ${
                         isPlaying
-                          ? 'bg-emerald-400 animate-pulse ring-2 ring-emerald-400/30'
+                          ? 'bg-emerald-400 animate-pulse ring-2 ring-emerald-400/40'
                           : 'bg-zinc-400'
                       }`}
                     />
-                    <span className="text-[10px] font-bold tracking-wider uppercase text-zinc-200">
+                    <span className="text-[10px] font-bold tracking-wider uppercase">
                       {isPlaying ? 'Playing' : 'Standby'}
                     </span>
                   </div>
-                  <span className="text-xs text-zinc-300 font-medium">
+                  <span className="text-xs text-zinc-300/90 font-medium">
                     {trackCount} {trackCount === 1 ? 'track' : 'tracks'}
                   </span>
                 </div>
@@ -220,12 +239,12 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                         if (e.key === 'Escape') setIsEditingActiveTitle(false);
                       }}
                       placeholder="Rename playlist..."
-                      className="flex-1 min-w-0 px-2.5 py-1 rounded-lg bg-[#22222a] border border-emerald-500/60 text-white text-sm font-semibold focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                      className="flex-1 min-w-0 px-2.5 py-1 rounded-xl bg-white/[0.12] border border-emerald-400/50 text-white text-sm font-semibold focus:outline-none focus:ring-1 focus:ring-emerald-400 backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.25)]"
                     />
                     <button
                       type="submit"
                       disabled={!activeTitleDraft.trim()}
-                      className="p-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-black transition-colors cursor-pointer disabled:opacity-40 shrink-0"
+                      className="p-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black transition-colors cursor-pointer disabled:opacity-40 shrink-0 shadow-[0_0_12px_rgba(16,185,129,0.4)]"
                       title="Save name"
                     >
                       <Check className="w-3.5 h-3.5 stroke-[2.5]" />
@@ -233,7 +252,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                     <button
                       type="button"
                       onClick={() => setIsEditingActiveTitle(false)}
-                      className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-zinc-300 transition-colors cursor-pointer shrink-0"
+                      className="p-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-zinc-300 transition-colors cursor-pointer shrink-0 border border-white/15"
                       title="Cancel"
                     >
                       <X className="w-3.5 h-3.5" />
@@ -262,7 +281,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                           setActiveTitleDraft(activePlaylist.title);
                           setIsEditingActiveTitle(true);
                         }}
-                        className="w-6 h-6 rounded-md flex items-center justify-center text-zinc-400 hover:text-emerald-300 hover:bg-white/10 transition-colors cursor-pointer shrink-0"
+                        className="w-6 h-6 rounded-lg flex items-center justify-center text-zinc-400 hover:text-emerald-300 hover:bg-white/10 transition-colors cursor-pointer shrink-0"
                         title="Rename playlist"
                       >
                         <Pencil className="w-3 h-3" />
@@ -279,7 +298,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                   onClose();
                 }}
                 aria-label="Close dashboard"
-                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-zinc-300 hover:text-white flex items-center justify-center transition-all border border-white/15 active:scale-95 shrink-0 cursor-pointer"
+                className="w-8 h-8 rounded-full bg-white/[0.10] hover:bg-white/[0.22] border border-white/25 text-white/80 hover:text-white flex items-center justify-center transition-all shadow-[inset_0_1px_1px_rgba(255,255,255,0.4),0_2px_8px_rgba(0,0,0,0.2)] active:scale-95 shrink-0 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -294,46 +313,46 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                   onClose();
                   onOpenAuthModal?.();
                 }}
-                className="w-full p-2.5 rounded-xl bg-[#18181d] hover:bg-[#22222a] border border-white/10 hover:border-white/20 flex items-center justify-between text-left transition-all active:scale-[0.99] group shadow-sm cursor-pointer"
+                className="w-full p-3 rounded-2xl liquid-glass-interactive flex items-center justify-between text-left group cursor-pointer"
               >
-                <div className="flex items-center gap-2.5 min-w-0">
+                <div className="flex items-center gap-3 min-w-0">
                   {user?.avatarUrl ? (
                     <img
                       src={user.avatarUrl}
                       alt={user.name}
-                      className="w-8 h-8 rounded-full border border-emerald-500/40 ring-2 ring-emerald-500/20 object-cover shrink-0"
+                      className="w-9 h-9 rounded-full border border-emerald-400/50 ring-2 ring-emerald-500/20 object-cover shrink-0 shadow-sm"
                     />
                   ) : (
-                    <div className="w-8 h-8 rounded-full bg-blue-500/20 border border-blue-500/35 text-blue-400 flex items-center justify-center shrink-0">
+                    <div className="w-9 h-9 rounded-xl bg-blue-500/20 border border-blue-400/40 text-blue-300 flex items-center justify-center shrink-0 shadow-[inset_0_1px_1px_rgba(255,255,255,0.4),0_0_16px_rgba(59,130,246,0.25)]">
                       <Cloud className="w-4 h-4" />
                     </div>
                   )}
 
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-xs font-semibold text-white truncate">
+                      <span className="text-xs sm:text-sm font-semibold text-white tracking-tight truncate">
                         {user ? user.name : 'Sign in with Google'}
                       </span>
                       {user && (
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 ring-2 ring-emerald-400/20 shrink-0" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 ring-2 ring-emerald-400/30 shrink-0" />
                       )}
                     </div>
-                    <span className="text-xs text-zinc-300 block truncate mt-0.5">
+                    <span className="text-xs text-white/70 block truncate mt-0.5">
                       {user ? 'Playlists backed up to cloud' : 'Keep playlists synced across devices'}
                     </span>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1 text-xs font-semibold text-zinc-300 group-hover:text-white shrink-0 ml-2">
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-white/80 group-hover:text-white shrink-0 ml-2 px-2.5 py-1 rounded-full bg-white/10 border border-white/15 shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)]">
                   <span>{user ? 'Account' : 'Sign In'}</span>
-                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                  <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
                 </div>
               </button>
             </div>
 
             {/* Quick Actions Bar: 3 Clean, Dedicated Discovery & Sync Actions */}
             <div className="px-5 py-2 relative z-10">
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-3 gap-2.5">
                 {/* 1. Search Songs */}
                 <button
                   type="button"
@@ -342,14 +361,14 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                     onClose();
                     onOpenSearch?.();
                   }}
-                  className="p-2.5 rounded-xl bg-[#18181d] hover:bg-[#22222a] border border-white/10 hover:border-white/20 flex flex-col items-center text-center gap-1.5 transition-all active:scale-[0.98] group cursor-pointer"
+                  className="p-3 rounded-2xl liquid-glass-interactive flex flex-col items-center text-center gap-2 group cursor-pointer"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/35 flex items-center justify-center text-emerald-400 group-hover:scale-105 transition-transform shrink-0">
-                    <Search className="w-4 h-4" />
+                  <div className="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-300 group-hover:scale-105 transition-transform shrink-0 shadow-[inset_0_1px_1px_rgba(255,255,255,0.4),0_0_16px_rgba(16,185,129,0.25)]">
+                    <Search className="w-4 h-4 stroke-[2.2]" />
                   </div>
                   <div className="min-w-0 w-full">
-                    <div className="text-xs font-semibold text-white truncate">Search</div>
-                    <div className="text-[10px] text-zinc-300 truncate mt-0.5">Add Songs</div>
+                    <div className="text-xs font-bold text-white tracking-tight truncate">Search</div>
+                    <div className="text-[10px] text-white/70 truncate mt-0.5 font-medium">Add Songs</div>
                   </div>
                 </button>
 
@@ -361,14 +380,14 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                     onClose();
                     onOpenCharts?.();
                   }}
-                  className="p-2.5 rounded-xl bg-[#18181d] hover:bg-[#22222a] border border-white/10 hover:border-white/20 flex flex-col items-center text-center gap-1.5 transition-all active:scale-[0.98] group cursor-pointer"
+                  className="p-3 rounded-2xl liquid-glass-interactive flex flex-col items-center text-center gap-2 group cursor-pointer"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-purple-500/20 border border-purple-500/35 flex items-center justify-center text-purple-300 group-hover:scale-105 transition-transform shrink-0">
-                    <TrendingUp className="w-4 h-4" />
+                  <div className="w-9 h-9 rounded-xl bg-purple-500/20 border border-purple-400/40 flex items-center justify-center text-purple-300 group-hover:scale-105 transition-transform shrink-0 shadow-[inset_0_1px_1px_rgba(255,255,255,0.4),0_0_16px_rgba(168,85,247,0.25)]">
+                    <TrendingUp className="w-4 h-4 stroke-[2.2]" />
                   </div>
                   <div className="min-w-0 w-full">
-                    <div className="text-xs font-semibold text-white truncate">Charts</div>
-                    <div className="text-[10px] text-zinc-300 truncate mt-0.5">Top 100</div>
+                    <div className="text-xs font-bold text-white tracking-tight truncate">Charts</div>
+                    <div className="text-[10px] text-white/70 truncate mt-0.5 font-medium">Top 100</div>
                   </div>
                 </button>
 
@@ -380,14 +399,14 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                     onClose();
                     onOpenSyncModal();
                   }}
-                  className="p-2.5 rounded-xl bg-[#18181d] hover:bg-[#22222a] border border-white/10 hover:border-white/20 flex flex-col items-center text-center gap-1.5 transition-all active:scale-[0.98] group cursor-pointer"
+                  className="p-3 rounded-2xl liquid-glass-interactive flex flex-col items-center text-center gap-2 group cursor-pointer"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-red-500/20 border border-red-500/35 flex items-center justify-center text-red-400 group-hover:scale-105 transition-transform shrink-0">
+                  <div className="w-9 h-9 rounded-xl bg-red-500/20 border border-red-400/40 flex items-center justify-center text-red-400 group-hover:scale-105 transition-transform shrink-0 shadow-[inset_0_1px_1px_rgba(255,255,255,0.4),0_0_16px_rgba(239,68,68,0.25)]">
                     <YouTubeIcon className="w-4 h-4 text-red-400" />
                   </div>
                   <div className="min-w-0 w-full">
-                    <div className="text-xs font-semibold text-white truncate">Sync</div>
-                    <div className="text-[10px] text-zinc-300 truncate mt-0.5">Import</div>
+                    <div className="text-xs font-bold text-white tracking-tight truncate">Sync</div>
+                    <div className="text-[10px] text-white/70 truncate mt-0.5 font-medium">Import</div>
                   </div>
                 </button>
               </div>
@@ -395,26 +414,26 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
 
             {/* High-Contrast Segmented Navigation Tabs: 2 Primary Tabs (Tracks & Themes) */}
             <div className="px-5 pt-2 pb-2 relative z-10">
-              <div className="grid grid-cols-2 p-1 rounded-xl bg-[#18181d] border border-white/10">
+              <div className="grid grid-cols-2 p-1 rounded-full bg-black/40 border border-white/15 backdrop-blur-2xl shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)]">
                 <button
                   type="button"
                   onClick={() => {
                     sound.playClick();
                     setActiveTab('tracks');
                   }}
-                  className={`py-1.5 px-3 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                  className={`py-2 px-3 rounded-full text-xs font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer ${
                     activeTab === 'tracks'
-                      ? 'bg-white text-neutral-950 shadow-md font-bold'
-                      : 'text-zinc-300 hover:text-white'
+                      ? 'liquid-glass-pill text-neutral-950 font-bold'
+                      : 'text-white/70 hover:text-white hover:bg-white/[0.08]'
                   }`}
                 >
                   <Music className="w-3.5 h-3.5" />
                   <span>Tracks</span>
                   <span
-                    className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                    className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
                       activeTab === 'tracks'
-                        ? 'bg-neutral-900/10 text-neutral-950'
-                        : 'bg-white/15 text-zinc-200'
+                        ? 'bg-neutral-950/15 text-neutral-950'
+                        : 'bg-white/15 text-white/90'
                     }`}
                   >
                     {trackCount}
@@ -427,19 +446,19 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                     sound.playClick();
                     setActiveTab('themes');
                   }}
-                  className={`py-1.5 px-3 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                  className={`py-2 px-3 rounded-full text-xs font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer ${
                     activeTab === 'themes'
-                      ? 'bg-white text-neutral-950 shadow-md font-bold'
-                      : 'text-zinc-300 hover:text-white'
+                      ? 'liquid-glass-pill text-neutral-950 font-bold'
+                      : 'text-white/70 hover:text-white hover:bg-white/[0.08]'
                   }`}
                 >
                   <Layers className="w-3.5 h-3.5" />
                   <span>Themes</span>
                   <span
-                    className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                    className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
                       activeTab === 'themes'
-                        ? 'bg-neutral-900/10 text-neutral-950'
-                        : 'bg-white/15 text-zinc-200'
+                        ? 'bg-neutral-950/15 text-neutral-950'
+                        : 'bg-white/15 text-white/90'
                     }`}
                   >
                     {VIEW_CATALOG.length}
@@ -462,33 +481,33 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                           sound.playClick();
                           setIsPlaylistDropdownOpen((prev) => !prev);
                         }}
-                        className="flex-1 p-2 rounded-xl bg-[#18181d] hover:bg-[#22222a] border border-white/10 hover:border-white/20 flex items-center justify-between text-left transition-all active:scale-[0.99] cursor-pointer group shadow-sm"
+                        className="flex-1 min-w-0 p-2 sm:p-2.5 rounded-2xl liquid-glass-interactive flex items-center justify-between text-left cursor-pointer group"
                       >
                         <div className="flex items-center gap-2.5 min-w-0">
-                          <div className="w-8 h-8 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0 group-hover:scale-105 transition-transform">
+                          <div className="w-8 h-8 rounded-xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-300 shrink-0 group-hover:scale-105 transition-transform shadow-[inset_0_1px_1px_rgba(255,255,255,0.4),0_0_14px_rgba(16,185,129,0.25)]">
                             <Disc3 className="w-4 h-4" />
                           </div>
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-1.5">
-                              <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 font-semibold">
+                              <span className="text-[9.5px] font-mono uppercase tracking-wider text-white/60 font-semibold">
                                 PLAYLIST
                               </span>
-                              <span className="text-[10px] text-zinc-500 font-sans">
-                                • {playlists.length} available
+                              <span className="text-[9.5px] text-white/40 font-sans">
+                                • {playlists.length}
                               </span>
                             </div>
-                            <div className="text-xs sm:text-sm font-bold text-white truncate leading-tight mt-0.5">
+                            <div className="text-xs sm:text-[13px] font-bold text-white tracking-tight truncate leading-tight mt-0.5">
                               {activePlaylist?.title || 'Select a playlist'}
                             </div>
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-1.5 shrink-0 ml-1.5">
-                          <span className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-white/10 text-zinc-200">
+                        <div className="flex items-center gap-1.5 shrink-0 ml-1">
+                          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-white/10 border border-white/15 text-white/90 shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)]">
                             {trackCount} {trackCount === 1 ? 'disc' : 'discs'}
                           </span>
                           <ChevronDown
-                            className={`w-4 h-4 text-zinc-400 transition-transform duration-200 ${
+                            className={`w-3.5 h-3.5 text-white/60 transition-transform duration-200 ${
                               isPlaylistDropdownOpen ? 'rotate-180 text-white' : ''
                             }`}
                           />
@@ -505,7 +524,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                             setIsEditingActiveTitle(true);
                           }}
                           title="Rename playlist"
-                          className="w-9 h-9 rounded-xl bg-[#18181d] hover:bg-[#22222a] border border-white/10 hover:border-white/20 flex items-center justify-center text-zinc-400 hover:text-emerald-400 transition-colors cursor-pointer shrink-0"
+                          className="w-8.5 h-8.5 rounded-xl liquid-glass-interactive flex items-center justify-center text-white/70 hover:text-emerald-300 cursor-pointer shrink-0"
                         >
                           <Pencil className="w-3.5 h-3.5" />
                         </button>
@@ -519,9 +538,9 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                           triggerCreatePlaylist?.();
                         }}
                         title="Create new playlist"
-                        className="w-9 h-9 rounded-xl bg-[#18181d] hover:bg-[#22222a] border border-white/10 hover:border-white/20 flex items-center justify-center text-zinc-400 hover:text-white transition-colors cursor-pointer shrink-0"
+                        className="w-8.5 h-8.5 rounded-xl liquid-glass-interactive flex items-center justify-center text-white/70 hover:text-white cursor-pointer shrink-0"
                       >
-                        <Plus className="w-4 h-4" />
+                        <Plus className="w-4 h-4 stroke-[2.5]" />
                       </button>
                     </div>
 
@@ -533,11 +552,16 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                           animate={{ opacity: 1, y: 0, scale: 1 }}
                           exit={{ opacity: 0, y: 4, scale: 0.98 }}
                           transition={{ duration: 0.15 }}
-                          className="absolute left-0 right-0 top-full mt-1.5 rounded-2xl bg-[#18181d] border border-white/15 shadow-[0_24px_60px_rgba(0,0,0,0.7)] p-2.5 flex flex-col gap-1.5 z-50 text-white font-sans"
+                          className="absolute left-0 right-0 top-full mt-2 rounded-2xl p-2.5 flex flex-col gap-2 z-50 text-white font-sans border border-white/20 shadow-[0_24px_70px_rgba(0,0,0,0.75),inset_0_1px_2px_rgba(255,255,255,0.35)]"
+                          style={{
+                            background: 'linear-gradient(160deg, rgba(24, 29, 44, 0.94) 0%, rgba(11, 14, 24, 0.98) 100%)',
+                            backdropFilter: 'blur(48px) saturate(200%)',
+                            WebkitBackdropFilter: 'blur(48px) saturate(200%)',
+                          }}
                         >
                           {/* Dropdown Header */}
-                          <div className="px-1.5 py-1 border-b border-white/10 flex items-center justify-between">
-                            <span className="text-xs font-semibold text-zinc-300 flex items-center gap-1.5">
+                          <div className="px-2 py-1 border-b border-white/10 flex items-center justify-between">
+                            <span className="text-xs font-semibold text-white/80 flex items-center gap-1.5">
                               <Disc3 className="w-3.5 h-3.5 text-emerald-400" />
                               Select Playlist
                             </span>
@@ -548,7 +572,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                                 setIsPlaylistDropdownOpen(false);
                                 triggerCreatePlaylist?.();
                               }}
-                              className="text-[11px] font-semibold text-emerald-400 hover:text-emerald-300 flex items-center gap-1 cursor-pointer"
+                              className="text-[11px] font-semibold text-emerald-300 hover:text-emerald-200 flex items-center gap-1 cursor-pointer"
                             >
                               <Plus className="w-3 h-3 stroke-[2.5]" />
                               <span>New Playlist</span>
@@ -564,27 +588,27 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                               onClose();
                               onOpenCommunityLeaderboard?.();
                             }}
-                            className="w-full p-2 rounded-xl bg-gradient-to-r from-amber-500/15 via-yellow-500/10 to-transparent hover:from-amber-500/25 border border-amber-500/30 flex items-center justify-between text-left transition-all active:scale-[0.98] cursor-pointer"
+                            className="w-full p-2.5 rounded-xl bg-gradient-to-r from-amber-500/20 via-yellow-500/10 to-transparent hover:from-amber-500/30 border border-amber-400/35 flex items-center justify-between text-left transition-all active:scale-[0.98] cursor-pointer shadow-[inset_0_1px_1px_rgba(255,255,255,0.25)]"
                           >
-                            <div className="flex items-center gap-2">
-                              <div className="w-6 h-6 rounded-lg bg-amber-500/20 border border-amber-500/35 flex items-center justify-center text-amber-300 shrink-0">
-                                <Trophy className="w-3.5 h-3.5" />
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-7 h-7 rounded-lg bg-amber-500/25 border border-amber-400/40 flex items-center justify-center text-amber-300 shrink-0 shadow-[0_0_12px_rgba(245,158,11,0.3)]">
+                                <Trophy className="w-4 h-4" />
                               </div>
                               <div>
-                                <div className="text-xs font-semibold text-amber-200 flex items-center gap-1.5">
+                                <div className="text-xs font-bold text-amber-200 flex items-center gap-1.5">
                                   <span>Community Leaderboard</span>
-                                  <span className="text-[9px] px-1 py-0.2 rounded bg-amber-500/30 text-amber-300 font-bold uppercase">
+                                  <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-amber-500/30 text-amber-200 border border-amber-400/40 font-bold uppercase">
                                     Ranked
                                   </span>
                                 </div>
-                                <div className="text-[10px] text-zinc-300 truncate">Explore most saved playlists</div>
+                                <div className="text-[10px] text-white/70 truncate mt-0.5">Explore most saved playlists</div>
                               </div>
                             </div>
-                            <ArrowRight className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                            <ArrowRight className="w-4 h-4 text-amber-400 shrink-0" />
                           </button>
 
                           {/* Playlists List inside Dropdown */}
-                          <div className="max-h-60 overflow-y-auto space-y-1 pr-0.5">
+                          <div className="max-h-60 overflow-y-auto space-y-1.5 pr-0.5">
                             {playlists.map((pl) => {
                               const isActive = pl.id === activePlaylist?.id;
                               const isEditingThis = editingPlaylistId === pl.id;
@@ -594,8 +618,8 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                                   key={pl.id}
                                   className={`w-full p-2 rounded-xl transition-all border ${
                                     isActive
-                                      ? 'bg-white/[0.14] border-white/25 text-white shadow-sm ring-1 ring-white/10'
-                                      : 'bg-[#1e1e24] hover:bg-[#26262e] border-white/[0.08] text-zinc-200'
+                                      ? 'bg-white/[0.18] border-emerald-400/50 text-white shadow-[inset_0_1px_1.5px_rgba(255,255,255,0.4),0_0_16px_rgba(16,185,129,0.2)]'
+                                      : 'bg-white/[0.05] hover:bg-white/[0.12] border-white/10 hover:border-white/20 text-white/90'
                                   }`}
                                 >
                                   {isEditingThis ? (
@@ -620,12 +644,12 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                                           if (e.key === 'Escape') setEditingPlaylistId(null);
                                         }}
                                         placeholder="Playlist name..."
-                                        className="flex-1 min-w-0 px-2 py-1 rounded-lg bg-[#202028] border border-emerald-500/60 text-xs font-semibold text-white focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                                        className="flex-1 min-w-0 px-2.5 py-1 rounded-lg bg-white/15 border border-emerald-400/60 text-xs font-semibold text-white focus:outline-none focus:ring-1 focus:ring-emerald-400 shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)]"
                                       />
                                       <button
                                         type="submit"
                                         disabled={!editingPlaylistTitle.trim()}
-                                        className="px-2 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-semibold flex items-center gap-1 cursor-pointer disabled:opacity-40 shrink-0"
+                                        className="px-2.5 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-bold flex items-center gap-1 cursor-pointer disabled:opacity-40 shrink-0 shadow-[0_0_10px_rgba(16,185,129,0.4)]"
                                       >
                                         <Check className="w-3 h-3 stroke-[2.5]" />
                                         <span>Save</span>
@@ -633,7 +657,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                                       <button
                                         type="button"
                                         onClick={() => setEditingPlaylistId(null)}
-                                        className="p-1 rounded-lg bg-white/10 hover:bg-white/20 text-zinc-300 cursor-pointer shrink-0"
+                                        className="p-1 rounded-lg bg-white/10 hover:bg-white/20 text-white/70 cursor-pointer shrink-0 border border-white/10"
                                       >
                                         <X className="w-3 h-3" />
                                       </button>
@@ -649,10 +673,10 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                                         }}
                                         className="flex items-center gap-2.5 flex-1 min-w-0 text-left cursor-pointer"
                                       >
-                                        <div className="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center shrink-0 border border-white/15">
+                                        <div className="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center shrink-0 border border-white/15 shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)]">
                                           <Disc3
                                             className={`w-3.5 h-3.5 ${
-                                              isActive ? 'text-emerald-400' : 'text-zinc-400'
+                                              isActive ? 'text-emerald-400' : 'text-white/60'
                                             }`}
                                           />
                                         </div>
@@ -662,12 +686,12 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                                               {pl.title}
                                             </span>
                                             {isActive && (
-                                              <span className="px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[9px] font-bold tracking-wider uppercase shrink-0">
+                                              <span className="px-1.5 py-0.2 rounded-full bg-emerald-500/25 text-emerald-300 border border-emerald-400/40 text-[9px] font-bold tracking-wider uppercase shrink-0">
                                                 Active
                                               </span>
                                             )}
                                           </div>
-                                          <div className="text-[10.5px] text-zinc-400 truncate mt-0.5">
+                                          <div className="text-[10.5px] text-white/60 truncate mt-0.5">
                                             {pl.tracks.length} {pl.tracks.length === 1 ? 'track' : 'tracks'} • {pl.category || 'Collection'}
                                           </div>
                                         </div>
@@ -684,7 +708,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                                             setEditingPlaylistTitle(pl.title);
                                           }}
                                           title="Rename playlist"
-                                          className="w-7 h-7 rounded-lg flex items-center justify-center text-zinc-400 hover:text-emerald-400 hover:bg-emerald-500/20 transition-colors cursor-pointer"
+                                          className="w-7 h-7 rounded-lg flex items-center justify-center text-white/60 hover:text-emerald-300 hover:bg-emerald-500/20 transition-colors cursor-pointer"
                                         >
                                           <Pencil className="w-3 h-3" />
                                         </button>
@@ -700,7 +724,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                                             onOpenCommunityLeaderboard?.(pl.id);
                                           }}
                                           title="Publish to leaderboard"
-                                          className="w-7 h-7 rounded-lg flex items-center justify-center text-zinc-400 hover:text-amber-400 hover:bg-amber-500/20 transition-colors cursor-pointer"
+                                          className="w-7 h-7 rounded-lg flex items-center justify-center text-white/60 hover:text-amber-300 hover:bg-amber-500/20 transition-colors cursor-pointer"
                                         >
                                           <Globe2 className="w-3 h-3" />
                                         </button>
@@ -714,7 +738,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                                             onDeletePlaylist(pl.id);
                                           }}
                                           title="Delete playlist"
-                                          className="w-7 h-7 rounded-lg flex items-center justify-center text-zinc-400 hover:text-red-400 hover:bg-red-500/20 transition-colors cursor-pointer"
+                                          className="w-7 h-7 rounded-lg flex items-center justify-center text-white/60 hover:text-red-300 hover:bg-red-500/20 transition-colors cursor-pointer"
                                         >
                                           <Trash2 className="w-3 h-3" />
                                         </button>
@@ -739,9 +763,9 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                         onClose();
                         onOpenSearch?.();
                       }}
-                      className="py-1.5 px-3 rounded-lg bg-[#18181d] hover:bg-[#22222a] text-xs font-semibold text-white flex items-center gap-1.5 transition-colors border border-white/10 cursor-pointer"
+                      className="py-1.5 px-3.5 rounded-full liquid-glass-interactive text-xs font-semibold text-white flex items-center gap-1.5 cursor-pointer"
                     >
-                      <Plus className="w-3.5 h-3.5 text-emerald-400" />
+                      <Plus className="w-3.5 h-3.5 text-emerald-300 stroke-[2.5]" />
                       <span>Add Song</span>
                     </button>
 
@@ -752,7 +776,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                           sound.playClick();
                           triggerSharePlaylist?.();
                         }}
-                        className="py-1.5 px-3 rounded-lg bg-[#18181d] hover:bg-[#22222a] text-xs font-semibold text-zinc-300 hover:text-white flex items-center gap-1.5 transition-colors border border-white/10 cursor-pointer"
+                        className="py-1.5 px-3.5 rounded-full liquid-glass-interactive text-xs font-semibold text-white/80 hover:text-white flex items-center gap-1.5 cursor-pointer"
                         title="Share playlist link"
                       >
                         <Share2 className="w-3.5 h-3.5" />
@@ -763,11 +787,11 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
 
                   {(!activePlaylist || activePlaylist.tracks.length === 0) && (
                     <div className="py-14 text-center">
-                      <div className="w-12 h-12 rounded-2xl bg-[#18181d] border border-white/10 flex items-center justify-center mx-auto text-zinc-400 mb-3">
+                      <div className="w-12 h-12 rounded-2xl liquid-glass-card flex items-center justify-center mx-auto text-white/60 mb-3">
                         <Music className="w-5 h-5" />
                       </div>
                       <h4 className="text-sm font-semibold text-white">Playlist is Empty</h4>
-                      <p className="text-xs text-zinc-300 mt-1 max-w-[240px] mx-auto">
+                      <p className="text-xs text-white/60 mt-1 max-w-[240px] mx-auto">
                         Search songs or tap the Charts button to press your first tracks.
                       </p>
                       <button
@@ -777,7 +801,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                           onClose();
                           onOpenSearch?.();
                         }}
-                        className="mt-3.5 py-1.5 px-4 rounded-lg bg-white text-neutral-950 font-bold text-xs transition-all active:scale-95 cursor-pointer"
+                        className="mt-3.5 py-2 px-5 rounded-full liquid-glass-pill text-neutral-950 font-bold text-xs transition-all active:scale-95 cursor-pointer"
                       >
                         Search Songs
                       </button>
@@ -795,10 +819,10 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                       return (
                         <div
                           key={track.id}
-                          className={`w-full flex items-center justify-between gap-2.5 p-2 rounded-xl transition-all border ${
+                          className={`w-full flex items-center justify-between gap-2.5 p-2 rounded-2xl transition-all border ${
                             isActive
-                              ? 'bg-white/[0.14] border-white/25 text-white shadow-sm ring-1 ring-white/10'
-                              : 'bg-[#16161b] hover:bg-[#202026] border-white/[0.08] text-zinc-200'
+                              ? 'liquid-glass-active text-white'
+                              : 'liquid-glass-interactive text-white/90'
                           }`}
                         >
                           {/* Track Play Trigger & Details */}
@@ -811,7 +835,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                             className="flex items-center gap-3 flex-1 min-w-0 text-left cursor-pointer"
                           >
                             {/* Artwork Thumbnail with Live Equalizer */}
-                            <div className="relative w-10 h-10 rounded-lg overflow-hidden shrink-0 border border-white/15 shadow-sm bg-neutral-900">
+                            <div className="relative w-10 h-10 rounded-xl overflow-hidden shrink-0 border border-white/20 shadow-sm bg-neutral-950">
                               <img
                                 src={thumbSrc}
                                 alt={track.title}
@@ -838,17 +862,17 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                               )}
                             </div>
 
-                            {/* Track Info (Crisp White and Zinc-300) */}
+                            {/* Track Info */}
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-1.5">
-                                <span className="text-[11px] font-mono tabular-nums text-zinc-400 font-medium">
+                                <span className="text-[11px] font-mono tabular-nums text-white/60 font-medium">
                                   {String(idx + 1).padStart(2, '0')}
                                 </span>
-                                <div className="text-xs font-semibold text-white truncate">
+                                <div className="text-xs font-semibold text-white tracking-tight truncate">
                                   {track.title}
                                 </div>
                               </div>
-                              <div className="text-xs text-zinc-300 truncate mt-0.5 font-medium">
+                              <div className="text-xs text-white/70 truncate mt-0.5 font-medium">
                                 {track.artist}
                               </div>
                             </div>
@@ -857,7 +881,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                           {/* Right Controls: Duration, Play & ALWAYS-VISIBLE Remove Button */}
                           <div className="flex items-center gap-1 shrink-0">
                             {durationStr && (
-                              <span className="text-xs font-mono tabular-nums text-zinc-400 mr-1">
+                              <span className="text-xs font-mono tabular-nums text-white/60 mr-1 font-medium">
                                 {durationStr}
                               </span>
                             )}
@@ -873,7 +897,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                                 }}
                                 title="Remove song from playlist"
                                 aria-label={`Remove ${track.title} from playlist`}
-                                className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-red-400 hover:bg-red-500/20 active:scale-90 transition-all cursor-pointer touch-target-sm"
+                                className="w-8 h-8 rounded-xl flex items-center justify-center text-white/60 hover:text-red-300 hover:bg-red-500/20 active:scale-90 transition-all cursor-pointer touch-target-sm"
                               >
                                 <Trash2 className="w-4 h-4" />
                               </button>
@@ -888,7 +912,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                                   }`}
                                 />
                               ) : (
-                                <span className="w-1.5 h-1.5 rounded-full bg-white/20" />
+                                <span className="w-1.5 h-1.5 rounded-full bg-white/30" />
                               )}
                             </div>
                           </div>
@@ -902,11 +926,11 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
               {/* TAB 2: THEMES / VISUAL VIEWS (13 CREATIVE NAMES) */}
               {activeTab === 'themes' && (
                 <div className="space-y-2 pb-4">
-                  <div className="text-xs font-medium text-zinc-300 px-0.5">
+                  <div className="text-xs font-medium text-white/70 px-0.5">
                     Choose a signature aesthetic player console:
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-2 gap-2.5">
                     {VIEW_CATALOG.map((item, idx) => {
                       const isActive = item.id === viewMode;
                       const gradientClass = VIEW_GRADIENTS[item.id] || 'from-neutral-500 to-black';
@@ -919,26 +943,26 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                             sound.playSwitch();
                             onChangeViewMode(item.id);
                           }}
-                          className={`p-3 rounded-xl text-left border transition-all active:scale-[0.98] flex flex-col justify-between gap-2.5 relative overflow-hidden group cursor-pointer ${
+                          className={`p-3 rounded-2xl text-left border transition-all active:scale-[0.98] flex flex-col justify-between gap-3 relative overflow-hidden group cursor-pointer ${
                             isActive
-                              ? 'bg-white/[0.16] border-white/35 text-white shadow-md ring-1 ring-white/20'
-                              : 'bg-[#16161b] hover:bg-[#202026] border-white/[0.08] text-zinc-200'
+                              ? 'liquid-glass-active text-white'
+                              : 'liquid-glass-interactive text-white/90'
                           }`}
                         >
                           <div className="flex items-center justify-between w-full relative z-10">
                             {/* Visual Preview Swatch */}
                             <div
-                              className={`w-6 h-6 rounded-lg bg-gradient-to-br ${gradientClass} border border-white/20 shadow-sm`}
+                              className={`w-7 h-7 rounded-xl bg-gradient-to-br ${gradientClass} border border-white/30 shadow-sm`}
                             />
 
                             <div className="flex items-center gap-1">
                               {isActive ? (
-                                <span className="px-1.5 py-0.5 rounded-full bg-emerald-500/25 text-emerald-300 border border-emerald-500/40 text-[9px] font-bold tracking-wider uppercase flex items-center gap-1">
+                                <span className="px-2 py-0.5 rounded-full bg-emerald-500/25 text-emerald-300 border border-emerald-400/40 text-[9px] font-bold tracking-wider uppercase flex items-center gap-1 shadow-[0_0_10px_rgba(16,185,129,0.3)]">
                                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
                                   Active
                                 </span>
                               ) : (
-                                <span className="text-[9px] font-mono uppercase tracking-wider text-zinc-300 px-1 py-0.5 rounded bg-white/10 font-medium">
+                                <span className="text-[9px] font-mono uppercase tracking-wider text-white/70 px-1.5 py-0.5 rounded-full bg-white/10 border border-white/15 font-medium">
                                   {item.badge || idx + 1}
                                 </span>
                               )}
@@ -946,10 +970,10 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                           </div>
 
                           <div className="relative z-10">
-                            <div className="text-xs font-bold text-white truncate leading-tight">
+                            <div className="text-xs font-bold text-white tracking-tight truncate leading-tight">
                               {item.name}
                             </div>
-                            <div className="text-[11px] text-zinc-300 truncate mt-0.5 font-medium">
+                            <div className="text-[11px] text-white/70 truncate mt-0.5 font-medium">
                               {item.subtitle}
                             </div>
                           </div>
@@ -962,21 +986,28 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
             </div>
 
             {/* Footer Console: Sound FX & Mini Video Toggles */}
-            <div className="px-5 py-3.5 border-t border-white/10 bg-[#141418] space-y-2 relative z-10">
-              <div className="grid grid-cols-2 gap-2">
+            <div
+              className="px-5 py-3.5 border-t border-white/[0.14] space-y-2 relative z-10"
+              style={{
+                background: 'rgba(255, 255, 255, 0.04)',
+                backdropFilter: 'blur(30px)',
+                WebkitBackdropFilter: 'blur(30px)',
+              }}
+            >
+              <div className="grid grid-cols-2 gap-2.5">
                 <button
                   type="button"
                   onClick={toggleSfx}
-                  className={`py-2 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 border transition-all active:scale-95 cursor-pointer ${
+                  className={`py-2 px-3 rounded-2xl text-xs font-semibold flex items-center justify-center gap-2 border transition-all active:scale-95 cursor-pointer ${
                     sfxEnabled
-                      ? 'bg-white/15 border-white/25 text-white shadow-sm'
-                      : 'bg-transparent border-white/10 text-zinc-400'
+                      ? 'liquid-glass-active text-white'
+                      : 'liquid-glass-interactive text-white/60'
                   }`}
                 >
                   {sfxEnabled ? (
-                    <Volume2 className="w-3.5 h-3.5 text-emerald-400" />
+                    <Volume2 className="w-4 h-4 text-emerald-300" />
                   ) : (
-                    <VolumeX className="w-3.5 h-3.5 text-zinc-400" />
+                    <VolumeX className="w-4 h-4 text-white/50" />
                   )}
                   <span>Clicks {sfxEnabled ? 'On' : 'Off'}</span>
                 </button>
@@ -987,18 +1018,18 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                     sound.playClick();
                     onToggleMiniVideo();
                   }}
-                  className={`py-2 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 border transition-all active:scale-95 cursor-pointer ${
+                  className={`py-2 px-3 rounded-2xl text-xs font-semibold flex items-center justify-center gap-2 border transition-all active:scale-95 cursor-pointer ${
                     showMiniVideo
-                      ? 'bg-white text-neutral-950 font-bold shadow-sm'
-                      : 'bg-[#18181d] border-white/10 text-zinc-200 hover:text-white'
+                      ? 'liquid-glass-pill text-neutral-950 font-bold'
+                      : 'liquid-glass-interactive text-white/80 hover:text-white'
                   }`}
                 >
-                  <Tv className="w-3.5 h-3.5" />
+                  <Tv className="w-4 h-4" />
                   <span>Video {showMiniVideo ? 'On' : 'Off'}</span>
                 </button>
               </div>
 
-              <div className="flex items-center justify-between text-xs text-zinc-400 pt-1 font-medium">
+              <div className="flex items-center justify-between text-xs text-white/60 pt-1 font-medium">
                 <span>V Themes • Space Play</span>
                 <span>Esc Close</span>
               </div>

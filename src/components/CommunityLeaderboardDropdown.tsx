@@ -193,8 +193,13 @@ export const CommunityLeaderboardDropdown: React.FC<CommunityLeaderboardDropdown
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 8, scale: 0.96 }}
       transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
-      style={{ backgroundColor: '#121216' }}
-      className="fixed left-3 right-3 top-[54px] sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 w-auto sm:w-[390px] max-h-[82vh] sm:max-h-[520px] rounded-2xl border border-white/15 shadow-[0_24px_60px_rgba(0,0,0,0.85)] p-3.5 z-50 text-white font-sans flex flex-col gap-2.5 overflow-hidden pointer-events-auto"
+      style={{
+        background: 'linear-gradient(150deg, rgba(22, 27, 44, 0.92) 0%, rgba(10, 13, 24, 0.96) 100%)',
+        backdropFilter: 'blur(45px) saturate(200%)',
+        WebkitBackdropFilter: 'blur(45px) saturate(200%)',
+        boxShadow: 'inset 0 1px 2px rgba(255, 255, 255, 0.35), 0 24px 70px rgba(0, 0, 0, 0.85)',
+      }}
+      className="fixed left-3 right-3 top-[54px] sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 w-auto sm:w-[390px] max-h-[82vh] sm:max-h-[520px] rounded-2xl border border-white/20 p-3.5 z-50 text-white font-sans flex flex-col gap-2.5 overflow-hidden pointer-events-auto"
     >
       {/* Dropdown Header */}
       <div className="flex items-center justify-between pb-2 border-b border-white/10 shrink-0">
@@ -228,20 +233,20 @@ export const CommunityLeaderboardDropdown: React.FC<CommunityLeaderboardDropdown
       </div>
 
       {/* Segmented Control Tabs */}
-      <div className="grid grid-cols-2 p-1 rounded-xl bg-black/60 border border-white/10 shrink-0">
+      <div className="grid grid-cols-2 p-1 rounded-full bg-black/40 border border-white/15 backdrop-blur-2xl shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)] shrink-0">
         <button
           type="button"
           onClick={() => {
             sound.playClick();
             setActiveTab('ranked');
           }}
-          className={`py-1.5 px-3 rounded-lg text-xs font-medium transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+          className={`py-1.5 px-3 rounded-full text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
             activeTab === 'ranked'
-              ? 'bg-zinc-800 text-white shadow-sm border border-white/15'
-              : 'text-zinc-400 hover:text-zinc-200'
+              ? 'liquid-glass-pill text-neutral-950 font-bold'
+              : 'text-white/70 hover:text-white hover:bg-white/[0.08]'
           }`}
         >
-          <Trophy className="w-3.5 h-3.5 text-amber-400" />
+          <Trophy className="w-3.5 h-3.5 text-amber-500" />
           <span>Most Saved</span>
         </button>
 
@@ -251,13 +256,13 @@ export const CommunityLeaderboardDropdown: React.FC<CommunityLeaderboardDropdown
             sound.playClick();
             setActiveTab('publish');
           }}
-          className={`py-1.5 px-3 rounded-lg text-xs font-medium transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+          className={`py-1.5 px-3 rounded-full text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
             activeTab === 'publish'
-              ? 'bg-zinc-800 text-white shadow-sm border border-white/15'
-              : 'text-zinc-400 hover:text-zinc-200'
+              ? 'liquid-glass-pill text-neutral-950 font-bold'
+              : 'text-white/70 hover:text-white hover:bg-white/[0.08]'
           }`}
         >
-          <UploadCloud className="w-3.5 h-3.5 text-emerald-400" />
+          <UploadCloud className="w-3.5 h-3.5 text-emerald-500" />
           <span>Publish Playlist</span>
         </button>
       </div>
@@ -312,7 +317,7 @@ export const CommunityLeaderboardDropdown: React.FC<CommunityLeaderboardDropdown
               return (
                 <div
                   key={crate.id}
-                  className="p-2.5 rounded-xl bg-zinc-900/95 hover:bg-zinc-800/95 border border-white/10 transition-all flex flex-col gap-2 group"
+                  className="p-3 rounded-2xl liquid-glass-interactive flex flex-col gap-2 group"
                 >
                   <div className="flex items-center justify-between gap-2.5 min-w-0">
                     <div className="flex items-center gap-2.5 min-w-0">
