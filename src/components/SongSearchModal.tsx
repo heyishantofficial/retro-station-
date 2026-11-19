@@ -167,10 +167,38 @@ export const SongSearchModal: React.FC<SongSearchModalProps> = ({
     setIsHoverDropdownOpen(false);
   };
 
+  const isSongInPlaylist = (song: SearchSongResult, pl: Playlist | undefined): boolean => {
+    if (!pl) return false;
+    return pl.tracks.some((t) => {
+      const sameYt = Boolean(
+        t.youtubeId &&
+        song.youtubeId &&
+        song.youtubeId.length === 11 &&
+        t.youtubeId === song.youtubeId
+      );
+      const sameTitleArtist =
+        t.title.trim().toLowerCase() === song.title.trim().toLowerCase() &&
+        t.artist.trim().toLowerCase() === song.artist.trim().toLowerCase();
+      return sameYt || sameTitleArtist;
+    });
+  };
+
   const handleAddSong = (song: SearchSongResult) => {
     sound.playClick(1160, 0.02);
     const destinationPl = activeCrate || playlists[0];
     if (!destinationPl) return;
+
+    if (isSongInPlaylist(song, destinationPl)) {
+      setAddedIds((prev) => ({ ...prev, [song.id]: `Already in ${destinationPl.title}` }));
+      window.setTimeout(() => {
+        setAddedIds((prev) => {
+          const next = { ...prev };
+          delete next[song.id];
+          return next;
+        });
+      }, 2400);
+      return;
+    }
 
     onAddSongToPlaylist(song, destinationPl.id);
     setAddedIds((prev) => ({ ...prev, [song.id]: destinationPl.title }));
@@ -185,6 +213,20 @@ export const SongSearchModal: React.FC<SongSearchModalProps> = ({
 
   const handleAddSongToSpecificPlaylist = (song: SearchSongResult, playlist: Playlist) => {
     sound.playClick(1160, 0.02);
+
+    if (isSongInPlaylist(song, playlist)) {
+      setHoveredSongDropdownId(null);
+      setAddedIds((prev) => ({ ...prev, [song.id]: `Already in ${playlist.title}` }));
+      window.setTimeout(() => {
+        setAddedIds((prev) => {
+          const next = { ...prev };
+          delete next[song.id];
+          return next;
+        });
+      }, 2400);
+      return;
+    }
+
     onAddSongToPlaylist(song, playlist.id);
     setTargetId(playlist.id);
     onSelectPlaylist?.(playlist.id);
@@ -459,8 +501,6 @@ export const SongSearchModal: React.FC<SongSearchModalProps> = ({
                 </div>
               ) : (
                 results.map((item) => {
-                  const isAdded = Boolean(addedIds[item.id]);
-
                   return (
                     <div
                       key={item.id}
@@ -483,9 +523,18 @@ export const SongSearchModal: React.FC<SongSearchModalProps> = ({
                           <h4 className="font-sans font-medium text-[14px] text-neutral-900 dark:text-white truncate leading-snug">
                             {item.title}
                           </h4>
-                          {item.source === 'curated' && (
-                            <span className="shrink-0 px-1.5 py-0.5 rounded-[4px] bg-amber-500/15 text-amber-700 dark:text-amber-400 font-mono text-[8.5px] uppercase tracking-wider leading-none">
-                              Verified
+                          {item.isVerified ? (
+                            <span className="shrink-0 px-1.5 py-0.5 rounded-[4px] bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-mono text-[8.5px] uppercase tracking-wider leading-none flex items-center gap-0.5">
+                              <Check className="w-2.5 h-2.5" />
+                              Ready to Play
+                            </span>
+                          ) : (
+                            <span
+                              className="shrink-0 px-1.5 py-0.5 rounded-[4px] bg-amber-500/15 text-amber-700 dark:text-amber-400 font-mono text-[8.5px] uppercase tracking-wider leading-none flex items-center gap-0.5 cursor-help"
+                              title="External track metadata — owner may restrict YouTube embedding unless direct link provided"
+                            >
+                              <span>⚠️</span>
+                              <span>Unverified Stream</span>
                             </span>
                           )}
                         </div>
@@ -506,154 +555,196 @@ export const SongSearchModal: React.FC<SongSearchModalProps> = ({
                         </div>
                       </div>
 
-                      {/* Add Button with Hover Playlist Menu */}
-                      <div
-                        className="relative shrink-0"
-                        onMouseEnter={() => handleMouseEnterSongBtn(item.id)}
-                        onMouseLeave={handleMouseLeaveSongBtn}
-                      >
-                        <button
-                          type="button"
-                          onClick={() => handleAddSong(item)}
-                          className={`px-3 py-1.5 rounded-xl flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-wider font-medium transition-all active:scale-95 cursor-pointer ${
-                            isAdded
-                              ? 'bg-emerald-500 text-white shadow-sm'
-                              : 'bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 hover:opacity-90 shadow-sm'
-                          }`}
-                          title="Click to add to target playlist, or hover to choose/create playlist"
-                        >
-                          {isAdded ? (
-                            <>
-                              <Check className="w-3.5 h-3.5" />
-                              <span className="truncate max-w-[120px]">
-                                Added
-                              </span>
-                            </>
-                          ) : (
-                            <>
-                              <Plus className="w-3.5 h-3.5" />
-                              <span>Add</span>
-                              <ChevronDown className="w-3 h-3 opacity-60 ml-0.5" />
-                            </>
-                          )}
-                        </button>
+                      {/* Add Button with Hover Playlist Menu & Duplicate Guard */}
+                      {(() => {
+                        const isAlreadyInActive = isSongInPlaylist(item, activeCrate);
+                        const addedFeedback = addedIds[item.id];
 
-                        {/* Hover Dropdown Menu listing user playlists */}
-                        <AnimatePresence>
-                          {hoveredSongDropdownId === item.id && (
-                            <motion.div
-                              initial={{ opacity: 0, y: 4, scale: 0.96 }}
-                              animate={{ opacity: 1, y: 0, scale: 1 }}
-                              exit={{ opacity: 0, y: 4, scale: 0.96 }}
-                              transition={{ duration: 0.15 }}
-                              className="absolute right-0 top-full mt-1.5 z-50 w-72 sm:w-80 rounded-2xl bg-white/95 dark:bg-[#1e1e22]/95 backdrop-blur-2xl border border-black/10 dark:border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.35)] p-2.5 flex flex-col gap-1.5 text-neutral-900 dark:text-white"
+                        return (
+                          <div
+                            className="relative shrink-0"
+                            onMouseEnter={() => handleMouseEnterSongBtn(item.id)}
+                            onMouseLeave={handleMouseLeaveSongBtn}
+                          >
+                            <button
+                              type="button"
+                              onClick={() => handleAddSong(item)}
+                              className={`px-3 py-1.5 rounded-xl flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-wider font-medium transition-all active:scale-95 cursor-pointer ${
+                                addedFeedback
+                                  ? 'bg-emerald-500 text-white shadow-sm'
+                                  : isAlreadyInActive
+                                  ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20 shadow-sm'
+                                  : 'bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 hover:opacity-90 shadow-sm'
+                              }`}
+                              title={
+                                isAlreadyInActive
+                                  ? 'Already in this playlist. Hover to add to a different playlist.'
+                                  : 'Click to add to target playlist, or hover to choose/create playlist'
+                              }
                             >
-                              <div className="px-2 py-1 border-b border-black/[0.06] dark:border-white/[0.06] flex items-center justify-between">
-                                <span className="font-mono text-[9px] uppercase tracking-wider text-neutral-400">
-                                  Add to Playlist
-                                </span>
-                                <span className="font-mono text-[9px] text-neutral-400">
-                                  {playlists.length} playlists
-                                </span>
-                              </div>
+                              {addedFeedback ? (
+                                <>
+                                  <Check className="w-3.5 h-3.5" />
+                                  <span className="truncate max-w-[130px]">
+                                    {addedFeedback}
+                                  </span>
+                                </>
+                              ) : isAlreadyInActive ? (
+                                <>
+                                  <Check className="w-3.5 h-3.5 text-emerald-500" />
+                                  <span>In Playlist</span>
+                                  <ChevronDown className="w-3 h-3 opacity-60 ml-0.5" />
+                                </>
+                              ) : (
+                                <>
+                                  <Plus className="w-3.5 h-3.5" />
+                                  <span>Add</span>
+                                  <ChevronDown className="w-3 h-3 opacity-60 ml-0.5" />
+                                </>
+                              )}
+                            </button>
 
-                              {/* Playlists List */}
-                              <div className="max-h-44 overflow-y-auto space-y-0.5 pr-0.5">
-                                {playlists.length === 0 ? (
-                                  <div className="py-2 px-2 text-center text-[11px] font-mono text-neutral-400">
-                                    No playlists created yet
-                                  </div>
-                                ) : (
-                                  playlists.map((pl) => {
-                                    const isTarget = pl.id === targetId;
-                                    return (
-                                      <button
-                                        key={pl.id}
-                                        type="button"
-                                        onClick={() =>
-                                          handleAddSongToSpecificPlaylist(item, pl)
-                                        }
-                                        className={`w-full px-2.5 py-1.5 rounded-xl text-left transition-colors flex items-center justify-between group/pl ${
-                                          isTarget
-                                            ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 font-medium'
-                                            : 'hover:bg-black/[0.05] dark:hover:bg-white/[0.07] text-neutral-800 dark:text-neutral-200'
-                                        }`}
-                                      >
-                                        <div className="flex items-center gap-2 min-w-0">
-                                          <ListMusic
-                                            className={`w-3.5 h-3.5 shrink-0 ${
-                                              isTarget
-                                                ? 'text-white dark:text-neutral-900'
-                                                : 'text-neutral-400'
-                                            }`}
-                                          />
-                                          <span className="text-[12px] truncate">
-                                            {pl.title}
-                                          </span>
-                                        </div>
-                                        <span
-                                          className={`font-mono text-[9.5px] shrink-0 ${
-                                            isTarget
-                                              ? 'opacity-80'
-                                              : 'text-neutral-400 group-hover/pl:text-neutral-600 dark:group-hover/pl:text-neutral-300'
-                                          }`}
-                                        >
-                                          {pl.tracks.length} tracks
-                                        </span>
-                                      </button>
-                                    );
-                                  })
-                                )}
-                              </div>
-
-                              {/* Inline Create New Playlist Section */}
-                              {inlineCreatingForSongId === item.id ? (
-                                <form
-                                  onSubmit={(e) => handleInlineCreateAndAdd(e, item)}
-                                  className="p-2 rounded-xl bg-black/[0.04] dark:bg-white/[0.05] border border-black/10 dark:border-white/10 flex flex-col gap-1.5"
+                            {/* Hover Dropdown Menu listing user playlists */}
+                            <AnimatePresence>
+                              {hoveredSongDropdownId === item.id && (
+                                <motion.div
+                                  initial={{ opacity: 0, y: 4, scale: 0.96 }}
+                                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                                  exit={{ opacity: 0, y: 4, scale: 0.96 }}
+                                  transition={{ duration: 0.15 }}
+                                  className="absolute right-0 top-full mt-1.5 z-50 w-72 sm:w-80 rounded-2xl bg-white/95 dark:bg-[#1e1e22]/95 backdrop-blur-2xl border border-black/10 dark:border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.35)] p-2.5 flex flex-col gap-1.5 text-neutral-900 dark:text-white"
                                 >
-                                  <input
-                                    type="text"
-                                    autoFocus
-                                    value={inlineCreateName}
-                                    onChange={(e) => setInlineCreateName(e.target.value)}
-                                    placeholder="New playlist name…"
-                                    className="w-full px-2.5 py-1.5 rounded-lg bg-white dark:bg-black/40 border border-black/15 dark:border-white/15 text-[12px] focus:outline-none focus:ring-1 focus:ring-neutral-900 dark:focus:ring-white"
-                                  />
-                                  <div className="flex items-center justify-end gap-1.5">
+                                  <div className="px-2 py-1 border-b border-black/[0.06] dark:border-white/[0.06] flex items-center justify-between">
+                                    <span className="font-mono text-[9px] uppercase tracking-wider text-neutral-400">
+                                      Add to Playlist
+                                    </span>
+                                    <span className="font-mono text-[9px] text-neutral-400">
+                                      {playlists.length} playlists
+                                    </span>
+                                  </div>
+
+                                  {!item.isVerified && (
+                                    <div className="px-2 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-[10px] font-mono text-amber-700 dark:text-amber-400 flex items-start gap-1.5 leading-tight">
+                                      <span>⚠️</span>
+                                      <span>
+                                        Unverified stream: YouTube owner may restrict embedding if video isn't licensed for third-party players.
+                                      </span>
+                                    </div>
+                                  )}
+
+                                  {/* Playlists List with Duplicate Status */}
+                                  <div className="max-h-44 overflow-y-auto space-y-0.5 pr-0.5">
+                                    {playlists.length === 0 ? (
+                                      <div className="py-2 px-2 text-center text-[11px] font-mono text-neutral-400">
+                                        No playlists created yet
+                                      </div>
+                                    ) : (
+                                      playlists.map((pl) => {
+                                        const isTarget = pl.id === targetId;
+                                        const isAlreadyInThisPl = isSongInPlaylist(item, pl);
+
+                                        return (
+                                          <button
+                                            key={pl.id}
+                                            type="button"
+                                            onClick={() =>
+                                              handleAddSongToSpecificPlaylist(item, pl)
+                                            }
+                                            className={`w-full px-2.5 py-1.5 rounded-xl text-left transition-colors flex items-center justify-between group/pl ${
+                                              isAlreadyInThisPl
+                                                ? 'bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 font-medium'
+                                                : isTarget
+                                                ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 font-medium'
+                                                : 'hover:bg-black/[0.05] dark:hover:bg-white/[0.07] text-neutral-800 dark:text-neutral-200'
+                                            }`}
+                                          >
+                                            <div className="flex items-center gap-2 min-w-0">
+                                              <ListMusic
+                                                className={`w-3.5 h-3.5 shrink-0 ${
+                                                  isAlreadyInThisPl
+                                                    ? 'text-emerald-500'
+                                                    : isTarget
+                                                    ? 'text-white dark:text-neutral-900'
+                                                    : 'text-neutral-400'
+                                                }`}
+                                              />
+                                              <span className="text-[12px] truncate">
+                                                {pl.title}
+                                              </span>
+                                            </div>
+
+                                            {isAlreadyInThisPl ? (
+                                              <span className="font-mono text-[9px] uppercase tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-1 shrink-0">
+                                                <Check className="w-3 h-3" />
+                                                In Playlist
+                                              </span>
+                                            ) : (
+                                              <span
+                                                className={`font-mono text-[9.5px] shrink-0 ${
+                                                  isTarget
+                                                    ? 'opacity-80'
+                                                    : 'text-neutral-400 group-hover/pl:text-neutral-600 dark:group-hover/pl:text-neutral-300'
+                                                }`}
+                                              >
+                                                + Add
+                                              </span>
+                                            )}
+                                          </button>
+                                        );
+                                      })
+                                    )}
+                                  </div>
+
+                                  {/* Inline Create New Playlist Section */}
+                                  {inlineCreatingForSongId === item.id ? (
+                                    <form
+                                      onSubmit={(e) => handleInlineCreateAndAdd(e, item)}
+                                      className="p-2 rounded-xl bg-black/[0.04] dark:bg-white/[0.05] border border-black/10 dark:border-white/10 flex flex-col gap-1.5"
+                                    >
+                                      <input
+                                        type="text"
+                                        autoFocus
+                                        value={inlineCreateName}
+                                        onChange={(e) => setInlineCreateName(e.target.value)}
+                                        placeholder="New playlist name…"
+                                        className="w-full px-2.5 py-1.5 rounded-lg bg-white dark:bg-black/40 border border-black/15 dark:border-white/15 text-[12px] focus:outline-none focus:ring-1 focus:ring-neutral-900 dark:focus:ring-white"
+                                      />
+                                      <div className="flex items-center justify-end gap-1.5">
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setInlineCreatingForSongId(null);
+                                            setInlineCreateName('');
+                                          }}
+                                          className="px-2 py-0.5 text-[10px] font-mono text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200"
+                                        >
+                                          Cancel
+                                        </button>
+                                        <button
+                                          type="submit"
+                                          disabled={!inlineCreateName.trim()}
+                                          className="px-2.5 py-1 rounded-md bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-mono text-[10px] font-medium disabled:opacity-40"
+                                        >
+                                          Create & Add
+                                        </button>
+                                      </div>
+                                    </form>
+                                  ) : (
                                     <button
                                       type="button"
-                                      onClick={() => {
-                                        setInlineCreatingForSongId(null);
-                                        setInlineCreateName('');
-                                      }}
-                                      className="px-2 py-0.5 text-[10px] font-mono text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200"
+                                      onClick={() => setInlineCreatingForSongId(item.id)}
+                                      className="w-full py-1.5 px-2.5 rounded-xl border border-dashed border-neutral-300 dark:border-neutral-600 hover:border-neutral-900 dark:hover:border-white text-neutral-700 dark:text-neutral-200 text-[11px] font-mono uppercase tracking-wider flex items-center justify-center gap-1.5 hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors"
                                     >
-                                      Cancel
+                                      <FolderPlus className="w-3.5 h-3.5" />
+                                      <span>+ Create New Playlist</span>
                                     </button>
-                                    <button
-                                      type="submit"
-                                      disabled={!inlineCreateName.trim()}
-                                      className="px-2.5 py-1 rounded-md bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-mono text-[10px] font-medium disabled:opacity-40"
-                                    >
-                                      Create & Add
-                                    </button>
-                                  </div>
-                                </form>
-                              ) : (
-                                <button
-                                  type="button"
-                                  onClick={() => setInlineCreatingForSongId(item.id)}
-                                  className="w-full py-1.5 px-2.5 rounded-xl border border-dashed border-neutral-300 dark:border-neutral-600 hover:border-neutral-900 dark:hover:border-white text-neutral-700 dark:text-neutral-200 text-[11px] font-mono uppercase tracking-wider flex items-center justify-center gap-1.5 hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors"
-                                >
-                                  <FolderPlus className="w-3.5 h-3.5" />
-                                  <span>+ Create New Playlist</span>
-                                </button>
+                                  )}
+                                </motion.div>
                               )}
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </div>
+                            </AnimatePresence>
+                          </div>
+                        );
+                      })()}
                     </div>
                   );
                 })

@@ -338,10 +338,16 @@ export function useYouTubePlayer({
               if (idx === activeDeckIdxRef.current || pending?.incomingIdx === idx) {
                 if (e.data === 101 || e.data === 150) {
                   callbacksRef.current.onErrorNotice(
-                    'Owner restricted embedding for this video — click Next or sync another track.'
+                    'YouTube owner restricted embedding for this track — auto-skipping to next track in 2s…'
                   );
+                  window.setTimeout(() => {
+                    callbacksRef.current.onTrackEnded();
+                  }, 2200);
                 } else {
-                  callbacksRef.current.onErrorNotice('Stream unavailable on YouTube.');
+                  callbacksRef.current.onErrorNotice('Stream unavailable on YouTube — skipping to next track…');
+                  window.setTimeout(() => {
+                    callbacksRef.current.onTrackEnded();
+                  }, 2200);
                 }
               }
             },

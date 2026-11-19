@@ -987,6 +987,25 @@ export function App() {
           const targetPl = playlists.find((p) => p.id === playlistId) || activePlaylist;
           if (!targetPl) return;
 
+          // Prevent duplicate songs in the same playlist
+          const isAlreadyInPlaylist = targetPl.tracks.some((t) => {
+            const sameYt = Boolean(
+              t.youtubeId &&
+              result.youtubeId &&
+              t.youtubeId.length === 11 &&
+              t.youtubeId === result.youtubeId
+            );
+            const sameTitleArtist =
+              t.title.trim().toLowerCase() === result.title.trim().toLowerCase() &&
+              t.artist.trim().toLowerCase() === result.artist.trim().toLowerCase();
+            return sameYt || sameTitleArtist;
+          });
+
+          if (isAlreadyInPlaylist) {
+            setViewToast(`"${result.title}" is already in "${targetPl.title}"!`);
+            return;
+          }
+
           const newTrack = convertSearchResultToTrack(
             result,
             targetPl.tracks.length,

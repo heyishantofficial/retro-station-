@@ -12,6 +12,7 @@ export interface SearchSongResult {
   coverUrl: string;
   genre?: string;
   source: 'curated' | 'youtube' | 'itunes';
+  isVerified?: boolean;
 }
 
 // Built-in instant-match index of popular classics across all major genres
@@ -126,7 +127,72 @@ export const POPULAR_HITS_CATALOG: SearchSongResult[] = [
     source: 'curated',
   },
 
-  // Indian / Bollywood Hits
+  // Indian / Bollywood / Devotional / Regional Hits
+  {
+    id: 'hit-ramayan-ka-saar',
+    youtubeId: 'szUSkYTXq7A',
+    title: 'Ramayan Ka Saar',
+    artist: 'Masoom Sharma, Amar Karnawal',
+    album: 'Ramayan Ka Saar',
+    year: '2025',
+    duration: 228,
+    coverUrl: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&q=80',
+    genre: 'Indian Pop / Haryanvi',
+    source: 'curated',
+    isVerified: true,
+  },
+  {
+    id: 'hit-aarti-ramayan-ji-ki',
+    youtubeId: '-EDmtb8T_e8',
+    title: 'Aarti Shri Ramayan Ji Ki',
+    artist: 'Anuradha Paudwal',
+    album: 'Aarti Sangrah',
+    year: '2010',
+    duration: 349,
+    coverUrl: 'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=800&q=80',
+    genre: 'Devotional & Spiritual',
+    source: 'curated',
+    isVerified: true,
+  },
+  {
+    id: 'hit-chaupaiyan-ramayan',
+    youtubeId: 'W5aQ1695yA4',
+    title: 'Chaupayan Ramayan',
+    artist: 'Jaspal Singh',
+    album: 'Sampoorna Ramayan',
+    year: '2005',
+    duration: 197,
+    coverUrl: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&q=80',
+    genre: 'Devotional & Spiritual',
+    source: 'curated',
+    isVerified: true,
+  },
+  {
+    id: 'hit-ramayan-jagjit',
+    youtubeId: 'er416XiUp4g',
+    title: 'Ramayan',
+    artist: 'Jagjit Singh',
+    album: 'Hey Ram',
+    year: '2001',
+    duration: 367,
+    coverUrl: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800&q=80',
+    genre: 'Devotional & Spiritual',
+    source: 'curated',
+    isVerified: true,
+  },
+  {
+    id: 'hit-hanuman-chalisa',
+    youtubeId: 'AETFvQonfV8',
+    title: 'Shree Hanuman Chalisa',
+    artist: 'Hariharan, Gulshan Kumar',
+    album: 'Shree Hanuman Chalisa',
+    year: '1992',
+    duration: 580,
+    coverUrl: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=800&q=80',
+    genre: 'Devotional & Spiritual',
+    source: 'curated',
+    isVerified: true,
+  },
   {
     id: 'hit-kesariya',
     youtubeId: 'BddP6PYo2gs',
@@ -290,6 +356,7 @@ export async function searchSongs(rawQuery: string): Promise<SearchSongResult[]>
           coverUrl: meta.thumbnail,
           genre: 'Direct Stream',
           source: 'youtube',
+          isVerified: true,
         },
       ];
     } catch {
@@ -305,6 +372,7 @@ export async function searchSongs(rawQuery: string): Promise<SearchSongResult[]>
           coverUrl: `https://i.ytimg.com/vi/${parsed.id}/hqdefault.jpg`,
           genre: 'Direct Stream',
           source: 'youtube',
+          isVerified: true,
         },
       ];
     }
@@ -346,17 +414,18 @@ export async function searchSongs(rawQuery: string): Promise<SearchSongResult[]>
             // Find if we already have a curated YouTube ID for this title & artist
             const curMatch = POPULAR_HITS_CATALOG.find(
               (c) =>
-                c.title.toLowerCase() === it.trackName.toLowerCase() &&
-                c.artist.toLowerCase().includes(it.artistName.toLowerCase().slice(0, 5))
+                c.title.toLowerCase() === it.trackName.toLowerCase() ||
+                (c.title.toLowerCase().includes(it.trackName.toLowerCase().slice(0, 8)) &&
+                 c.artist.toLowerCase().includes(it.artistName.toLowerCase().slice(0, 5)))
             );
 
             // Upscale artwork from 100x100 to 600x600 for crisp visualizer presentation
             const hiResArt = (it.artworkUrl100 || '').replace('100x100bb', '600x600bb');
+            const hasVerifiedYt = Boolean(curMatch && curMatch.youtubeId && curMatch.youtubeId.length === 11);
 
             return {
               id: `itunes-${it.trackId}`,
-              // If we have a verified YT match, use it; otherwise use song query for YouTube player
-              youtubeId: curMatch ? curMatch.youtubeId : `${it.trackName} ${it.artistName}`,
+              youtubeId: curMatch ? curMatch.youtubeId : '',
               title: it.trackName,
               artist: it.artistName,
               album: it.collectionName || it.trackName,
@@ -365,6 +434,7 @@ export async function searchSongs(rawQuery: string): Promise<SearchSongResult[]>
               coverUrl: hiResArt || 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800&q=80',
               genre: it.primaryGenreName || 'Music',
               source: 'itunes',
+              isVerified: hasVerifiedYt,
             };
           });
 
@@ -390,10 +460,11 @@ export async function searchSongs(rawQuery: string): Promise<SearchSongResult[]>
 export function convertSearchResultToTrack(result: SearchSongResult, trackIndex: number, playlistName: string): Track {
   const designs: Track['discDesign'][] = ['artistic', 'minimal', 'typography', 'dark'];
   const cleanTitle = result.title.toUpperCase();
+  const safeIdPart = (result.youtubeId || result.id).replace(/[^a-zA-Z0-9_-]/g, '') || 'track';
 
   return {
-    id: `track-${result.youtubeId.replace(/[^a-zA-Z0-9_-]/g, '')}-${Date.now()}-${trackIndex}`,
-    youtubeId: result.youtubeId,
+    id: `track-${safeIdPart}-${Date.now()}-${trackIndex}`,
+    youtubeId: result.youtubeId || '',
     title: cleanTitle,
     artist: result.artist,
     album: result.album || playlistName,
