@@ -906,6 +906,11 @@ export function App() {
           }}
           onOpenSharingIsCaring={() => setIsSharingIsCaringOpen(true)}
           isSharingIsCaringOpen={isSharingIsCaringOpen}
+          onOpenSyncModal={() => {
+            setSyncError(null);
+            setSyncStatus(null);
+            setIsSyncModalOpen(true);
+          }}
           onImportCommunityPlaylist={handleImportCommunityPlaylist}
           onPlayCommunityPlaylist={handlePlayCommunityPlaylist}
           onRenamePlaylist={handleRenamePlaylist}
@@ -1337,6 +1342,15 @@ export function App() {
           setActiveTrackIndex(0);
           setViewToast(`Created "${title}" ✦`);
           return newId;
+        }}
+        onImportPlaylistUrl={(plId) => {
+          handleSyncPlaylist(plId);
+        }}
+        onOpenSyncModal={() => {
+          setIsSearchModalOpen(false);
+          setSyncError(null);
+          setSyncStatus(null);
+          setIsSyncModalOpen(true);
         }}
       />
 

@@ -10,8 +10,11 @@ import {
   ChevronDown,
   FolderPlus,
   ListMusic,
+  Link2,
 } from 'lucide-react';
 import { searchSongs, SearchSongResult, POPULAR_HITS_CATALOG } from '../services/musicSearch';
+import { parseYouTubeInput } from '../services/youtube';
+import { YouTubeIcon } from './YouTubeIcon';
 import { Playlist } from '../types';
 import { sound } from '../utils/soundEffects';
 
@@ -23,6 +26,8 @@ interface SongSearchModalProps {
   onSelectPlaylist?: (id: string) => void;
   onAddSongToPlaylist: (result: SearchSongResult, playlistId: string) => void;
   onCreatePlaylist?: (title: string) => string;
+  onImportPlaylistUrl?: (playlistId: string) => void;
+  onOpenSyncModal?: () => void;
 }
 
 const QUICK_TAGS = [
@@ -46,11 +51,17 @@ export const SongSearchModal: React.FC<SongSearchModalProps> = ({
   onSelectPlaylist,
   onAddSongToPlaylist,
   onCreatePlaylist,
+  onImportPlaylistUrl,
+  onOpenSyncModal,
 }) => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchSongResult[]>(POPULAR_HITS_CATALOG.slice(0, 8));
   const [isSearching, setIsSearching] = useState(false);
   const [addedIds, setAddedIds] = useState<Record<string, string>>({});
+
+  // YouTube Playlist Detection
+  const parsedYouTube = parseYouTubeInput(query.trim());
+  const isPlaylistUrl = parsedYouTube.type === 'playlist';
 
   // Target Playlist State
   const [targetId, setTargetId] = useState<string>(activePlaylistId);
@@ -98,6 +109,11 @@ export const SongSearchModal: React.FC<SongSearchModalProps> = ({
     const trimmed = query.trim();
     if (!trimmed) {
       setResults(POPULAR_HITS_CATALOG.slice(0, 8));
+      setIsSearching(false);
+      return;
+    }
+
+    if (parseYouTubeInput(trimmed).type === 'playlist') {
       setIsSearching(false);
       return;
     }
@@ -434,13 +450,31 @@ export const SongSearchModal: React.FC<SongSearchModalProps> = ({
                   </div>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="w-8 h-8 rounded-full bg-black/[0.04] dark:bg-white/[0.06] hover:bg-black/[0.08] dark:hover:bg-white/[0.12] flex items-center justify-center text-neutral-400 hover:text-neutral-800 dark:hover:text-white transition-colors border border-black/[0.06] dark:border-white/[0.08]"
-                >
-                  <X className="w-4 h-4" />
-                </button>
+                <div className="flex items-center gap-2">
+                  {onOpenSyncModal && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        sound.playClick();
+                        onClose();
+                        onOpenSyncModal();
+                      }}
+                      className="px-2.5 py-1 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 border border-red-500/20 text-[11px] font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+                      title="Paste a YouTube or Spotify playlist URL"
+                    >
+                      <Link2 className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline">Import Playlist URL</span>
+                      <span className="sm:hidden">Import URL</span>
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="w-8 h-8 rounded-full bg-black/[0.04] dark:bg-white/[0.06] hover:bg-black/[0.08] dark:hover:bg-white/[0.12] flex items-center justify-center text-neutral-400 hover:text-neutral-800 dark:hover:text-white transition-colors border border-black/[0.06] dark:border-white/[0.08]"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
 
               {/* Search Bar Input */}
@@ -451,6 +485,14 @@ export const SongSearchModal: React.FC<SongSearchModalProps> = ({
                   type="text"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && isPlaylistUrl && onImportPlaylistUrl) {
+                      e.preventDefault();
+                      sound.playDiscSpin();
+                      onClose();
+                      onImportPlaylistUrl(parsedYouTube.id);
+                    }
+                  }}
                   placeholder="Search song title, artist, or paste any YouTube link…"
                   className="w-full h-11 pl-10 pr-9 rounded-2xl bg-black/[0.05] dark:bg-white/[0.08] border border-black/[0.06] dark:border-white/[0.08] text-[15px] placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white/40 transition-all"
                 />
@@ -488,6 +530,46 @@ export const SongSearchModal: React.FC<SongSearchModalProps> = ({
 
             {/* Results Scroll Area */}
             <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2 min-h-[260px] max-h-[52dvh] relative z-10">
+              {/* Special Handler: Detected YouTube Playlist URL */}
+              {isPlaylistUrl && (
+                <div className="p-4 rounded-2xl bg-gradient-to-r from-red-500/20 via-rose-500/15 to-purple-500/15 border border-red-500/35 text-neutral-900 dark:text-white shadow-lg space-y-3 mb-2">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="w-9 h-9 rounded-xl bg-red-500/30 border border-red-400/40 flex items-center justify-center text-red-400 shrink-0 shadow">
+                        <YouTubeIcon className="w-5 h-5 text-red-400" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-xs font-bold text-neutral-900 dark:text-white flex items-center gap-1.5">
+                          <span>YouTube Playlist Detected</span>
+                          <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-red-500/20 text-red-600 dark:text-red-300 font-mono font-bold uppercase">
+                            Direct Link
+                          </span>
+                        </div>
+                        <div className="text-[11px] text-neutral-600 dark:text-neutral-400 truncate mt-0.5 font-mono">
+                          Playlist ID: {parsedYouTube.id}
+                        </div>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        sound.playDiscSpin();
+                        onClose();
+                        onImportPlaylistUrl?.(parsedYouTube.id);
+                      }}
+                      className="px-4 py-2 rounded-full bg-red-600 hover:bg-red-500 text-white font-bold text-xs flex items-center gap-1.5 shadow transition-all active:scale-95 cursor-pointer shrink-0"
+                    >
+                      <Link2 className="w-3.5 h-3.5" />
+                      <span>Import Playlist</span>
+                    </button>
+                  </div>
+                  <p className="text-[11.5px] text-neutral-600 dark:text-neutral-300 leading-snug">
+                    Press <strong>Import Playlist</strong> to fetch all songs and press custom digital discs in Retro Station.
+                  </p>
+                </div>
+              )}
+
               {isSearching ? (
                 <div className="flex flex-col items-center justify-center py-14 text-neutral-400">
                   <Disc3 className="w-7 h-7 animate-spin text-neutral-600 dark:text-neutral-300 mb-2" />

@@ -9,6 +9,7 @@ import {
   Sparkles,
   TrendingUp,
   LogIn,
+  ClipboardPaste,
 } from 'lucide-react';
 import { YouTubeIcon } from './YouTubeIcon';
 import { parseYouTubeInput } from '../services/youtube';
@@ -142,6 +143,21 @@ export const YouTubeSyncModal: React.FC<YouTubeSyncModalProps> = ({
     onSyncPlaylist(pl.id, pl.title);
   };
 
+  const handlePasteClipboard = async () => {
+    sound.playClick();
+    try {
+      if (navigator.clipboard) {
+        const text = await navigator.clipboard.readText();
+        if (text) {
+          setUrlInput(text.trim());
+          setLocalError(null);
+        }
+      }
+    } catch {
+      // ignore
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setLocalError(null);
@@ -149,7 +165,7 @@ export const YouTubeSyncModal: React.FC<YouTubeSyncModalProps> = ({
 
     if (parsed.type === 'invalid') {
       setLocalError(
-        'Please paste a valid YouTube or YouTube Music playlist URL, playlist ID (PL...), or track link.'
+        'Please paste a valid YouTube or YouTube Music playlist URL (e.g. https://music.youtube.com/playlist?list=PL...), playlist ID, or video track link.'
       );
       return;
     }
@@ -165,7 +181,7 @@ export const YouTubeSyncModal: React.FC<YouTubeSyncModalProps> = ({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-5">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-5 font-sans">
           {/* Dimming Scrim */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -173,29 +189,32 @@ export const YouTubeSyncModal: React.FC<YouTubeSyncModalProps> = ({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             onClick={onClose}
-            className="absolute inset-0 bg-black/45 backdrop-blur-[5px]"
+            className="absolute inset-0 bg-black/70 backdrop-blur-md cursor-pointer"
           />
 
-          {/* Translucent Apple-style Modal Sheet */}
+          {/* Liquid Glass Modal Sheet */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 12 }}
+            initial={{ opacity: 0, scale: 0.94, y: 16 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.96, y: 8 }}
-            transition={{ type: 'spring', damping: 28, stiffness: 320 }}
-            className="relative w-full max-w-xl max-h-[88dvh] overflow-y-auto rounded-3xl bg-[#f5f5f3]/95 text-neutral-900 backdrop-blur-2xl border border-black/10 shadow-[0_32px_80px_rgba(0,0,0,0.25)] flex flex-col"
+            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+            className="relative w-full max-w-xl max-h-[90dvh] overflow-y-auto rounded-3xl liquid-glass-drawer border border-white/25 text-white shadow-[0_32px_80px_rgba(0,0,0,0.85),inset_0_1px_2px_rgba(255,255,255,0.4)] flex flex-col z-10"
           >
             {/* Header */}
-            <div className="px-6 pt-5 pb-3 border-b border-black/10 flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-full bg-neutral-900 text-white flex items-center justify-center shadow">
-                  <YouTubeIcon className="w-4 h-4 text-red-500" />
+            <div className="px-6 pt-5 pb-3 border-b border-white/[0.14] flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-red-500/20 border border-red-400/40 flex items-center justify-center text-red-400 shadow-[0_0_18px_rgba(239,68,68,0.3)]">
+                  <YouTubeIcon className="w-5 h-5 text-red-400" />
                 </div>
                 <div>
-                  <h2 className="font-serif text-lg font-bold uppercase tracking-wide text-neutral-900 leading-none">
-                    Import & Sync Music
+                  <h2 className="text-base sm:text-lg font-bold tracking-tight text-white flex items-center gap-2">
+                    <span>Import YouTube Playlist</span>
+                    <span className="text-[9px] px-2 py-0.5 rounded-full bg-red-500/25 border border-red-400/40 text-red-300 font-mono font-bold uppercase">
+                      URL Fetch
+                    </span>
                   </h2>
-                  <p className="font-mono text-[9px] uppercase tracking-[0.16em] text-neutral-500 mt-1">
-                    YouTube Playlists, Spotify Library & Live Charts
+                  <p className="text-xs text-white/60 mt-0.5">
+                    Paste any YouTube or YouTube Music playlist link to press your custom digital CDs
                   </p>
                 </div>
               </div>
@@ -206,7 +225,7 @@ export const YouTubeSyncModal: React.FC<YouTubeSyncModalProps> = ({
                   sound.playClick();
                   onClose();
                 }}
-                className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 hover:text-black hover:bg-black/5 transition-colors"
+                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 flex items-center justify-center text-white/70 hover:text-white transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -214,11 +233,11 @@ export const YouTubeSyncModal: React.FC<YouTubeSyncModalProps> = ({
 
             {/* Quick Live Charts Banner */}
             {onOpenCharts && (
-              <div className="px-6 py-2.5 bg-gradient-to-r from-purple-950 via-indigo-950 to-purple-900 text-white flex items-center justify-between">
+              <div className="px-6 py-2.5 bg-gradient-to-r from-purple-500/25 via-indigo-500/20 to-purple-500/25 border-b border-white/10 text-white flex items-center justify-between">
                 <div className="flex items-center gap-2 min-w-0 pr-2">
                   <TrendingUp className="w-4 h-4 text-purple-300 shrink-0" />
-                  <span className="font-mono text-[10.5px] uppercase tracking-wider truncate">
-                    Live Charts: Trending 20, Top 100 India & Global
+                  <span className="text-xs text-white/90 truncate font-medium">
+                    Looking for new music? Explore <strong>Live Charts</strong> (Top 100 & Trending)
                   </span>
                 </div>
                 <button
@@ -228,55 +247,58 @@ export const YouTubeSyncModal: React.FC<YouTubeSyncModalProps> = ({
                     onClose();
                     onOpenCharts();
                   }}
-                  className="px-3 py-1 rounded-full bg-white text-neutral-950 font-mono text-[10px] font-bold uppercase tracking-wider shrink-0 hover:bg-purple-100 transition-colors shadow"
+                  className="px-3 py-1 rounded-full bg-white text-neutral-950 text-[11px] font-bold shrink-0 hover:bg-purple-100 transition-colors shadow cursor-pointer active:scale-95"
                 >
                   Browse Charts
                 </button>
               </div>
             )}
 
-            {/* 3-Tab Segmented Selector: Paste Link | Connect Spotify | Google YouTube */}
-            <div className="px-6 pt-3 pb-2 border-b border-black/[0.08]">
-              <div className="grid grid-cols-3 p-1 rounded-2xl bg-black/[0.05] text-[10px] font-mono uppercase tracking-[0.12em]">
+            {/* 3-Tab Segmented Selector: Paste URL | Connect Spotify | Google YouTube */}
+            <div className="px-6 pt-4 pb-2">
+              <div className="grid grid-cols-3 p-1 rounded-full bg-black/40 border border-white/15 backdrop-blur-2xl shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)]">
                 <button
                   type="button"
                   onClick={() => {
                     sound.playClick();
                     setActiveTab('link');
                   }}
-                  className={`py-2 rounded-xl transition-all ${
+                  className={`py-2 px-3 rounded-full text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                     activeTab === 'link'
-                      ? 'bg-white text-neutral-950 shadow-sm font-bold'
-                      : 'text-neutral-500 hover:text-neutral-800'
+                      ? 'liquid-glass-pill text-neutral-950 font-bold'
+                      : 'text-white/70 hover:text-white hover:bg-white/[0.08]'
                   }`}
                 >
-                  Paste URL
+                  <Link2 className="w-3.5 h-3.5" />
+                  <span>Paste URL</span>
                 </button>
+
                 <button
                   type="button"
                   onClick={() => {
                     sound.playClick();
                     setActiveTab('spotify');
                   }}
-                  className={`py-2 rounded-xl transition-all flex items-center justify-center gap-1.5 ${
+                  className={`py-2 px-3 rounded-full text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                     activeTab === 'spotify'
-                      ? 'bg-emerald-600 text-white shadow-sm font-bold'
-                      : 'text-neutral-500 hover:text-neutral-800'
+                      ? 'liquid-glass-pill text-neutral-950 font-bold'
+                      : 'text-white/70 hover:text-white hover:bg-white/[0.08]'
                   }`}
                 >
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                   <span>Spotify</span>
                 </button>
+
                 <button
                   type="button"
                   onClick={() => {
                     sound.playClick();
                     setActiveTab('google');
                   }}
-                  className={`py-2 rounded-xl transition-all flex items-center justify-center gap-1.5 ${
+                  className={`py-2 px-3 rounded-full text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                     activeTab === 'google'
-                      ? 'bg-red-600 text-white shadow-sm font-bold'
-                      : 'text-neutral-500 hover:text-neutral-800'
+                      ? 'liquid-glass-pill text-neutral-950 font-bold'
+                      : 'text-white/70 hover:text-white hover:bg-white/[0.08]'
                   }`}
                 >
                   <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
@@ -289,11 +311,21 @@ export const YouTubeSyncModal: React.FC<YouTubeSyncModalProps> = ({
             {activeTab === 'link' && (
               <form onSubmit={handleSubmit} className="p-6 space-y-4">
                 <div>
-                  <label className="block font-mono text-[9.5px] uppercase tracking-[0.2em] text-neutral-500 mb-1.5">
-                    YouTube / YouTube Music Playlist or Track Link
-                  </label>
-                  <div className="relative">
-                    <Link2 className="w-4 h-4 text-neutral-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-[11px] font-bold text-white/80 uppercase tracking-wider font-mono">
+                      YouTube / YouTube Music Playlist URL
+                    </label>
+                    <button
+                      type="button"
+                      onClick={handlePasteClipboard}
+                      className="text-[11px] text-rose-300 hover:text-rose-200 flex items-center gap-1 font-medium cursor-pointer"
+                    >
+                      <ClipboardPaste className="w-3 h-3" />
+                      <span>Paste from Clipboard</span>
+                    </button>
+                  </div>
+                  <div className="relative flex items-center">
+                    <Link2 className="w-4 h-4 text-white/40 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                     <input
                       type="text"
                       value={urlInput}
@@ -302,60 +334,73 @@ export const YouTubeSyncModal: React.FC<YouTubeSyncModalProps> = ({
                         setLocalError(null);
                       }}
                       placeholder="https://music.youtube.com/playlist?list=PL..."
-                      className="w-full pl-10 pr-3.5 py-2.5 rounded-2xl bg-white border border-black/15 text-[15px] sm:text-[13px] font-sans text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900 transition-all"
+                      className="w-full pl-10 pr-20 py-2.5 rounded-2xl bg-black/40 border border-white/20 text-white placeholder-white/40 text-xs sm:text-sm font-sans focus:outline-none focus:ring-2 focus:ring-rose-400/60 transition-all shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)]"
                       autoFocus
                     />
+                    <button
+                      type="button"
+                      onClick={handlePasteClipboard}
+                      className="absolute right-2 py-1 px-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-[11px] font-mono text-white/80 hover:text-white transition-colors cursor-pointer"
+                    >
+                      Paste
+                    </button>
                   </div>
+                  <p className="text-[10.5px] text-white/50 mt-1.5">
+                    Paste any public or unlisted YouTube playlist link, YouTube Music URL, or ID (e.g. <code>PL...</code>).
+                  </p>
                 </div>
 
                 <div>
-                  <label className="block font-mono text-[9.5px] uppercase tracking-[0.2em] text-neutral-500 mb-1.5">
-                    Collection Label (Optional)
+                  <label className="block text-[11px] font-bold text-white/80 uppercase tracking-wider font-mono mb-1.5">
+                    Custom Playlist Name (Optional)
                   </label>
                   <input
                     type="text"
                     value={playlistTitle}
                     onChange={(e) => setPlaylistTitle(e.target.value)}
-                    placeholder="e.g. My Favorite Tracks"
-                    className="w-full px-3.5 py-2 rounded-2xl bg-white border border-black/15 text-[15px] sm:text-[13px] font-sans text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900 transition-all"
+                    placeholder="e.g. Late Night Drives, Summer Vibes 2024…"
+                    className="w-full px-3.5 py-2.5 rounded-2xl bg-black/40 border border-white/20 text-white placeholder-white/40 text-xs sm:text-sm font-sans focus:outline-none focus:ring-2 focus:ring-rose-400/60 transition-all shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)]"
                   />
                 </div>
 
                 {/* Status & Errors */}
                 {(localError || syncError) && (
-                  <div className="flex items-start gap-2 p-3 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-800 text-[11px]">
-                    <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                  <div className="flex items-start gap-2.5 p-3 rounded-2xl bg-red-500/20 border border-red-400/40 text-red-200 text-xs shadow-[0_0_16px_rgba(239,68,68,0.25)]">
+                    <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-red-300" />
                     <span>{localError || syncError}</span>
                   </div>
                 )}
 
                 {syncStatus && !syncError && (
-                  <div className="flex items-center gap-2 p-3 rounded-2xl bg-neutral-900/5 border border-black/10 text-neutral-800 text-[11px]">
+                  <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-emerald-500/20 border border-emerald-400/40 text-emerald-200 text-xs shadow-[0_0_16px_rgba(16,185,129,0.25)]">
                     {isSyncing ? (
-                      <Disc3 className="w-4 h-4 animate-spin shrink-0" />
+                      <Disc3 className="w-4 h-4 animate-spin shrink-0 text-emerald-300" />
                     ) : (
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <CheckCircle2 className="w-4 h-4 text-emerald-300 shrink-0" />
                     )}
-                    <span className="font-mono text-[10px] tracking-wide">{syncStatus}</span>
+                    <span className="font-mono text-[11px] tracking-wide">{syncStatus}</span>
                   </div>
                 )}
 
-                <div className="flex items-center justify-between pt-1">
-                  <span className="text-[10.5px] text-neutral-500">
+                <div className="flex items-center justify-between pt-2">
+                  <span className="text-[11px] text-white/60">
                     Works with any <strong>Unlisted</strong> or <strong>Public</strong> YouTube playlist.
                   </span>
                   <button
                     type="submit"
                     disabled={isSyncing || !urlInput.trim()}
-                    className="px-5 py-2.5 rounded-full bg-neutral-900 text-white text-[11.5px] font-medium tracking-wide hover:bg-neutral-800 disabled:opacity-40 transition-all active:scale-95 flex items-center gap-2 shadow"
+                    className="py-2.5 px-6 rounded-full bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-400 hover:to-rose-500 text-white text-xs font-bold shadow-[0_0_20px_rgba(239,68,68,0.4)] disabled:opacity-40 transition-all active:scale-95 flex items-center gap-2 cursor-pointer"
                   >
                     {isSyncing ? (
                       <>
-                        <Disc3 className="w-3.5 h-3.5 animate-spin" />
-                        <span>Syncing…</span>
+                        <Disc3 className="w-4 h-4 animate-spin" />
+                        <span>Syncing Discs…</span>
                       </>
                     ) : (
-                      <span>Sync & Press Discs</span>
+                      <>
+                        <Sparkles className="w-3.5 h-3.5" />
+                        <span>Fetch & Press Discs</span>
+                      </>
                     )}
                   </button>
                 </div>
@@ -367,17 +412,17 @@ export const YouTubeSyncModal: React.FC<YouTubeSyncModalProps> = ({
               <div className="p-6 space-y-4">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <h3 className="font-serif text-base font-semibold uppercase tracking-wide">
+                    <h3 className="text-base font-bold text-white tracking-tight">
                       Connect Spotify Library
                     </h3>
-                    <p className="font-sans text-xs text-neutral-600 mt-0.5">
+                    <p className="text-xs text-white/70 mt-1">
                       Import your Spotify playlists into Retro Station with <strong>100% free universal playback</strong>. (No Spotify Premium required!)
                     </p>
                   </div>
                   <button
                     type="button"
                     onClick={handleSpotifyConnect}
-                    className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-mono text-[11px] font-semibold uppercase tracking-wider flex items-center gap-1.5 shrink-0 transition-all active:scale-95 shadow"
+                    className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 shrink-0 transition-all active:scale-95 shadow cursor-pointer"
                   >
                     <LogIn className="w-3.5 h-3.5" />
                     <span>{spotifyToken ? 'Reconnect' : 'Connect'}</span>
@@ -385,13 +430,13 @@ export const YouTubeSyncModal: React.FC<YouTubeSyncModalProps> = ({
                 </div>
 
                 {isLoadingSpotify ? (
-                  <div className="py-12 flex flex-col items-center justify-center text-neutral-400">
-                    <Disc3 className="w-7 h-7 animate-spin text-emerald-600 mb-2" />
+                  <div className="py-12 flex flex-col items-center justify-center text-white/60">
+                    <Disc3 className="w-8 h-8 animate-spin text-emerald-400 mb-2" />
                     <span className="font-mono text-xs">Loading your Spotify playlists…</span>
                   </div>
                 ) : spotifyPlaylists.length > 0 ? (
                   <div className="space-y-1.5 max-h-60 overflow-y-auto pr-1">
-                    <span className="font-mono text-[9px] uppercase tracking-wider text-neutral-400 block pb-1">
+                    <span className="text-[10px] uppercase tracking-wider text-white/50 font-mono block pb-1">
                       Your Spotify Playlists ({spotifyPlaylists.length}):
                     </span>
                     {spotifyPlaylists.map((pl) => (
@@ -399,31 +444,31 @@ export const YouTubeSyncModal: React.FC<YouTubeSyncModalProps> = ({
                         key={pl.id}
                         type="button"
                         onClick={() => handleImportSpotify(pl)}
-                        className="w-full p-2.5 rounded-2xl hover:bg-black/[0.05] border border-black/10 text-left transition-all flex items-center justify-between group"
+                        className="w-full p-2.5 rounded-2xl liquid-glass-interactive text-left transition-all flex items-center justify-between group cursor-pointer"
                       >
                         <div className="flex items-center gap-3 min-w-0 pr-2">
                           <img
                             src={pl.imageUrl}
                             alt={pl.name}
-                            className="w-10 h-10 rounded-xl object-cover shadow-sm bg-neutral-200"
+                            className="w-10 h-10 rounded-xl object-cover shadow-sm bg-neutral-800"
                           />
                           <div className="min-w-0">
-                            <div className="font-serif text-[13px] font-semibold truncate group-hover:text-emerald-700">
+                            <div className="text-xs font-bold text-white truncate group-hover:text-emerald-300">
                               {pl.name}
                             </div>
-                            <div className="font-mono text-[9.5px] text-neutral-500">
+                            <div className="font-mono text-[10px] text-white/60">
                               {pl.trackCount} tracks
                             </div>
                           </div>
                         </div>
-                        <span className="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-700 font-mono text-[10px] font-medium uppercase tracking-wider group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                        <span className="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 text-[10px] font-bold uppercase tracking-wider group-hover:bg-emerald-400 group-hover:text-black transition-colors">
                           Import
                         </span>
                       </button>
                     ))}
                   </div>
                 ) : (
-                  <div className="p-4 rounded-2xl bg-black/[0.03] border border-black/10 text-center font-mono text-xs text-neutral-500">
+                  <div className="p-4 rounded-2xl liquid-glass-card text-center font-mono text-xs text-white/60">
                     Click <strong>Connect</strong> above to sign in with Spotify and load your playlists.
                   </div>
                 )}
@@ -435,10 +480,10 @@ export const YouTubeSyncModal: React.FC<YouTubeSyncModalProps> = ({
               <div className="p-6 space-y-4">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <h3 className="font-serif text-base font-semibold uppercase tracking-wide">
+                    <h3 className="text-base font-bold text-white tracking-tight">
                       Sign in with Google / YouTube
                     </h3>
-                    <p className="font-sans text-xs text-neutral-600 mt-0.5">
+                    <p className="text-xs text-white/70 mt-1">
                       Read-only access to import your personal YouTube playlists & Liked Videos directly without copying links.
                     </p>
                   </div>
@@ -446,7 +491,7 @@ export const YouTubeSyncModal: React.FC<YouTubeSyncModalProps> = ({
                     type="button"
                     onClick={handleGoogleConnect}
                     disabled={isLoadingGoogle}
-                    className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white font-mono text-[11px] font-semibold uppercase tracking-wider flex items-center gap-1.5 shrink-0 transition-all active:scale-95 shadow"
+                    className="px-4 py-2 rounded-xl bg-red-500 hover:bg-red-400 text-white font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 shrink-0 transition-all active:scale-95 shadow cursor-pointer"
                   >
                     <LogIn className="w-3.5 h-3.5" />
                     <span>{googleToken ? 'Signed In' : 'Sign In'}</span>
@@ -454,13 +499,13 @@ export const YouTubeSyncModal: React.FC<YouTubeSyncModalProps> = ({
                 </div>
 
                 {isLoadingGoogle ? (
-                  <div className="py-12 flex flex-col items-center justify-center text-neutral-400">
-                    <Disc3 className="w-7 h-7 animate-spin text-red-600 mb-2" />
+                  <div className="py-12 flex flex-col items-center justify-center text-white/60">
+                    <Disc3 className="w-8 h-8 animate-spin text-red-400 mb-2" />
                     <span className="font-mono text-xs">Connecting to Google…</span>
                   </div>
                 ) : googlePlaylists.length > 0 ? (
                   <div className="space-y-1.5 max-h-60 overflow-y-auto pr-1">
-                    <span className="font-mono text-[9px] uppercase tracking-wider text-neutral-400 block pb-1">
+                    <span className="text-[10px] uppercase tracking-wider text-white/50 font-mono block pb-1">
                       Your YouTube Playlists ({googlePlaylists.length}):
                     </span>
                     {googlePlaylists.map((pl) => (
@@ -468,31 +513,31 @@ export const YouTubeSyncModal: React.FC<YouTubeSyncModalProps> = ({
                         key={pl.id}
                         type="button"
                         onClick={() => handleImportGoogle(pl)}
-                        className="w-full p-2.5 rounded-2xl hover:bg-black/[0.05] border border-black/10 text-left transition-all flex items-center justify-between group"
+                        className="w-full p-2.5 rounded-2xl liquid-glass-interactive text-left transition-all flex items-center justify-between group cursor-pointer"
                       >
                         <div className="flex items-center gap-3 min-w-0 pr-2">
                           <img
                             src={pl.thumbnailUrl}
                             alt={pl.title}
-                            className="w-10 h-10 rounded-xl object-cover shadow-sm bg-neutral-200"
+                            className="w-10 h-10 rounded-xl object-cover shadow-sm bg-neutral-800"
                           />
                           <div className="min-w-0">
-                            <div className="font-serif text-[13px] font-semibold truncate group-hover:text-red-700">
+                            <div className="text-xs font-bold text-white truncate group-hover:text-red-300">
                               {pl.title}
                             </div>
-                            <div className="font-mono text-[9.5px] text-neutral-500">
+                            <div className="font-mono text-[10px] text-white/60">
                               {pl.itemCount} tracks
                             </div>
                           </div>
                         </div>
-                        <span className="px-2.5 py-1 rounded-lg bg-red-500/10 text-red-700 font-mono text-[10px] font-medium uppercase tracking-wider group-hover:bg-red-600 group-hover:text-white transition-colors">
+                        <span className="px-2.5 py-1 rounded-lg bg-red-500/20 text-red-300 border border-red-400/40 text-[10px] font-bold uppercase tracking-wider group-hover:bg-red-500 group-hover:text-white transition-colors">
                           Press
                         </span>
                       </button>
                     ))}
                   </div>
                 ) : (
-                  <div className="p-4 rounded-2xl bg-black/[0.03] border border-black/10 text-center font-mono text-xs text-neutral-500">
+                  <div className="p-4 rounded-2xl liquid-glass-card text-center font-mono text-xs text-white/60">
                     Click <strong>Sign In</strong> above to fetch your personal playlists and Liked Videos.
                   </div>
                 )}
@@ -500,9 +545,9 @@ export const YouTubeSyncModal: React.FC<YouTubeSyncModalProps> = ({
             )}
 
             {/* Quick-Try Curated Presets */}
-            <div className="px-6 py-4 bg-black/[0.03] border-t border-black/10">
-              <div className="flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-neutral-500 mb-2.5">
-                <Sparkles className="w-3 h-3" />
+            <div className="px-6 py-4 border-t border-white/[0.14] bg-white/[0.02]">
+              <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-white/60 mb-2.5">
+                <Sparkles className="w-3.5 h-3.5 text-rose-400" />
                 <span>Quick-Sync Curated Playlists</span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -517,12 +562,12 @@ export const YouTubeSyncModal: React.FC<YouTubeSyncModalProps> = ({
                       setPlaylistTitle(preset.label);
                       onSyncPlaylist(preset.id, preset.label);
                     }}
-                    className="text-left p-2.5 rounded-2xl bg-white hover:bg-neutral-50 border border-black/10 transition-all active:scale-95 group shadow-sm"
+                    className="text-left p-2.5 rounded-2xl liquid-glass-interactive transition-all active:scale-95 group cursor-pointer"
                   >
-                    <div className="text-[11.5px] font-medium text-neutral-900 leading-tight group-hover:underline">
+                    <div className="text-xs font-semibold text-white leading-tight group-hover:text-rose-300">
                       {preset.label}
                     </div>
-                    <div className="font-mono text-[8.5px] text-neutral-500 uppercase tracking-wider mt-1">
+                    <div className="font-mono text-[9px] text-white/50 uppercase tracking-wider mt-1">
                       {preset.tag}
                     </div>
                   </button>

@@ -19,6 +19,7 @@ import { useViewportMode } from '../hooks/useViewportMode';
 import { Playlist } from '../types';
 import { UserProfile } from '../services/cloudSync';
 import { CommunityLeaderboardDropdown } from './CommunityLeaderboardDropdown';
+import { YouTubeIcon } from './YouTubeIcon';
 
 interface HeaderNavProps {
   isMenuOpen: boolean;
@@ -44,6 +45,7 @@ interface HeaderNavProps {
   onRenamePlaylist?: (id: string, newTitle: string) => void;
   onOpenSharingIsCaring?: () => void;
   isSharingIsCaringOpen?: boolean;
+  onOpenSyncModal?: () => void;
   initialPublishPlaylistId?: string;
   initialPublishCrateId?: string;
 }
@@ -72,6 +74,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
   onRenamePlaylist,
   onOpenSharingIsCaring,
   isSharingIsCaringOpen = false,
+  onOpenSyncModal,
   initialPublishPlaylistId,
   initialPublishCrateId,
 }) => {
@@ -184,6 +187,23 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
             className={`touch-target w-9 h-9 rounded-full flex items-center justify-center ${iconColor} ${hoverBg} active:scale-90 transition-all cursor-pointer`}
           >
             <Search className="w-4 h-4" strokeWidth={1.75} />
+          </button>
+        )}
+
+        {/* 1b. Import YouTube Playlist URL Trigger */}
+        {!isMenuOpen && onOpenSyncModal && (
+          <button
+            type="button"
+            onClick={() => {
+              sound.playClick();
+              setIsPlaylistDropdownOpen(false);
+              onOpenSyncModal();
+            }}
+            aria-label="Import YouTube Playlist URL"
+            title="Import YouTube Playlist or Song URL"
+            className={`touch-target w-9 h-9 rounded-full flex items-center justify-center ${iconColor} ${hoverBg} active:scale-90 transition-all cursor-pointer`}
+          >
+            <YouTubeIcon className="w-4 h-4 text-red-500" />
           </button>
         )}
 
@@ -350,8 +370,24 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
                         className="flex-1 py-1.5 px-2 rounded-xl border border-dashed border-neutral-300 dark:border-neutral-600 hover:border-neutral-900 dark:hover:border-white text-neutral-700 dark:text-neutral-200 text-[10.5px] font-mono uppercase tracking-wider flex items-center justify-center gap-1.5 hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors cursor-pointer"
                       >
                         <FolderPlus className="w-3.5 h-3.5" />
-                        <span>+ New Playlist</span>
+                        <span>+ New</span>
                       </button>
+
+                      {onOpenSyncModal && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            sound.playClick();
+                            setIsPlaylistDropdownOpen(false);
+                            onOpenSyncModal();
+                          }}
+                          className="py-1.5 px-2.5 rounded-xl bg-red-500/10 hover:bg-red-500/15 text-red-700 dark:text-red-400 border border-red-500/20 text-[10.5px] font-mono uppercase tracking-wider flex items-center gap-1 transition-colors cursor-pointer"
+                          title="Import a YouTube or Spotify Playlist URL"
+                        >
+                          <YouTubeIcon className="w-3.5 h-3.5 text-red-500" />
+                          <span>Import URL</span>
+                        </button>
+                      )}
 
                       {onOpenCharts && (
                         <button

@@ -405,7 +405,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                   </div>
                 </button>
 
-                {/* 3. Sync YouTube */}
+                {/* 3. Sync YouTube / Import URL */}
                 <button
                   type="button"
                   onClick={() => {
@@ -414,13 +414,14 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                     onOpenSyncModal();
                   }}
                   className="p-3 rounded-2xl liquid-glass-interactive flex flex-col items-center text-center gap-2 group cursor-pointer"
+                  title="Import YouTube Music Playlist or Song URL"
                 >
                   <div className="w-9 h-9 rounded-xl bg-red-500/20 border border-red-400/40 flex items-center justify-center text-red-400 group-hover:scale-105 transition-transform shrink-0 shadow-[inset_0_1px_1px_rgba(255,255,255,0.4),0_0_16px_rgba(239,68,68,0.25)]">
                     <YouTubeIcon className="w-4 h-4 text-red-400" />
                   </div>
                   <div className="min-w-0 w-full">
-                    <div className="text-xs font-bold text-white tracking-tight truncate">Sync</div>
-                    <div className="text-[10px] text-white/70 truncate mt-0.5 font-medium">Import</div>
+                    <div className="text-xs font-bold text-white tracking-tight truncate">Import URL</div>
+                    <div className="text-[10px] text-white/70 truncate mt-0.5 font-medium">YouTube Playlist</div>
                   </div>
                 </button>
               </div>
@@ -621,6 +622,34 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                             <ArrowRight className="w-4 h-4 text-amber-400 shrink-0" />
                           </button>
 
+                          {/* Import YouTube Playlist URL Action */}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              sound.playClick();
+                              setIsPlaylistDropdownOpen(false);
+                              onClose();
+                              onOpenSyncModal();
+                            }}
+                            className="w-full p-2.5 rounded-xl bg-gradient-to-r from-red-500/20 via-pink-500/10 to-transparent hover:from-red-500/30 border border-red-400/35 flex items-center justify-between text-left transition-all active:scale-[0.98] cursor-pointer shadow-[inset_0_1px_1px_rgba(255,255,255,0.25)]"
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-7 h-7 rounded-lg bg-red-500/25 border border-red-400/40 flex items-center justify-center text-red-300 shrink-0 shadow-[0_0_12px_rgba(239,68,68,0.3)]">
+                                <YouTubeIcon className="w-4 h-4 text-red-400" />
+                              </div>
+                              <div>
+                                <div className="text-xs font-bold text-red-200 flex items-center gap-1.5">
+                                  <span>Import YouTube Playlist URL</span>
+                                  <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-red-500/30 text-red-200 border border-red-400/40 font-bold uppercase">
+                                    Fetch
+                                  </span>
+                                </div>
+                                <div className="text-[10px] text-white/70 truncate mt-0.5">Paste YouTube Music link to press discs</div>
+                              </div>
+                            </div>
+                            <ArrowRight className="w-4 h-4 text-red-400 shrink-0" />
+                          </button>
+
                           {/* Playlists List inside Dropdown */}
                           <div className="max-h-60 overflow-y-auto space-y-1.5 pr-0.5">
                             {playlists.map((pl) => {
@@ -768,8 +797,8 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                     </AnimatePresence>
                   </div>
 
-                  {/* Secondary Toolbar: Add & Share */}
-                  <div className="flex items-center justify-between pb-1">
+                  {/* Secondary Toolbar: Add Song, Import URL & Share */}
+                  <div className="flex items-center gap-2 pb-1">
                     <button
                       type="button"
                       onClick={() => {
@@ -777,10 +806,24 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                         onClose();
                         onOpenSearch?.();
                       }}
-                      className="py-1.5 px-3.5 rounded-full liquid-glass-interactive text-xs font-semibold text-white flex items-center gap-1.5 cursor-pointer"
+                      className="py-1.5 px-3 rounded-full liquid-glass-interactive text-xs font-semibold text-white flex items-center justify-center gap-1.5 cursor-pointer flex-1"
                     >
                       <Plus className="w-3.5 h-3.5 text-emerald-300 stroke-[2.5]" />
                       <span>Add Song</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        sound.playClick();
+                        onClose();
+                        onOpenSyncModal();
+                      }}
+                      className="py-1.5 px-3 rounded-full liquid-glass-interactive text-xs font-semibold text-white flex items-center justify-center gap-1.5 cursor-pointer flex-1"
+                      title="Paste a YouTube playlist URL to import"
+                    >
+                      <YouTubeIcon className="w-3.5 h-3.5 text-red-400" />
+                      <span>Import URL</span>
                     </button>
 
                     {activePlaylist && (
@@ -790,11 +833,10 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                           sound.playClick();
                           triggerSharePlaylist?.();
                         }}
-                        className="py-1.5 px-3.5 rounded-full liquid-glass-interactive text-xs font-semibold text-white/80 hover:text-white flex items-center gap-1.5 cursor-pointer"
+                        className="w-8 h-8 rounded-full liquid-glass-interactive text-white/80 hover:text-white flex items-center justify-center cursor-pointer shrink-0"
                         title="Share playlist link"
                       >
                         <Share2 className="w-3.5 h-3.5" />
-                        <span>Share</span>
                       </button>
                     )}
                   </div>
@@ -806,19 +848,33 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                       </div>
                       <h4 className="text-sm font-semibold text-white">Playlist is Empty</h4>
                       <p className="text-xs text-white/60 mt-1 max-w-[240px] mx-auto">
-                        Search songs or tap the Charts button to press your first tracks.
+                        Search songs or paste a YouTube playlist link to press your first tracks.
                       </p>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          sound.playClick();
-                          onClose();
-                          onOpenSearch?.();
-                        }}
-                        className="mt-3.5 py-2 px-5 rounded-full liquid-glass-pill text-neutral-950 font-bold text-xs transition-all active:scale-95 cursor-pointer"
-                      >
-                        Search Songs
-                      </button>
+                      <div className="mt-3.5 flex items-center justify-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            sound.playClick();
+                            onClose();
+                            onOpenSearch?.();
+                          }}
+                          className="py-2 px-4 rounded-full liquid-glass-pill text-neutral-950 font-bold text-xs transition-all active:scale-95 cursor-pointer"
+                        >
+                          Search Songs
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            sound.playClick();
+                            onClose();
+                            onOpenSyncModal();
+                          }}
+                          className="py-2 px-4 rounded-full liquid-glass-interactive text-white font-bold text-xs transition-all active:scale-95 cursor-pointer flex items-center gap-1.5"
+                        >
+                          <YouTubeIcon className="w-3.5 h-3.5 text-red-400" />
+                          <span>Import URL</span>
+                        </button>
+                      </div>
                     </div>
                   )}
 
