@@ -1,8 +1,40 @@
 const GOOGLE_CLIENT_ID_STORAGE = 'retro_google_client_id_v1';
 const GOOGLE_TOKEN_STORAGE = 'retro_google_access_token_v1';
 
-// Default / fallback public web client ID
-const DEFAULT_GOOGLE_CLIENT_ID = '937291048201-publicretrostation.apps.googleusercontent.com';
+// Placeholder identifier that causes Google 401 invalid_client
+const DUMMY_PLACEHOLDER_SUBSTRING = 'publicretrostation';
+
+export function getStoredGoogleClientId(): string {
+  try {
+    const custom = localStorage.getItem(GOOGLE_CLIENT_ID_STORAGE);
+    if (custom && custom.trim()) return custom.trim();
+    const envId = (import.meta as any).env?.VITE_GOOGLE_CLIENT_ID;
+    if (envId && typeof envId === 'string' && envId.trim()) return envId.trim();
+  } catch {
+    // ignore
+  }
+  return '';
+}
+
+export function setStoredGoogleClientId(clientId: string): void {
+  try {
+    const clean = clientId.trim();
+    if (clean) {
+      localStorage.setItem(GOOGLE_CLIENT_ID_STORAGE, clean);
+    } else {
+      localStorage.removeItem(GOOGLE_CLIENT_ID_STORAGE);
+    }
+  } catch {
+    // ignore
+  }
+}
+
+export function isValidGoogleClientId(clientId?: string): boolean {
+  if (!clientId) return false;
+  const clean = clientId.trim();
+  if (!clean || clean.includes(DUMMY_PLACEHOLDER_SUBSTRING)) return false;
+  return clean.endsWith('.apps.googleusercontent.com') && clean.length > 30;
+}
 
 declare global {
   interface Window {
@@ -94,19 +126,23 @@ export async function loginWithGoogleAccount(
   onError?: (err: string) => void,
   customClientId?: string
 ): Promise<void> {
+  const clientId = (customClientId || getStoredGoogleClientId()).trim();
+
+  if (!clientId || clientId.includes(DUMMY_PLACEHOLDER_SUBSTRING)) {
+    onError?.(
+      'No valid Google Cloud Client ID configured. Please enter your Google OAuth Client ID in settings, or use Instant Profile Sign-In.'
+    );
+    return;
+  }
+
+  if (customClientId) {
+    setStoredGoogleClientId(customClientId);
+  }
+
   await loadGoogleGISScript();
   if (!window.google?.accounts?.oauth2) {
     onError?.('Google Identity Services not ready');
     return;
-  }
-
-  const clientId = (customClientId || localStorage.getItem(GOOGLE_CLIENT_ID_STORAGE) || DEFAULT_GOOGLE_CLIENT_ID).trim();
-  if (customClientId) {
-    try {
-      localStorage.setItem(GOOGLE_CLIENT_ID_STORAGE, customClientId);
-    } catch {
-      // ignore
-    }
   }
 
   const client = window.google.accounts.oauth2.initTokenClient({
@@ -155,19 +191,23 @@ export async function loginWithGoogleYouTube(
   onError?: (err: string) => void,
   customClientId?: string
 ): Promise<void> {
+  const clientId = (customClientId || getStoredGoogleClientId()).trim();
+
+  if (!clientId || clientId.includes(DUMMY_PLACEHOLDER_SUBSTRING)) {
+    onError?.(
+      'No valid Google Cloud Client ID configured. Please configure your Google Client ID to import from your personal YouTube Library.'
+    );
+    return;
+  }
+
+  if (customClientId) {
+    setStoredGoogleClientId(customClientId);
+  }
+
   await loadGoogleGISScript();
   if (!window.google?.accounts?.oauth2) {
     onError?.('Google Identity Services not ready');
     return;
-  }
-
-  const clientId = (customClientId || localStorage.getItem(GOOGLE_CLIENT_ID_STORAGE) || DEFAULT_GOOGLE_CLIENT_ID).trim();
-  if (customClientId) {
-    try {
-      localStorage.setItem(GOOGLE_CLIENT_ID_STORAGE, customClientId);
-    } catch {
-      // ignore
-    }
   }
 
   const client = window.google.accounts.oauth2.initTokenClient({
