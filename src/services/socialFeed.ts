@@ -52,120 +52,8 @@ export interface CreatePostPayload {
 const LOCAL_FEED_KEY = 'retro_social_feed_cache';
 const LOCAL_REACTIONS_KEY = 'retro_social_user_reactions';
 
-// Aesthetic starter posts to welcome listeners into the lounge
-export const SEED_POSTS: SocialPost[] = [
-  {
-    id: 'seed_post_1',
-    type: 'song',
-    note: 'The synth lead at the drop gives me goosebumps every single time. Peak night drive energy.',
-    timestampSeconds: 52,
-    author: {
-      name: 'Elena Vance',
-      avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&q=80',
-    },
-    song: {
-      id: 'seed_song_resonance',
-      title: 'Resonance',
-      artist: 'HOME',
-      album: 'Odyssey',
-      year: '2014',
-      duration: 212,
-      coverUrl: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&q=80',
-      youtubeId: '8GW6sLrK40k',
-      genre: 'Chillwave',
-      label: 'Midwest Collective',
-      matrixCode: 'RS-HOME-01',
-      quotes: [],
-    },
-    reactions: {
-      hype: 42,
-      love: 68,
-      save: 24,
-    },
-    createdAt: new Date(Date.now() - 1000 * 60 * 45).toISOString(), // 45m ago
-  },
-  {
-    id: 'seed_post_2',
-    type: 'playlist',
-    note: 'Handpicked lo-fi chillhop for deep coding and rain outside. Keeps your focus locked in all night.',
-    author: {
-      name: 'Kaito Tanaka',
-      avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80',
-    },
-    playlist: {
-      id: 'seed_pl_lofi',
-      title: 'Lofi Beats • Late Night Study',
-      category: 'Lofi & Chill',
-      trackCount: 4,
-      tracks: [
-        {
-          id: 'lofi-1',
-          title: 'Snowman',
-          artist: 'WYS',
-          album: '1 AM Study Session',
-          year: '2020',
-          duration: 198,
-          coverUrl: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&q=80',
-          youtubeId: 'beBUgpflR40',
-          genre: 'Lofi Hip Hop',
-          label: 'Lofi Records',
-          matrixCode: 'RS-LOFI-01',
-          quotes: [],
-        },
-        {
-          id: 'lofi-2',
-          title: 'The Girl I Havent Met',
-          artist: 'Kudasaibeats',
-          album: 'Falling',
-          year: '2017',
-          duration: 184,
-          coverUrl: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=800&q=80',
-          youtubeId: 'wAPCSnAhhC8',
-          genre: 'Lofi',
-          label: 'Independent',
-          matrixCode: 'RS-LOFI-02',
-          quotes: [],
-        },
-      ],
-    },
-    reactions: {
-      hype: 57,
-      love: 91,
-      save: 38,
-    },
-    createdAt: new Date(Date.now() - 1000 * 60 * 180).toISOString(), // 3h ago
-  },
-  {
-    id: 'seed_post_3',
-    type: 'song',
-    note: 'Kavinsky and Lovefoxxx created the definitive modern synthwave anthem. That vocoder is immortal.',
-    timestampSeconds: 68,
-    author: {
-      name: 'Marcus Brody',
-      avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&q=80',
-    },
-    song: {
-      id: 'seed_song_nightcall',
-      title: 'Nightcall',
-      artist: 'Kavinsky',
-      album: 'Drive Original Soundtrack',
-      year: '2010',
-      duration: 259,
-      coverUrl: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=800&q=80',
-      youtubeId: 'MV_3Dpw-BRY',
-      genre: 'Synthwave',
-      label: 'Record Makers',
-      matrixCode: 'RS-DRIVE-01',
-      quotes: [],
-    },
-    reactions: {
-      hype: 83,
-      love: 44,
-      save: 18,
-    },
-    createdAt: new Date(Date.now() - 1000 * 60 * 360).toISOString(), // 6h ago
-  },
-];
+// Clean slate: no demo / seed posts
+export const SEED_POSTS: SocialPost[] = [];
 
 /**
  * Fetch feed posts with server-first pattern and resilient localStorage fallback
@@ -175,14 +63,16 @@ export async function fetchSocialFeed(filter: 'recent' | 'trending' = 'recent'):
     const res = await fetch(`/api/feed/posts?filter=${filter}`);
     if (res.ok) {
       const data = await res.json();
-      if (Array.isArray(data.posts) && data.posts.length > 0) {
+      if (Array.isArray(data.posts)) {
+        // Filter out any lingering seed / demo posts
+        const realPosts = data.posts.filter((p: SocialPost) => !p.id.startsWith('seed_post_'));
         // Cache for offline resilience
         try {
-          localStorage.setItem(LOCAL_FEED_KEY, JSON.stringify(data.posts));
+          localStorage.setItem(LOCAL_FEED_KEY, JSON.stringify(realPosts));
         } catch {
           // ignore storage quota errors
         }
-        return data.posts;
+        return realPosts;
       }
     }
   } catch {
@@ -194,16 +84,16 @@ export async function fetchSocialFeed(filter: 'recent' | 'trending' = 'recent'):
     const localRaw = localStorage.getItem(LOCAL_FEED_KEY);
     if (localRaw) {
       const parsed = JSON.parse(localRaw);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        return sortPosts(parsed, filter);
+      if (Array.isArray(parsed)) {
+        const realPosts = parsed.filter((p: SocialPost) => !p.id.startsWith('seed_post_'));
+        return sortPosts(realPosts, filter);
       }
     }
   } catch {
     // ignore
   }
 
-  // First-time fallback: Seed posts
-  return sortPosts(SEED_POSTS, filter);
+  return [];
 }
 
 /**
@@ -334,6 +224,31 @@ export function hasUserReacted(postId: string, reactionType: ReactionType): bool
   return Boolean(map[postId]?.[reactionType]);
 }
 
+/**
+ * Delete a post (only allowed for post author)
+ */
+export async function deleteSocialPost(postId: string, userId?: string): Promise<boolean> {
+  // 1. Delete from local cache
+  try {
+    const feed = getCachedFeed().filter((p) => p.id !== postId);
+    localStorage.setItem(LOCAL_FEED_KEY, JSON.stringify(feed));
+  } catch {
+    // ignore
+  }
+
+  // 2. Delete from backend if reachable
+  try {
+    const res = await fetch(`/api/feed/posts/${encodeURIComponent(postId)}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId }),
+    });
+    return res.ok;
+  } catch {
+    return true;
+  }
+}
+
 // Helpers
 function getLocalUserReactions(): Record<string, Record<string, boolean>> {
   try {
@@ -347,9 +262,13 @@ function getLocalUserReactions(): Record<string, Record<string, boolean>> {
 function getCachedFeed(): SocialPost[] {
   try {
     const raw = localStorage.getItem(LOCAL_FEED_KEY);
-    return raw ? JSON.parse(raw) : [...SEED_POSTS];
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed)
+      ? parsed.filter((p: SocialPost) => !p.id.startsWith('seed_post_'))
+      : [];
   } catch {
-    return [...SEED_POSTS];
+    return [];
   }
 }
 

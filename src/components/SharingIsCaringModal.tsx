@@ -17,6 +17,7 @@ import {
   Check,
   Clock,
   LogIn,
+  Trash2,
 } from 'lucide-react';
 import {
   SocialPost,
@@ -24,6 +25,7 @@ import {
   createSocialPost,
   togglePostReaction,
   hasUserReacted,
+  deleteSocialPost,
   ReactionType,
 } from '../services/socialFeed';
 import { searchSongs, SearchSongResult } from '../services/musicSearch';
@@ -252,6 +254,12 @@ export const SharingIsCaringModal: React.FC<SharingIsCaringModalProps> = ({
     onImportPlaylist(imported);
     setSavedPlaylistPostId(postId);
     setTimeout(() => setSavedPlaylistPostId(null), 2000);
+  };
+
+  const handleDeletePost = async (postId: string) => {
+    sound.playClick();
+    setFeed((prev) => prev.filter((p) => p.id !== postId));
+    await deleteSocialPost(postId, user?.id);
   };
 
   if (!isOpen) return null;
@@ -742,6 +750,21 @@ export const SharingIsCaringModal: React.FC<SharingIsCaringModalProps> = ({
                             <Share2 className="w-3.5 h-3.5" />
                           )}
                         </button>
+
+                        {/* Author Delete Action */}
+                        {user &&
+                          (post.author.id === user.id ||
+                            (post.author.email && post.author.email === user.email) ||
+                            post.author.name === user.name) && (
+                            <button
+                              type="button"
+                              onClick={() => handleDeletePost(post.id)}
+                              title="Delete your post"
+                              className="w-7 h-7 rounded-lg liquid-glass-interactive flex items-center justify-center text-red-400 hover:text-red-300 hover:bg-red-500/20 cursor-pointer"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
                       </div>
                     </div>
 
